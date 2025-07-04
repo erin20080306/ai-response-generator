@@ -442,6 +442,7 @@ class EnhancedAIAssistant {
         // 初始化遊戲中心
         if (typeof GameCenter !== 'undefined') {
             this.gameCenter = new GameCenter(this);
+            this.gameCenter.init();
         }
 
         // 初始化文件生成器

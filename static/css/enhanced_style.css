@@ -783,3 +783,24 @@ body {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* 遊戲卡片樣式 */
+.game-card {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: 1px solid var(--bs-border-color);
+}
+
+.game-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.game-container {
+    min-height: 400px;
+    background: var(--bs-body-bg);
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

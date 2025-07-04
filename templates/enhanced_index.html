@@ -63,6 +63,11 @@
                                 <i class="fas fa-users me-2"></i>協作功能
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="games-tab" data-bs-toggle="tab" data-bs-target="#games-panel" type="button" role="tab">
+                                <i class="fas fa-gamepad me-2"></i>遊戲中心
+                            </button>
+                        </li>
                     </ul>
                 </div>
                 
@@ -602,6 +607,97 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Games Panel -->
+                    <div class="tab-pane fade" id="games-panel" role="tabpanel">
+                        <div class="panel-container">
+                            <h4 class="mb-4">遊戲中心</h4>
+                            
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    <!-- Game Selection -->
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h5 class="mb-0"><i class="fas fa-gamepad me-2"></i>遊戲選擇</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-4 mb-3">
+                                                    <div class="card text-center game-card" onclick="loadGame('tetris')">
+                                                        <div class="card-body">
+                                                            <i class="fas fa-th-large fa-2x mb-2 text-primary"></i>
+                                                            <h5 class="card-title">俄羅斯方塊</h5>
+                                                            <p class="card-text">經典的俄羅斯方塊遊戲</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 mb-3">
+                                                    <div class="card text-center game-card" onclick="loadGame('mahjong')">
+                                                        <div class="card-body">
+                                                            <i class="fas fa-square fa-2x mb-2 text-success"></i>
+                                                            <h5 class="card-title">麻將</h5>
+                                                            <p class="card-text">4人麻將遊戲</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 mb-3">
+                                                    <div class="card text-center game-card" onclick="loadGame('farm')">
+                                                        <div class="card-body">
+                                                            <i class="fas fa-seedling fa-2x mb-2 text-warning"></i>
+                                                            <h5 class="card-title">農場物語</h5>
+                                                            <p class="card-text">農場模擬RPG遊戲</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Game Container -->
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0"><i class="fas fa-play me-2"></i>遊戲畫面</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="gameContainer" class="game-container">
+                                                <div class="text-center text-muted">
+                                                    <i class="fas fa-gamepad fa-3x mb-3"></i>
+                                                    <h5>請選擇一個遊戲開始</h5>
+                                                    <p>點擊上方的遊戲卡片來載入遊戲</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-4">
+                                    <!-- Game Info -->
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>遊戲資訊</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="gameInfo">
+                                                <p>選擇遊戲後將顯示相關資訊</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Game Controls -->
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0"><i class="fas fa-cog me-2"></i>遊戲控制</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="gameControls">
+                                                <p>遊戲載入後將顯示控制選項</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -725,5 +821,80 @@
     <script src="{{ url_for('static', filename='js/collaboration.js') }}"></script>
     <script src="{{ url_for('static', filename='js/games_clean.js') }}"></script>
     <script src="{{ url_for('static', filename='js/document_generator.js') }}"></script>
+    
+    <!-- 全域遊戲載入函數 -->
+    <script>
+        function loadGame(gameType) {
+            const gameContainer = document.getElementById('gameContainer');
+            const gameInfo = document.getElementById('gameInfo');
+            const gameControls = document.getElementById('gameControls');
+            
+            // 清除目前內容
+            gameContainer.innerHTML = '';
+            gameInfo.innerHTML = '';
+            gameControls.innerHTML = '';
+            
+            // 根據遊戲類型載入不同的遊戲
+            switch(gameType) {
+                case 'tetris':
+                    loadTetrisGame();
+                    break;
+                case 'mahjong':
+                    loadMahjongGame();
+                    break;
+                case 'farm':
+                    loadFarmStoryGame();
+                    break;
+                default:
+                    gameContainer.innerHTML = '<div class="text-center text-muted"><p>遊戲載入失敗</p></div>';
+                    break;
+            }
+        }
+        
+        function loadTetrisGame() {
+            const gameContainer = document.getElementById('gameContainer');
+            const gameInfo = document.getElementById('gameInfo');
+            const gameControls = document.getElementById('gameControls');
+            
+            gameContainer.innerHTML = '<div id="tetrisGame"><canvas id="tetrisCanvas" width="300" height="600"></canvas></div>';
+            gameInfo.innerHTML = '<h6>俄羅斯方塊</h6><p>使用方向鍵移動方塊，空白鍵旋轉</p>';
+            gameControls.innerHTML = '<button class="btn btn-primary" onclick="startTetris()">開始遊戲</button>';
+            
+            // 初始化俄羅斯方塊
+            if (typeof initializeTetris === 'function') {
+                initializeTetris();
+            }
+        }
+        
+        function loadMahjongGame() {
+            const gameContainer = document.getElementById('gameContainer');
+            const gameInfo = document.getElementById('gameInfo');
+            const gameControls = document.getElementById('gameControls');
+            
+            gameContainer.innerHTML = '<div id="mahjongGame"></div>';
+            gameInfo.innerHTML = '<h6>麻將</h6><p>4人麻將遊戲，點擊牌張進行遊戲</p>';
+            gameControls.innerHTML = '<button class="btn btn-primary" onclick="startMahjong()">開始遊戲</button>';
+            
+            // 初始化麻將
+            if (typeof initializeMahjong === 'function') {
+                initializeMahjong();
+            }
+        }
+        
+        function loadFarmStoryGame() {
+            const gameContainer = document.getElementById('gameContainer');
+            const gameInfo = document.getElementById('gameInfo');
+            const gameControls = document.getElementById('gameControls');
+            
+            gameContainer.innerHTML = '<div id="farmStoryGame"></div>';
+            gameInfo.innerHTML = '<h6>農場物語</h6><p>農場RPG遊戲，與NPC對話並管理農場</p>';
+            gameControls.innerHTML = '<button class="btn btn-primary" onclick="startFarmStory()">開始遊戲</button>';
+            
+            // 初始化農場故事
+            if (typeof initializeFarmStory === 'function') {
+                initializeFarmStory();
+            }
+        }
+    </script>
 </body>
 </html>
