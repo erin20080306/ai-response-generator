@@ -2,6 +2,7 @@ import os
 import logging
 import base64
 import requests
+from datetime import datetime
 from io import BytesIO
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, session, send_file
@@ -252,6 +253,82 @@ def text_to_speech():
     except Exception as e:
         logging.error(f"文字轉語音錯誤: {e}")
         return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/save_game_score', methods=['POST'])
+def save_game_score():
+    """Save game score"""
+    try:
+        data = request.get_json()
+        game_name = data.get('game_name')
+        score = data.get('score')
+        details = data.get('details', {})
+        
+        # 初始化遊戲分數記錄
+        if 'game_scores' not in session:
+            session['game_scores'] = {}
+        
+        if game_name not in session['game_scores']:
+            session['game_scores'][game_name] = []
+        
+        # 記錄分數
+        score_record = {
+            'score': score,
+            'details': details,
+            'timestamp': datetime.now().isoformat(),
+            'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        session['game_scores'][game_name].append(score_record)
+        
+        # 只保留最近10次記錄
+        session['game_scores'][game_name] = session['game_scores'][game_name][-10:]
+        
+        return jsonify({
+            'success': True,
+            'message': '分數已記錄',
+            'best_score': max([r['score'] for r in session['game_scores'][game_name]])
+        })
+        
+    except Exception as e:
+        logging.error(f"Error saving game score: {str(e)}")
+        return jsonify({'error': 'Failed to save score', 'success': False}), 500
+
+@app.route('/get_game_scores', methods=['GET'])
+def get_game_scores():
+    """Get game scores"""
+    try:
+        game_name = request.args.get('game_name')
+        
+        if 'game_scores' not in session:
+            session['game_scores'] = {}
+        
+        if game_name:
+            scores = session['game_scores'].get(game_name, [])
+            best_score = max([r['score'] for r in scores]) if scores else 0
+            return jsonify({
+                'success': True,
+                'scores': scores,
+                'best_score': best_score,
+                'total_games': len(scores)
+            })
+        else:
+            # 返回所有遊戲統計
+            all_stats = {}
+            for game, scores in session['game_scores'].items():
+                all_stats[game] = {
+                    'best_score': max([r['score'] for r in scores]) if scores else 0,
+                    'total_games': len(scores),
+                    'latest_score': scores[-1]['score'] if scores else 0
+                }
+            
+            return jsonify({
+                'success': True,
+                'game_stats': all_stats
+            })
+        
+    except Exception as e:
+        logging.error(f"Error getting game scores: {str(e)}")
+        return jsonify({'error': 'Failed to get scores', 'success': False}), 500
 
 @app.route('/clear_history', methods=['POST'])
 def clear_history():

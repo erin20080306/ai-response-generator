@@ -367,6 +367,11 @@ class EnhancedAIAssistant {
             this.collaboration = new Collaboration(this);
         }
 
+        // 初始化遊戲中心
+        if (typeof GameCenter !== 'undefined') {
+            this.gameCenter = new GameCenter(this);
+        }
+
         // 初始化 Socket.IO
         this.initializeSocket();
     }
