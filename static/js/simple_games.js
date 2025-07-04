@@ -574,7 +574,7 @@ function renderMahjongBoard() {
 function updateMahjongDisplay() {
     // 更新當前玩家
     const currentPlayerElement = document.getElementById('currentPlayer');
-    if (currentPlayerElement) {
+    if (currentPlayerElement && gameData.mahjong.players && gameData.mahjong.players[gameData.mahjong.currentPlayer]) {
         currentPlayerElement.textContent = gameData.mahjong.players[gameData.mahjong.currentPlayer].name;
     }
     
@@ -690,10 +690,7 @@ function executeAITurn() {
     updateMahjongDisplay();
 }
 
-function selectTile(tile, index) {
-    gameData.mahjong.selectedTile = tile;
-    renderMahjongBoard();
-}
+
 
 function restartMahjong() {
     // 重置所有玩家分數
