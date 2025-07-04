@@ -1089,7 +1089,7 @@ class GameCenter {
         `;
 
         const modal = this.createGameModal('俄羅斯方塊', gameContent);
-        modal.show();
+        // modal.show() 已經在 createGameModal 中處理
 
         setTimeout(() => {
             this.initTetrisGame();
@@ -1347,7 +1347,7 @@ class GameCenter {
         `;
 
         const modal = this.createGameModal('麻將', gameContent);
-        modal.show();
+        // modal.show() 已經在 createGameModal 中處理
 
         setTimeout(() => {
             this.initMahjongGame();
@@ -1616,7 +1616,7 @@ class GameCenter {
         `;
 
         const modal = this.createGameModal('牧場物語', gameContent);
-        modal.show();
+        // modal.show() 已經在 createGameModal 中處理
 
         setTimeout(() => {
             this.initFarmGame();
