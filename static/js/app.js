@@ -133,12 +133,12 @@ class AIAssistant {
         const typeInterval = setInterval(() => {
             if (index < text.length) {
                 const currentText = text.substring(0, index + 1);
-                // Format the text properly for display
-                const formattedText = this.formatMessage(currentText);
-                element.innerHTML = icon + formattedText + cursor;
+                // Use escapeHtml for typewriter effect to avoid formatting issues
+                element.innerHTML = icon + this.escapeHtml(currentText).replace(/\n/g, '<br>') + cursor;
                 index++;
                 this.scrollToBottom();
             } else {
+                // Only format the message once at the end
                 element.innerHTML = icon + this.formatMessage(text);
                 clearInterval(typeInterval);
                 // Highlight code after typewriter effect
@@ -167,7 +167,7 @@ class AIAssistant {
                 currentIndex++;
                 this.scrollToBottom();
                 setTimeout(processNext, 200);
-            } else {
+            } else if (part.trim()) {
                 // This is regular text - use typewriter effect
                 let charIndex = 0;
                 const cursor = '<span class="typewriter-cursor">|</span>';
@@ -176,7 +176,7 @@ class AIAssistant {
                     if (charIndex < part.length) {
                         const currentContent = element.innerHTML.replace(cursor, '');
                         const currentText = part.substring(0, charIndex + 1);
-                        element.innerHTML = currentContent + this.escapeHtml(currentText) + cursor;
+                        element.innerHTML = currentContent + this.escapeHtml(currentText).replace(/\n/g, '<br>') + cursor;
                         charIndex++;
                         this.scrollToBottom();
                     } else {
@@ -186,6 +186,10 @@ class AIAssistant {
                         setTimeout(processNext, 100);
                     }
                 }, 30);
+            } else {
+                // Empty part, skip
+                currentIndex++;
+                setTimeout(processNext, 50);
             }
         };
         
