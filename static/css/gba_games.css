@@ -1,0 +1,634 @@
+/* GBA風格遊戲介面 */
+.game-container {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border: 4px solid #1a252f;
+    border-radius: 12px;
+    box-shadow: 
+        0 8px 16px rgba(0,0,0,0.4),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+    font-family: 'Courier New', monospace;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+/* 俄羅斯方塊GBA風格 */
+.tetris-container {
+    background: linear-gradient(180deg, #4a6741 0%, #2d4025 100%);
+    color: #fff3d6;
+    padding: 20px;
+    min-height: 600px;
+}
+
+.tetris-board {
+    width: 300px;
+    height: 600px;
+    background: #1a1a2e;
+    border: 3px solid #16213e;
+    border-radius: 8px;
+    margin: 0 auto 20px;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(20, 1fr);
+    gap: 1px;
+    box-shadow: 
+        inset 0 0 20px rgba(0,0,0,0.5),
+        0 0 30px rgba(78, 205, 196, 0.3);
+}
+
+.tetris-cell {
+    background: #0f3460;
+    border: 1px solid #16537e;
+    transition: all 0.1s ease;
+}
+
+.tetris-cell.filled {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+    border: 1px solid #a93226;
+    box-shadow: 
+        inset 1px 1px 2px rgba(255,255,255,0.3),
+        inset -1px -1px 2px rgba(0,0,0,0.3);
+}
+
+.tetris-cell.current {
+    background: linear-gradient(145deg, #f39c12, #e67e22);
+    border: 1px solid #d68910;
+    animation: tetrisPulse 0.5s infinite alternate;
+}
+
+@keyframes tetrisPulse {
+    0% { box-shadow: 0 0 5px #f39c12; }
+    100% { box-shadow: 0 0 15px #f39c12, 0 0 25px #f39c12; }
+}
+
+.tetris-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.tetris-btn {
+    background: linear-gradient(145deg, #3498db, #2980b9);
+    color: white;
+    border: 2px solid #21618c;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.tetris-btn:hover {
+    background: linear-gradient(145deg, #5dade2, #3498db);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+.tetris-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 麻將GBA風格 */
+.mahjong-container {
+    background: linear-gradient(180deg, #27ae60 0%, #1e8449 100%);
+    color: #fff3d6;
+    padding: 20px;
+    min-height: 600px;
+}
+
+.mahjong-board {
+    background: #0d4f3c;
+    border: 3px solid #186a3b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 0 auto 20px;
+    max-width: 800px;
+    box-shadow: 
+        inset 0 0 30px rgba(0,0,0,0.4),
+        0 0 20px rgba(39, 174, 96, 0.3);
+}
+
+.mahjong-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.mahjong-tile {
+    width: 50px;
+    height: 70px;
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    border: 2px solid #6c757d;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 
+        0 4px 8px rgba(0,0,0,0.2),
+        inset 0 1px 3px rgba(255,255,255,0.4);
+}
+
+.mahjong-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+        0 6px 12px rgba(0,0,0,0.3),
+        inset 0 1px 3px rgba(255,255,255,0.4);
+}
+
+.mahjong-tile.selected {
+    background: linear-gradient(145deg, #fff3cd, #ffeaa7);
+    border-color: #e67e22;
+    transform: translateY(-5px);
+}
+
+.mahjong-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.mahjong-btn {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+    color: white;
+    border: 2px solid #a93226;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.mahjong-btn:hover {
+    background: linear-gradient(145deg, #ec7063, #e74c3c);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+/* 農場物語GBA風格增強 */
+.farm-story-game {
+    background: linear-gradient(180deg, #f4e6d7 0%, #e8d5b7 100%);
+    border: 4px solid #8B4513;
+    box-shadow: 
+        0 8px 16px rgba(0,0,0,0.3),
+        inset 0 0 0 2px #D2B48C;
+}
+
+.game-character {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(145deg, #ff6b6b, #ee5a52);
+    border: 2px solid #c44569;
+    border-radius: 50%;
+    position: absolute;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 10;
+    box-shadow: 
+        0 4px 8px rgba(0,0,0,0.3),
+        inset 0 1px 3px rgba(255,255,255,0.3);
+}
+
+.game-character::before {
+    content: '🧑‍🌾';
+    animation: characterBob 2s ease-in-out infinite;
+}
+
+@keyframes characterBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+/* 農田瓷磚動畫效果 */
+.farm-tile {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.farm-tile::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: rotate(45deg);
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.farm-tile:hover::before {
+    opacity: 1;
+    animation: shimmer 0.6s ease-in-out;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* 工具按鈕GBA風格 */
+.tool-button {
+    background: linear-gradient(145deg, #3498db, #2980b9);
+    color: white;
+    border: 2px solid #21618c;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    margin: 2px;
+}
+
+.tool-button:hover {
+    background: linear-gradient(145deg, #5dade2, #3498db);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.tool-button.active {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+    border-color: #a93226;
+}
+
+/* 場景切換動畫 */
+.scene-transition {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #2c3e50, #3498db);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.scene-transition.active {
+    opacity: 1;
+    animation: sceneWipe 1s ease-in-out;
+}
+
+@keyframes sceneWipe {
+    0% { clip-path: circle(0% at 50% 50%); }
+    100% { clip-path: circle(150% at 50% 50%); }
+}
+
+/* NPC對話框 */
+.npc-dialogue {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: linear-gradient(145deg, #fff, #f8f9fa);
+    border: 3px solid #8B4513;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    z-index: 100;
+    font-family: 'Comic Sans MS', cursive;
+}
+
+.npc-dialogue::before {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 30px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #8B4513;
+}
+
+/* 粒子效果系統 */
+.particle {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+    animation: particleFloat 2s ease-out forwards;
+}
+
+@keyframes particleFloat {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.5);
+    }
+}
+
+.harvest-particle {
+    background: #f39c12;
+    width: 8px;
+    height: 8px;
+}
+
+.water-particle {
+    background: #3498db;
+    width: 6px;
+    height: 6px;
+}
+
+.plant-particle {
+    background: #27ae60;
+    width: 4px;
+    height: 4px;
+}
+
+/* 遊戲資訊面板 */
+.game-info-panel {
+    background: linear-gradient(145deg, #34495e, #2c3e50);
+    color: #ecf0f1;
+    border: 2px solid #1a252f;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    box-shadow: 
+        0 4px 8px rgba(0,0,0,0.3),
+        inset 0 1px 3px rgba(255,255,255,0.1);
+}
+
+.game-info-panel h5 {
+    color: #e74c3c;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    margin-bottom: 10px;
+}
+
+/* 俄羅斯方塊控制按鈕樣式 */
+.tetris-controls .btn {
+    background: linear-gradient(145deg, #3498db, #2980b9);
+    color: white;
+    border: 2px solid #21618c;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    margin: 5px;
+}
+
+.tetris-controls .btn:hover {
+    background: linear-gradient(145deg, #5dade2, #3498db);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+.tetris-controls .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 麻將控制按鈕樣式 */
+.mahjong-controls .btn {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+    color: white;
+    border: 2px solid #a93226;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    margin: 5px;
+}
+
+.mahjong-controls .btn:hover {
+    background: linear-gradient(145deg, #ec7063, #e74c3c);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+/* 俄羅斯方塊動畫效果 */
+@keyframes tetrisFlash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.lines-clear-effect {
+    animation: tetrisFlash 0.3s ease-in-out 2;
+}
+
+/* 農場物語增強動畫 */
+.farm-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    gap: 2px;
+    background: #2d5016;
+    border: 3px solid #8B4513;
+    border-radius: 8px;
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.farm-grid::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, 
+        transparent 25%, 
+        rgba(255,255,255,0.05) 25%, 
+        rgba(255,255,255,0.05) 50%, 
+        transparent 50%, 
+        transparent 75%, 
+        rgba(255,255,255,0.05) 75%);
+    background-size: 20px 20px;
+    pointer-events: none;
+}
+
+/* 場景顯示區域 */
+.scene-display {
+    background: linear-gradient(135deg, #f4e6d7, #e8d5b7);
+    border: 4px solid #8B4513;
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 400px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 8px 16px rgba(0,0,0,0.3),
+        inset 0 0 0 2px #D2B48C;
+}
+
+/* NPC 精靈 */
+.npc-sprite {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    font-size: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.npc-sprite:hover {
+    transform: scale(1.1) translateY(-3px);
+    background: rgba(255,255,255,0.2);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+/* 場景物件 */
+.scene-object {
+    position: absolute;
+    font-size: 24px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.scene-object:hover {
+    transform: scale(1.2);
+    filter: brightness(1.2);
+}
+
+/* 工具選擇面板 */
+.tool-selection {
+    background: linear-gradient(145deg, #34495e, #2c3e50);
+    border: 2px solid #1a252f;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.seed-selection {
+    background: linear-gradient(145deg, #27ae60, #229954);
+    border: 2px solid #1e8449;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+/* 位置顯示 */
+.location-display {
+    background: linear-gradient(145deg, #8e44ad, #7d3c98);
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+/* 心形體力條增強 */
+.heart {
+    font-size: 20px;
+    margin: 0 2px;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.heart.full {
+    color: #e74c3c;
+    text-shadow: 0 0 5px #e74c3c;
+    animation: heartBeat 2s ease-in-out infinite;
+}
+
+.heart.empty {
+    color: #34495e;
+    opacity: 0.5;
+}
+
+@keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* 遊戲資訊增強 */
+.game-stats {
+    background: linear-gradient(145deg, #2c3e50, #34495e);
+    color: #ecf0f1;
+    border: 2px solid #1a252f;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #f39c12;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .tetris-board {
+        width: 250px;
+        height: 500px;
+        grid-template-columns: repeat(10, 1fr);
+        grid-template-rows: repeat(20, 1fr);
+    }
+    
+    .mahjong-tile {
+        width: 40px;
+        height: 60px;
+        font-size: 20px;
+    }
+    
+    .farm-grid {
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(6, 1fr);
+    }
+    
+    .npc-sprite {
+        width: 36px;
+        height: 36px;
+        font-size: 28px;
+    }
+    
+    .scene-object {
+        font-size: 18px;
+    }
+}

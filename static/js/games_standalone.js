@@ -179,26 +179,31 @@ function loadFarmStoryGame() {
     
     // 初始化心形顯示和場景
     setTimeout(() => {
-        if (typeof updateHeartDisplay === 'function') {
-            updateHeartDisplay();
-        }
-        if (typeof changeGameLocation === 'function') {
-            changeGameLocation('farm');
-        }
+        updateHeartDisplay();
+        changeGameLocation('farm');
     }, 200);
 }
 
-// 全域遊戲變數
+// 全域遊戲變數 - GBA風格遊戲系統
 let gameData = {
     farmStory: {
         aiUsesLeft: 10,
         playerName: '小農夫',
         money: 100,
-        health: 100,
-        energy: 100,
         currentTool: 'hoe',
         currentSeed: 'potato',
         currentLocation: 'farm',
+        gameStarted: false,
+        // 玩家物件，包含所有屬性
+        player: {
+            x: 5,
+            y: 5,
+            energy: 100,
+            health: 100,
+            experience: 0,
+            level: 1,
+            sprite: '🧑‍🌾'
+        },
         inventory: {
             tools: ['hoe', 'watering_can', 'axe', 'pickaxe', 'fishing_rod'],
             seeds: ['potato', 'carrot', 'tomato', 'corn'],
@@ -206,31 +211,100 @@ let gameData = {
             crops: []
         },
         npcRelations: {
-            'Mayor Tom': { level: 1, points: 0 },
-            'Shopkeeper Mary': { level: 1, points: 0 },
-            'Blacksmith Jack': { level: 1, points: 0 },
-            'Doctor Lily': { level: 1, points: 0 }
+            'Mayor Tom': { level: 1, points: 0, sprite: '👨‍💼' },
+            'Shopkeeper Mary': { level: 1, points: 0, sprite: '👩‍💼' },
+            'Blacksmith Jack': { level: 1, points: 0, sprite: '👨‍🔧' },
+            'Doctor Lily': { level: 1, points: 0, sprite: '👩‍⚕️' }
         },
         farm: {
             crops: {},
             animals: [],
-            buildings: []
+            buildings: [],
+            grid: Array(10).fill(null).map(() => Array(10).fill('grass'))
         },
-        gameStarted: false
+        // 場景資料
+        scenes: {
+            farm: {
+                name: '農場',
+                background: '#90EE90',
+                tiles: ['🌱', '🌾', '🥕', '🥔', '🌽'],
+                objects: ['🚜', '🏚️', '🌳'],
+                npcs: []
+            },
+            town: {
+                name: '小鎮',
+                background: '#DDD',
+                tiles: ['🏠', '🏪', '🏛️', '⛲'],
+                objects: ['🚗', '🛒', '📮'],
+                npcs: ['Mayor Tom']
+            },
+            shop: {
+                name: '商店',
+                background: '#FFE4B5',
+                tiles: ['📦', '🛍️', '💰', '🔧'],
+                objects: ['🧮', '⚖️', '💳'],
+                npcs: ['Shopkeeper Mary']
+            },
+            forest: {
+                name: '森林',
+                background: '#228B22',
+                tiles: ['🌳', '🍄', '🌿', '🦌'],
+                objects: ['🪓', '🐿️', '🦋'],
+                npcs: ['Blacksmith Jack']
+            },
+            mine: {
+                name: '礦山',
+                background: '#696969',
+                tiles: ['⛏️', '💎', '🪨', '⚒️'],
+                objects: ['🔦', '⛰️', '💰'],
+                npcs: ['Doctor Lily']
+            }
+        }
     },
     tetris: {
-        board: [],
+        board: Array(20).fill(null).map(() => Array(10).fill(0)),
         currentPiece: null,
+        nextPiece: null,
         score: 0,
         level: 1,
-        gameStarted: false
+        linesCleared: 0,
+        gameStarted: false,
+        gameOver: false,
+        dropTime: 0,
+        lastTime: 0,
+        // 俄羅斯方塊形狀和顏色
+        pieces: [
+            { shape: [[[1,1,1,1]]], color: '#ff6b6b' }, // I
+            { shape: [[[1,1],[1,1]]], color: '#4ecdc4' }, // O
+            { shape: [[[0,1,0],[1,1,1]]], color: '#45b7d1' }, // T
+            { shape: [[[0,1,1],[1,1,0]]], color: '#f9ca24' }, // S
+            { shape: [[[1,1,0],[0,1,1]]], color: '#6c5ce7' }, // Z
+            { shape: [[[1,0,0],[1,1,1]]], color: '#fd79a8' }, // J
+            { shape: [[[0,0,1],[1,1,1]]], color: '#fdcb6e' } // L
+        ]
     },
     mahjong: {
-        tiles: [],
         playerHand: [],
-        aiHands: [[], [], []],
+        gameStarted: false,
         currentPlayer: 0,
-        gameStarted: false
+        score: 0,
+        round: 1,
+        selectedTile: null,
+        tiles: [],
+        discardPile: [],
+        // 麻將牌組
+        tileSet: [
+            '🀇', '🀈', '🀉', '🀊', '🀋', '🀌', '🀍', '🀎', '🀏', // 一到九萬
+            '🀐', '🀑', '🀒', '🀓', '🀔', '🀕', '🀖', '🀗', '🀘', // 一到九筒
+            '🀙', '🀚', '🀛', '🀜', '🀝', '🀞', '🀟', '🀠', '🀡', // 一到九條
+            '🀀', '🀁', '🀂', '🀃', '🀄', '🀅', '🀆' // 字牌
+        ],
+        players: [
+            { name: '玩家', hand: [], score: 0, isAI: false },
+            { name: 'AI1', hand: [], score: 0, isAI: true },
+            { name: 'AI2', hand: [], score: 0, isAI: true },
+            { name: 'AI3', hand: [], score: 0, isAI: true }
+        ]
     }
 };
 
@@ -1513,6 +1587,162 @@ function talkToNPC(npcType) {
             aiCounter.textContent = gameData.farmStory.aiUsesLeft;
         }
     }
+}
+
+// 俄羅斯方塊控制函數
+function moveTetrisLeft() {
+    if (gameData.tetris.gameStarted && !gameData.tetris.gameOver && gameData.tetris.currentPiece) {
+        if (canMoveTetrisPiece(-1, 0)) {
+            gameData.tetris.currentPiece.x--;
+            renderTetrisBoard();
+        }
+    }
+}
+
+function moveTetrisRight() {
+    if (gameData.tetris.gameStarted && !gameData.tetris.gameOver && gameData.tetris.currentPiece) {
+        if (canMoveTetrisPiece(1, 0)) {
+            gameData.tetris.currentPiece.x++;
+            renderTetrisBoard();
+        }
+    }
+}
+
+function rotateTetrisPiece() {
+    if (!gameData.tetris.gameStarted || gameData.tetris.gameOver || !gameData.tetris.currentPiece) return;
+    
+    const piece = gameData.tetris.currentPiece;
+    const rotatedShape = rotateMatrix(piece.shape);
+    
+    // 暫時應用旋轉
+    const originalShape = piece.shape;
+    piece.shape = rotatedShape;
+    
+    // 檢查旋轉是否有效
+    if (canMoveTetrisPiece(0, 0)) {
+        renderTetrisBoard();
+    } else {
+        // 恢復原始形狀
+        piece.shape = originalShape;
+    }
+}
+
+function dropTetrisPiece() {
+    if (!gameData.tetris.gameStarted || gameData.tetris.gameOver || !gameData.tetris.currentPiece) return;
+    
+    while (canMoveTetrisPiece(0, 1)) {
+        gameData.tetris.currentPiece.y++;
+        gameData.tetris.score += 2;
+    }
+    renderTetrisBoard();
+    updateTetrisDisplay();
+}
+
+function rotateMatrix(matrix) {
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+    const rotated = Array(cols).fill(null).map(() => Array(rows).fill(0));
+    
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            rotated[j][rows - 1 - i] = matrix[i][j];
+        }
+    }
+    
+    return rotated;
+}
+
+// 麻將控制函數
+function drawMahjongTile() {
+    console.log('摸牌');
+    if (!gameData.mahjong.gameStarted) {
+        gameData.mahjong.gameStarted = true;
+        initMahjongHand();
+    }
+    
+    const tileSet = gameData.mahjong.tileSet;
+    const randomTile = tileSet[Math.floor(Math.random() * tileSet.length)];
+    gameData.mahjong.playerHand.push(randomTile);
+    renderMahjongHand();
+    updateMahjongDisplay();
+}
+
+function discardMahjongTile() {
+    console.log('打牌');
+    if (gameData.mahjong.selectedTile && gameData.mahjong.playerHand.length > 0) {
+        const tileIndex = gameData.mahjong.playerHand.indexOf(gameData.mahjong.selectedTile);
+        if (tileIndex > -1) {
+            gameData.mahjong.playerHand.splice(tileIndex, 1);
+            gameData.mahjong.discardPile.push(gameData.mahjong.selectedTile);
+            gameData.mahjong.selectedTile = null;
+            renderMahjongHand();
+            updateMahjongDisplay();
+        }
+    } else {
+        showNotification('打牌', '請先選擇要打出的牌！');
+    }
+}
+
+function declareMahjongWin() {
+    console.log('胡牌');
+    if (gameData.mahjong.playerHand.length >= 14) {
+        alert('恭喜胡牌！分數 +1000');
+        gameData.mahjong.score += 1000;
+        gameData.mahjong.round++;
+        gameData.mahjong.playerHand = [];
+        gameData.mahjong.discardPile = [];
+        renderMahjongHand();
+        updateMahjongDisplay();
+    } else {
+        showNotification('胡牌', '手牌不足，無法胡牌！');
+    }
+}
+
+function initMahjongHand() {
+    // 初始化手牌
+    for (let i = 0; i < 13; i++) {
+        const randomTile = gameData.mahjong.tileSet[Math.floor(Math.random() * gameData.mahjong.tileSet.length)];
+        gameData.mahjong.playerHand.push(randomTile);
+    }
+    renderMahjongHand();
+}
+
+function renderMahjongHand() {
+    const boardElement = document.getElementById('mahjongBoard');
+    if (!boardElement) return;
+    
+    boardElement.innerHTML = `
+        <div class="mahjong-hand">
+            <h6>玩家手牌 (${gameData.mahjong.playerHand.length}/17)：</h6>
+            <div class="mahjong-tiles">
+                ${gameData.mahjong.playerHand.map((tile, index) => 
+                    `<div class="mahjong-tile ${gameData.mahjong.selectedTile === tile ? 'selected' : ''}" 
+                          onclick="selectMahjongTile('${tile}', ${index})">${tile}</div>`
+                ).join('')}
+            </div>
+        </div>
+        <div class="mahjong-discard">
+            <h6>牌河 (${gameData.mahjong.discardPile.length})：</h6>
+            <div class="discard-tiles">
+                ${gameData.mahjong.discardPile.map(tile => 
+                    `<span class="discarded-tile">${tile}</span>`
+                ).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function selectMahjongTile(tile, index) {
+    gameData.mahjong.selectedTile = tile;
+    renderMahjongHand();
+}
+
+function updateMahjongDisplay() {
+    const scoreElement = document.getElementById('mahjongScore');
+    const roundElement = document.getElementById('mahjongRound');
+    
+    if (scoreElement) scoreElement.textContent = gameData.mahjong.score;
+    if (roundElement) roundElement.textContent = gameData.mahjong.round;
 }
 
 // 當頁面載入時初始化
