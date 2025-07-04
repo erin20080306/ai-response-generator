@@ -1,6 +1,9 @@
 import os
 import logging
 from flask import Flask, render_template, request, jsonify, session
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
+from werkzeug.middleware.proxy_fix import ProxyFix
 from openai_client import OpenAIClient
 
 # Configure logging
@@ -11,15 +14,41 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("openai").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
+class Base(DeclarativeBase):
+    pass
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+# Database configuration
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    'pool_pre_ping': True,
+    "pool_recycle": 300,
+}
+
+# Initialize database
+db = SQLAlchemy(app, model_class=Base)
 
 # Initialize OpenAI client
 openai_client = OpenAIClient()
 
+# Create database tables
+with app.app_context():
+    import models
+    models.init_db(db)
+    db.create_all()
+
 @app.route('/')
 def index():
-    """Render the main chat interface"""
+    """Render the enhanced main chat interface"""
+    return render_template('enhanced_index.html')
+
+@app.route('/simple')
+def simple_index():
+    """Render the simple chat interface"""
     return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
