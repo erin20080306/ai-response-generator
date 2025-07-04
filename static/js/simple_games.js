@@ -35,13 +35,27 @@ function ensureGamesTabVisible() {
 
 // 當頁面載入完成時確保遊戲介面可見
 document.addEventListener('DOMContentLoaded', function() {
-    // 不自動切換到遊戲標籤，讓用戶手動點擊
     console.log('遊戲系統已準備就緒');
+    
+    // 強制啟動遊戲標籤
+    setTimeout(() => {
+        const gamesTab = document.getElementById('games-tab');
+        const gamesPanel = document.getElementById('games-panel');
+        
+        if (gamesTab && gamesPanel) {
+            // 確保遊戲標籤和面板可見
+            gamesPanel.style.display = 'block';
+            gamesPanel.classList.add('show', 'active');
+            gamesTab.classList.add('active');
+            console.log('遊戲面板已強制顯示');
+        }
+    }, 500);
     
     // 確保遊戲容器存在
     const gameContainer = document.getElementById('gameContainer');
     if (gameContainer) {
         console.log('遊戲容器已找到');
+        gameContainer.style.display = 'block';
     } else {
         console.error('遊戲容器未找到');
     }
