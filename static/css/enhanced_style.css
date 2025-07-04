@@ -350,31 +350,77 @@ body {
 .ai-message .message-content h4 { font-size: 1.1rem; }
 
 .ai-message .message-content code {
-    background: #1a1a1a;
-    color: #e74c3c;
-    padding: 0.2rem 0.4rem;
-    border-radius: 0.3rem;
-    font-family: 'Fira Code', 'Courier New', monospace;
+    background: #2d3748;
+    color: #ffd700;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.4rem;
+    font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;
     font-size: 0.9rem;
-    border: 1px solid #333;
+    border: 1px solid #4a5568;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .ai-message .message-content pre {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 0.5rem;
-    padding: 1rem;
+    background: #1a202c;
+    border: 2px solid #2d3748;
+    border-radius: 0.8rem;
+    padding: 1.5rem;
     overflow-x: auto;
-    margin: 1rem 0;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.ai-message .message-content pre::before {
+    content: "程式碼";
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    background: #2d3748;
+    color: #ffd700;
+    padding: 0.2rem 0.8rem;
+    border-radius: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid #4a5568;
 }
 
 .ai-message .message-content pre code {
     background: transparent;
     border: none;
-    color: #f8f8f2;
-    font-size: 0.85rem;
+    color: #e2e8f0;
+    font-size: 0.9rem;
     padding: 0;
+    font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;
+    line-height: 1.6;
+    display: block;
+    white-space: pre;
+}
+
+/* 為不同程式語言添加不同顏色 */
+.ai-message .message-content pre[data-language="javascript"]::before {
+    content: "JavaScript";
+    background: #f7df1e;
+    color: #000;
+}
+
+.ai-message .message-content pre[data-language="python"]::before {
+    content: "Python";
+    background: #3776ab;
+    color: #fff;
+}
+
+.ai-message .message-content pre[data-language="html"]::before {
+    content: "HTML";
+    background: #e34f26;
+    color: #fff;
+}
+
+.ai-message .message-content pre[data-language="css"]::before {
+    content: "CSS";
+    background: #1572b6;
+    color: #fff;
 }
 
 .ai-message .message-content blockquote {
@@ -435,6 +481,76 @@ body {
     50% { 
         background: linear-gradient(135deg, #3498db, #2980b9);
     }
+}
+
+/* 分隔器樣式 */
+.code-separator {
+    height: 1.5rem;
+    margin: 1rem 0;
+    border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+.heading-separator {
+    height: 1rem;
+    margin: 0.8rem 0;
+}
+
+/* 改進清單樣式 */
+.ai-message .message-content ul {
+    background: rgba(52, 152, 219, 0.05);
+    border-left: 3px solid #3498db;
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+}
+
+.ai-message .message-content ul li {
+    margin-bottom: 0.6rem;
+    list-style-type: disc;
+    line-height: 1.6;
+}
+
+/* 改進段落間距 */
+.ai-message .message-content p + p {
+    margin-top: 1.2rem;
+}
+
+.ai-message .message-content h1 + p,
+.ai-message .message-content h2 + p,
+.ai-message .message-content h3 + p,
+.ai-message .message-content h4 + p {
+    margin-top: 0.8rem;
+}
+
+/* 程式碼區塊與其他元素的間距 */
+.ai-message .message-content pre + h1,
+.ai-message .message-content pre + h2,
+.ai-message .message-content pre + h3,
+.ai-message .message-content pre + h4 {
+    margin-top: 2rem;
+}
+
+.ai-message .message-content pre + p {
+    margin-top: 1.5rem;
+}
+
+/* 複製按鈕 */
+.ai-message .message-content pre {
+    position: relative;
+}
+
+.ai-message .message-content pre:hover::after {
+    content: "點擊複製";
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: rgba(52, 152, 219, 0.9);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.3rem;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
 }
 
 .ai-message .message-content {

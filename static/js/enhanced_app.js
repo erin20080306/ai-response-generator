@@ -800,16 +800,29 @@ class EnhancedAIAssistant {
     }
 
     formatMessage(text) {
-        // 處理程式碼區塊
+        // 處理程式碼區塊，添加語言標籤和間距
         text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
             const language = lang || 'text';
-            return `<pre><code class="language-${language}">${this.escapeHtml(code.trim())}</code></pre>`;
+            const cleanCode = this.escapeHtml(code.trim());
+            return `<pre data-language="${language}"><code class="language-${language}">${cleanCode}</code></pre>`;
         });
 
         // 處理行內程式碼
         text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-        // 處理換行
+        // 處理標題 (添加更多間距)
+        text = text.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+        text = text.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+        text = text.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+
+        // 處理清單項目
+        text = text.replace(/^\- (.*$)/gm, '<li>$1</li>');
+        text = text.replace(/^(\d+)\. (.*$)/gm, '<li>$1. $2</li>');
+
+        // 將連續的 <li> 包裝在 <ul> 中
+        text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+
+        // 處理換行 (在程式碼區塊外)
         text = text.replace(/\n/g, '<br>');
 
         // 處理連結
@@ -823,6 +836,10 @@ class EnhancedAIAssistant {
 
         // 處理斜體
         text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+        // 在段落之間添加間距
+        text = text.replace(/(<\/pre>)<br>/g, '$1<div class="code-separator"></div>');
+        text = text.replace(/(<\/h[1-6]>)<br>/g, '$1<div class="heading-separator"></div>');
 
         return text;
     }
