@@ -1441,6 +1441,195 @@ def download_file(filename):
         logging.error(f"Download error: {str(e)}")
         return jsonify({'error': 'Download failed'}), 500
 
+# 協作功能 API 路由
+@app.route('/api/collaboration/create_room', methods=['POST'])
+def create_collaboration_room():
+    """創建協作房間"""
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        max_participants = data.get('max_participants', 10)
+        
+        if not name:
+            return jsonify({'success': False, 'error': '房間名稱不能為空'})
+        
+        # 生成房間代碼
+        import random
+        import string
+        room_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        
+        # 使用資料庫模型創建房間
+        from models import init_db
+        models = init_db(db)
+        
+        new_room = models['CollaborationRoom'](
+            name=name,
+            room_code=room_code,
+            created_by='system',  # 簡化實現，實際應該是用戶ID
+            max_participants=max_participants
+        )
+        
+        db.session.add(new_room)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'room_code': room_code,
+            'room': {
+                'id': new_room.id,
+                'name': new_room.name,
+                'room_code': new_room.room_code,
+                'max_participants': new_room.max_participants,
+                'created_at': new_room.created_at.isoformat()
+            }
+        })
+        
+    except Exception as e:
+        logging.error(f"創建房間錯誤: {e}")
+        return jsonify({'success': False, 'error': f'創建房間失敗: {str(e)}'})
+
+@app.route('/api/collaboration/join_room', methods=['POST'])
+def join_collaboration_room():
+    """加入協作房間"""
+    try:
+        data = request.get_json()
+        room_code = data.get('room_code', '').strip().upper()
+        username = data.get('username', '匿名用戶').strip()
+        
+        if not room_code:
+            return jsonify({'success': False, 'error': '房間代碼不能為空'})
+        
+        # 使用資料庫模型查詢房間
+        from models import init_db
+        models = init_db(db)
+        
+        room = models['CollaborationRoom'].query.filter_by(
+            room_code=room_code, 
+            is_active=True
+        ).first()
+        
+        if not room:
+            return jsonify({'success': False, 'error': '房間不存在或已關閉'})
+        
+        # 檢查房間參與者數量
+        current_participants = models['RoomParticipant'].query.filter_by(
+            room_id=room.id,
+            is_active=True
+        ).count()
+        
+        if current_participants >= room.max_participants:
+            return jsonify({'success': False, 'error': '房間已滿'})
+        
+        # 檢查用戶是否已在房間中
+        existing_participant = models['RoomParticipant'].query.filter_by(
+            room_id=room.id,
+            username=username,
+            is_active=True
+        ).first()
+        
+        if not existing_participant:
+            # 添加新參與者
+            new_participant = models['RoomParticipant'](
+                room_id=room.id,
+                username=username
+            )
+            db.session.add(new_participant)
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'room': {
+                'id': room.id,
+                'name': room.name,
+                'room_code': room.room_code,
+                'max_participants': room.max_participants,
+                'current_participants': current_participants + 1
+            }
+        })
+        
+    except Exception as e:
+        logging.error(f"加入房間錯誤: {e}")
+        return jsonify({'success': False, 'error': f'加入房間失敗: {str(e)}'})
+
+@app.route('/api/collaboration/leave_room', methods=['POST'])
+def leave_collaboration_room():
+    """離開協作房間"""
+    try:
+        data = request.get_json()
+        room_code = data.get('room_code', '').strip().upper()
+        username = data.get('username', '').strip()
+        
+        if not room_code or not username:
+            return jsonify({'success': False, 'error': '缺少必要參數'})
+        
+        # 使用資料庫模型
+        from models import init_db
+        models = init_db(db)
+        
+        room = models['CollaborationRoom'].query.filter_by(room_code=room_code).first()
+        if not room:
+            return jsonify({'success': False, 'error': '房間不存在'})
+        
+        # 更新參與者狀態
+        participant = models['RoomParticipant'].query.filter_by(
+            room_id=room.id,
+            username=username,
+            is_active=True
+        ).first()
+        
+        if participant:
+            participant.is_active = False
+            db.session.commit()
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        logging.error(f"離開房間錯誤: {e}")
+        return jsonify({'success': False, 'error': f'離開房間失敗: {str(e)}'})
+
+@app.route('/api/collaboration/room_info/<room_code>')
+def get_room_info(room_code):
+    """獲取房間資訊"""
+    try:
+        # 使用資料庫模型
+        from models import init_db
+        models = init_db(db)
+        
+        room = models['CollaborationRoom'].query.filter_by(
+            room_code=room_code.upper(),
+            is_active=True
+        ).first()
+        
+        if not room:
+            return jsonify({'success': False, 'error': '房間不存在'})
+        
+        participants = models['RoomParticipant'].query.filter_by(
+            room_id=room.id,
+            is_active=True
+        ).all()
+        
+        return jsonify({
+            'success': True,
+            'room': {
+                'id': room.id,
+                'name': room.name,
+                'room_code': room.room_code,
+                'max_participants': room.max_participants,
+                'current_participants': len(participants),
+                'participants': [
+                    {
+                        'id': p.id,
+                        'username': p.username,
+                        'joined_at': p.joined_at.isoformat()
+                    } for p in participants
+                ]
+            }
+        })
+        
+    except Exception as e:
+        logging.error(f"獲取房間資訊錯誤: {e}")
+        return jsonify({'success': False, 'error': f'獲取房間資訊失敗: {str(e)}'})
+
 @app.route('/health')
 def health():
     """Health check endpoint"""
