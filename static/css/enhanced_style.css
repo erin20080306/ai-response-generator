@@ -1320,3 +1320,66 @@ body {
     padding: 20px;
     border: 1px solid var(--border-color);
 }
+
+/* 檔案上傳拖拽樣式 */
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: var(--dark-bg);
+}
+
+.upload-area:hover {
+    border-color: var(--primary-color);
+    background: rgba(13, 110, 253, 0.1);
+}
+
+.upload-area.drag-over {
+    border-color: var(--success-color);
+    background: rgba(25, 135, 84, 0.1);
+    transform: scale(1.02);
+}
+
+.upload-content {
+    pointer-events: none;
+}
+
+.upload-area i {
+    color: var(--text-muted);
+    transition: color 0.3s ease;
+}
+
+.upload-area:hover i,
+.upload-area.drag-over i {
+    color: var(--primary-color);
+}
+
+.upload-area.drag-over i {
+    color: var(--success-color);
+}
+
+/* 檔案列表樣式 */
+.file-item {
+    background: var(--dark-bg);
+    transition: all 0.3s ease;
+}
+
+.file-item:hover {
+    background: var(--darker-bg);
+    transform: translateX(5px);
+}
+
+/* 分析結果樣式 */
+.analysis-item {
+    background: var(--dark-bg);
+    border-color: var(--border-color) !important;
+}
+
+.analysis-content .bg-light {
+    background: var(--darker-bg) !important;
+    color: var(--bs-body-color) !important;
+    border: 1px solid var(--border-color);
+}

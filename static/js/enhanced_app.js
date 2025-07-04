@@ -202,20 +202,27 @@ class EnhancedAIAssistant {
         const fileUploadBtn = document.getElementById('fileUploadBtn');
         const fileInput = document.getElementById('fileInput');
         const selectFilesBtn = document.getElementById('selectFilesBtn');
+        const fileInputPanel = document.getElementById('fileInputPanel');
         const uploadArea = document.getElementById('uploadArea');
 
-        // 檔案上傳按鈕
+        // 檔案上傳按鈕 (聊天區域)
         if (fileUploadBtn && fileInput) {
             fileUploadBtn.addEventListener('click', () => fileInput.click());
         }
 
-        if (selectFilesBtn && fileInput) {
-            selectFilesBtn.addEventListener('click', () => fileInput.click());
+        // 檔案選擇按鈕 (檔案面板)
+        if (selectFilesBtn && fileInputPanel) {
+            selectFilesBtn.addEventListener('click', () => fileInputPanel.click());
         }
 
-        // 檔案選擇
+        // 檔案選擇事件 (聊天區域)
         if (fileInput) {
             fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        }
+
+        // 檔案選擇事件 (檔案面板)
+        if (fileInputPanel) {
+            fileInputPanel.addEventListener('change', (e) => this.handleFileSelect(e));
         }
 
         // 拖拽上傳
@@ -2521,7 +2528,6 @@ class EnhancedAIAssistant {
     }
 
     handleFileSelect(event) {
-        // 檔案選擇處理函數
         const files = event.target.files;
         if (files && files.length > 0) {
             for (let file of files) {
@@ -2530,10 +2536,204 @@ class EnhancedAIAssistant {
         }
     }
 
-    processFile(file) {
-        // 處理上傳的檔案
-        console.log('Processing file:', file.name);
-        // 這裡可以添加檔案處理邏輯
+    async processFile(file) {
+        try {
+            console.log('處理檔案:', file.name);
+            
+            // 驗證檔案大小 (50MB 限制)
+            if (file.size > 50 * 1024 * 1024) {
+                this.showNotification('檔案過大，請選擇小於50MB的檔案', 'error');
+                return;
+            }
+
+            // 顯示上傳進度
+            this.showNotification('正在上傳檔案...', 'info');
+            
+            // 創建FormData
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // 上傳檔案
+            const response = await fetch('/analyze_image', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`上傳失敗: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                // 更新檔案列表
+                this.addFileToList(file, result);
+                
+                // 顯示分析結果
+                this.showAnalysisResult(file, result);
+                
+                this.showNotification('檔案上傳並分析成功！', 'success');
+            } else {
+                throw new Error(result.error || '分析失敗');
+            }
+
+        } catch (error) {
+            console.error('檔案處理錯誤:', error);
+            this.showNotification(`檔案處理失敗: ${error.message}`, 'error');
+        }
+    }
+
+    addFileToList(file, result) {
+        const filesList = document.getElementById('filesList');
+        if (!filesList) return;
+
+        // 清除空狀態
+        const emptyState = filesList.querySelector('.text-center.text-muted');
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        // 創建檔案項目
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item d-flex align-items-center justify-content-between p-3 border rounded mb-2';
+        fileItem.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas ${this.getFileIcon(file.type)} fa-2x me-3"></i>
+                <div>
+                    <h6 class="mb-1">${file.name}</h6>
+                    <small class="text-muted">${this.formatFileSize(file.size)} • ${file.type || '未知類型'}</small>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-outline-primary" onclick="app.viewFileAnalysis('${file.name}')">
+                    <i class="fas fa-eye me-1"></i>查看
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="app.removeFile('${file.name}')">
+                    <i class="fas fa-trash me-1"></i>刪除
+                </button>
+            </div>
+        `;
+
+        filesList.appendChild(fileItem);
+    }
+
+    showAnalysisResult(file, result) {
+        const analysisResults = document.getElementById('analysisResults');
+        if (!analysisResults) return;
+
+        // 清除空狀態
+        const emptyState = analysisResults.querySelector('.text-center.text-muted');
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        // 創建分析結果
+        const resultItem = document.createElement('div');
+        resultItem.className = 'analysis-item border rounded p-3 mb-3';
+        resultItem.innerHTML = `
+            <div class="d-flex align-items-center mb-2">
+                <i class="fas ${this.getFileIcon(file.type)} me-2"></i>
+                <h6 class="mb-0">${file.name}</h6>
+            </div>
+            <div class="analysis-content">
+                <h6>AI 分析結果：</h6>
+                <div class="bg-light p-3 rounded">
+                    <p class="mb-0">${result.analysis || '無法分析此檔案'}</p>
+                </div>
+            </div>
+            <div class="mt-2">
+                <small class="text-muted">分析時間: ${new Date().toLocaleString()}</small>
+            </div>
+        `;
+
+        analysisResults.appendChild(resultItem);
+    }
+
+    getFileIcon(fileType) {
+        if (!fileType) return 'fa-file';
+        
+        if (fileType.startsWith('image/')) return 'fa-image';
+        if (fileType.startsWith('video/')) return 'fa-video';
+        if (fileType.startsWith('audio/')) return 'fa-music';
+        if (fileType.includes('pdf')) return 'fa-file-pdf';
+        if (fileType.includes('word') || fileType.includes('document')) return 'fa-file-word';
+        if (fileType.includes('excel') || fileType.includes('spreadsheet')) return 'fa-file-excel';
+        if (fileType.includes('powerpoint') || fileType.includes('presentation')) return 'fa-file-powerpoint';
+        if (fileType.includes('text')) return 'fa-file-alt';
+        if (fileType.includes('zip') || fileType.includes('archive')) return 'fa-file-archive';
+        
+        return 'fa-file';
+    }
+
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    handleDragOver(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+            uploadArea.classList.add('drag-over');
+        }
+    }
+
+    handleDragLeave(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+            uploadArea.classList.remove('drag-over');
+        }
+    }
+
+    handleFileDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+            uploadArea.classList.remove('drag-over');
+        }
+
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+            for (let file of files) {
+                this.processFile(file);
+            }
+        }
+    }
+
+    viewFileAnalysis(fileName) {
+        // 顯示特定檔案的分析結果
+        this.showNotification(`查看 ${fileName} 的分析結果`, 'info');
+    }
+
+    removeFile(fileName) {
+        // 移除檔案
+        if (confirm(`確定要刪除檔案 "${fileName}" 嗎？`)) {
+            // 從檔案列表移除
+            const fileItems = document.querySelectorAll('.file-item');
+            fileItems.forEach(item => {
+                if (item.textContent.includes(fileName)) {
+                    item.remove();
+                }
+            });
+            
+            // 從分析結果移除
+            const analysisItems = document.querySelectorAll('.analysis-item');
+            analysisItems.forEach(item => {
+                if (item.textContent.includes(fileName)) {
+                    item.remove();
+                }
+            });
+            
+            this.showNotification(`已刪除檔案 "${fileName}"`, 'success');
+        }
     }
 }
 
