@@ -1020,18 +1020,21 @@
 .thinking {
     color: #ffd700;
     font-weight: bold;
+    font-size: 20px;
     animation: pulse 1.5s infinite;
 }
 
 .draw-tile {
     color: #4ecdc4;
     font-weight: bold;
+    font-size: 22px;
     animation: slideIn 0.5s ease;
 }
 
 .discard-tile {
     color: #ff6b6b;
     font-weight: bold;
+    font-size: 24px;
     animation: slideIn 0.5s ease;
 }
 

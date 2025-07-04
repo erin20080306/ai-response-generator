@@ -829,20 +829,30 @@ function checkPlayerActions(discardedTile) {
     const playerHand = gameData.mahjong.players[0].hand;
     const actions = [];
     
+    console.log('檢查動作:', discardedTile, '玩家手牌:', playerHand);
+    
     // 檢查胡牌
-    if (canWin(playerHand, discardedTile)) {
+    const canWinResult = canWin(playerHand, discardedTile);
+    console.log('可以胡牌?', canWinResult);
+    if (canWinResult) {
         actions.push('胡');
     }
     
     // 檢查碰牌
-    if (canPeng(playerHand, discardedTile)) {
+    const canPengResult = canPeng(playerHand, discardedTile);
+    console.log('可以碰牌?', canPengResult);
+    if (canPengResult) {
         actions.push('碰');
     }
     
     // 檢查吃牌
-    if (canChi(playerHand, discardedTile)) {
+    const canChiResult = canChi(playerHand, discardedTile);
+    console.log('可以吃牌?', canChiResult);
+    if (canChiResult) {
         actions.push('吃');
     }
+    
+    console.log('可執行動作:', actions);
     
     if (actions.length > 0) {
         showActionPrompt(discardedTile, actions);
@@ -936,22 +946,90 @@ function skipAction() {
     }, 1000);
 }
 
-// 檢查胡牌
+// 檢查胡牌 - 更精確的邏輯
 function canWin(hand, newTile) {
     const testHand = [...hand, newTile];
-    return testHand.length >= 14; // 簡化檢查
+    
+    // 基本條件：手牌數量必須是14張
+    if (testHand.length !== 14) return false;
+    
+    // 檢查是否有對子（將牌）
+    const tileCounts = {};
+    testHand.forEach(tile => {
+        tileCounts[tile] = (tileCounts[tile] || 0) + 1;
+    });
+    
+    // 簡化胡牌檢查：有一對對子，其他都是三張一組
+    let pairs = 0;
+    let triplets = 0;
+    
+    for (const tile in tileCounts) {
+        const count = tileCounts[tile];
+        if (count === 2) pairs++;
+        else if (count >= 3) triplets++;
+        else if (count === 1) return false; // 有孤張牌
+    }
+    
+    // 胡牌條件：正好一對對子，其他都是三張以上
+    return pairs === 1 && triplets >= 4;
 }
 
-// 檢查碰牌
+// 檢查碰牌 - 精確檢查
 function canPeng(hand, tile) {
     const count = hand.filter(t => t === tile).length;
-    return count >= 2;
+    return count >= 2; // 手牌中有至少2張相同牌
 }
 
-// 檢查吃牌
+// 檢查吃牌 - 更精確的檢查
 function canChi(hand, tile) {
-    // 簡化檢查：只要手牌中有相關牌就可以吃
-    return hand.some(t => t !== tile && isSameSuit(t, tile));
+    // 只能吃數字牌（萬、筒、索），不能吃字牌
+    const numberSuits = {
+        '萬': ['🀇', '🀈', '🀉', '🀊', '🀋', '🀌', '🀍', '🀎', '🀏'],
+        '筒': ['🀐', '🀑', '🀒', '🀓', '🀔', '🀕', '🀖', '🀗', '🀘'],
+        '索': ['🀙', '🀚', '🀛', '🀜', '🀝', '🀞', '🀟', '🀠', '🀡']
+    };
+    
+    // 檢查是否為字牌
+    const ziPai = ['🀀', '🀁', '🀂', '🀃', '🀄', '🀅', '🀆'];
+    if (ziPai.includes(tile)) return false; // 字牌不能吃
+    
+    // 找出牌的花色和數字
+    let tileIndex = -1;
+    let tileSuit = null;
+    
+    for (const suit in numberSuits) {
+        const index = numberSuits[suit].indexOf(tile);
+        if (index !== -1) {
+            tileIndex = index;
+            tileSuit = suit;
+            break;
+        }
+    }
+    
+    if (tileSuit === null) return false;
+    
+    // 檢查能否組成順子
+    const suitTiles = numberSuits[tileSuit];
+    const handTilesInSuit = hand.filter(t => suitTiles.includes(t));
+    
+    // 檢查是否有相鄰的牌可以組成順子
+    // 可能的組合：ABC, BCA, CAB
+    for (let i = Math.max(0, tileIndex - 2); i <= Math.min(6, tileIndex); i++) {
+        if (i + 2 < suitTiles.length) {
+            const needed1 = suitTiles[i];
+            const needed2 = suitTiles[i + 1];
+            const needed3 = suitTiles[i + 2];
+            
+            // 檢查是否包含目標牌，且手牌中有其他兩張
+            if ([needed1, needed2, needed3].includes(tile)) {
+                const otherTiles = [needed1, needed2, needed3].filter(t => t !== tile);
+                const hasOtherTiles = otherTiles.every(t => handTilesInSuit.includes(t));
+                if (hasOtherTiles) return true;
+            }
+        }
+    }
+    
+    return false;
 }
 
 // 檢查是否同花色
