@@ -7,30 +7,26 @@ class DocumentGenerator {
         this.app = app;
         this.templates = {
             spreadsheet: [
-                { name: '財務報表', type: 'financial' },
-                { name: '專案計劃', type: 'project' },
-                { name: '員工清單', type: 'employee' },
-                { name: '員工出勤記錄', type: 'hr_attendance' },
-                { name: '薪資計算表', type: 'hr_salary' },
-                { name: '請假申請記錄', type: 'hr_leave' },
-                { name: '員工績效評估', type: 'hr_performance' },
-                { name: '招聘管理表', type: 'hr_recruitment' },
-                { name: '教育訓練記錄', type: 'hr_training' },
-                { name: '銷售統計', type: 'sales' },
-                { name: '庫存管理', type: 'inventory' },
-                { name: '預算規劃', type: 'budget' },
-                { name: '客戶資料', type: 'customer' },
-                { name: '學生成績', type: 'grades' }
+                { name: '財務報表', type: 'financial', desc: '公司財務收支統計表' },
+                { name: '專案計劃', type: 'project', desc: '專案任務規劃與追蹤表' },
+                { name: '員工清單', type: 'employee', desc: '公司員工基本資料表' },
+                { name: '員工出勤記錄', type: 'hr_attendance', desc: '員工每日出勤時間記錄表' },
+                { name: '薪資計算表', type: 'hr_salary', desc: '員工薪資詳細計算表' },
+                { name: '員工績效評估', type: 'hr_performance', desc: '員工績效評估表' },
+                { name: '銷售統計', type: 'sales', desc: '月度銷售業績統計表' },
+                { name: '庫存管理', type: 'inventory', desc: '庫存管理表' },
+                { name: '預算規劃', type: 'budget', desc: '年度預算規劃表' },
+                { name: '客戶資料', type: 'customer', desc: '客戶基本資訊管理表' },
+                { name: '學生成績', type: 'grades', desc: '學生成績統計表' }
             ],
             document: [
-                { name: '會議紀錄', type: 'meeting' },
-                { name: '項目提案', type: 'proposal' },
-                { name: '技術文檔', type: 'technical' },
-                { name: '合約範本', type: 'contract' },
-                { name: '報告書', type: 'report' },
-                { name: '履歷表', type: 'resume' },
-                { name: '商業計劃', type: 'business_plan' },
-                { name: '產品說明', type: 'product_desc' }
+                { name: '會議紀錄', type: 'meeting', desc: '標準會議紀錄範本' },
+                { name: '項目提案', type: 'proposal', desc: '標準項目提案書範本' },
+                { name: '技術文檔', type: 'technical', desc: '技術文檔範本' },
+                { name: '合約範本', type: 'contract', desc: '標準合約範本' },
+                { name: '報告書', type: 'report', desc: '標準報告書範本' },
+                { name: '履歷表', type: 'resume', desc: '標準履歷表範本' },
+                { name: '商業計劃', type: 'business_plan', desc: '商業計劃書範本' }
             ]
         };
         
@@ -99,8 +95,14 @@ class DocumentGenerator {
                                         <div class="list-group list-group-flush">
                                             ${this.templates.spreadsheet.map(template => `
                                                 <a href="#" class="list-group-item list-group-item-action template-item" 
-                                                   data-type="spreadsheet" data-template="${template.type}">
-                                                    <i class="fas fa-table me-2"></i>${template.name}
+                                                   data-type="spreadsheet" data-template="${template.type}"
+                                                   title="${template.desc}">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <i class="fas fa-table me-2"></i>${template.name}
+                                                            <br><small class="text-muted">${template.desc}</small>
+                                                        </div>
+                                                    </div>
                                                 </a>
                                             `).join('')}
                                         </div>
@@ -117,8 +119,14 @@ class DocumentGenerator {
                                         <div class="list-group list-group-flush">
                                             ${this.templates.document.map(template => `
                                                 <a href="#" class="list-group-item list-group-item-action template-item" 
-                                                   data-type="document" data-template="${template.type}">
-                                                    <i class="fas fa-file-alt me-2"></i>${template.name}
+                                                   data-type="document" data-template="${template.type}"
+                                                   title="${template.desc}">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <i class="fas fa-file-alt me-2"></i>${template.name}
+                                                            <br><small class="text-muted">${template.desc}</small>
+                                                        </div>
+                                                    </div>
                                                 </a>
                                             `).join('')}
                                         </div>
@@ -161,14 +169,16 @@ class DocumentGenerator {
             this.generateDocument();
         });
 
-        // 範本選擇
-        document.querySelectorAll('.template-item').forEach(item => {
-            item.addEventListener('click', (e) => {
+        // 使用事件委派處理範本選擇
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.template-item')) {
                 e.preventDefault();
+                const item = e.target.closest('.template-item');
                 const type = item.dataset.type;
                 const template = item.dataset.template;
+                console.log('範本選擇:', type, template);
                 this.generateFromTemplate(type, template);
-            });
+            }
         });
 
         // 清除歷史
