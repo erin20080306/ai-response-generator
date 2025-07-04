@@ -666,6 +666,15 @@ function initFarmStoryGame() {
     
     // 創建專業遊戲介面
     createProfessionalFarmUI();
+    
+    // 初始化Canvas特效系統
+    setTimeout(() => {
+        const gameWorld = document.querySelector('.game-world');
+        if (gameWorld && window.canvasEffects) {
+            window.canvasEffects.init(gameWorld);
+            console.log('Canvas特效系統已整合到農場物語遊戲');
+        }
+    }, 1000);
 }
 
 function createProfessionalFarmUI() {
@@ -1691,6 +1700,12 @@ function farmTile() {
     window.farmGameState.player.energy -= 5;
     showNotification('農作', '翻土完成！準備種植種子。');
     updateStatusDisplay();
+    
+    // 添加Canvas特效
+    if (window.canvasEffects) {
+        const player = window.farmGameState.player;
+        window.canvasEffects.createToolEffect(player.x, player.y, 'hoe');
+    }
 }
 
 function waterCrops() {
@@ -1721,6 +1736,13 @@ function chopWood() {
     window.farmGameState.player.money += wood * 10;
     showNotification('砍柴', `收集了${wood}塊木材！獲得${wood * 10}金幣。`);
     updateStatusDisplay();
+    
+    // 添加Canvas特效
+    if (window.canvasEffects) {
+        const player = window.farmGameState.player;
+        window.canvasEffects.createToolEffect(player.x, player.y, 'axe');
+        window.canvasEffects.createHarvestEffect(player.x + 20, player.y - 10, 'wood');
+    }
 }
 
 function mineStone() {
