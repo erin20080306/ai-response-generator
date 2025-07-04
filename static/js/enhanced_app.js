@@ -2605,11 +2605,17 @@ class EnhancedAIAssistant {
     }
 
     handleFileSelect(event) {
+        console.log('檔案選擇事件觸發');
         const files = event.target.files;
+        console.log('選擇的檔案數量:', files ? files.length : 0);
+        
         if (files && files.length > 0) {
             for (let file of files) {
+                console.log('開始處理檔案:', file.name, file.size, file.type);
                 this.processFile(file);
             }
+        } else {
+            console.log('沒有選擇檔案');
         }
     }
 
@@ -2682,10 +2688,10 @@ class EnhancedAIAssistant {
                 </div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-sm btn-outline-primary" onclick="app.viewFileAnalysis('${file.name}')">
+                <button class="btn btn-sm btn-outline-primary" onclick="window.aiAssistant.viewFileAnalysis('${file.name}')">
                     <i class="fas fa-eye me-1"></i>查看
                 </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="app.removeFile('${file.name}')">
+                <button class="btn btn-sm btn-outline-danger" onclick="window.aiAssistant.removeFile('${file.name}')">
                     <i class="fas fa-trash me-1"></i>刪除
                 </button>
             </div>
