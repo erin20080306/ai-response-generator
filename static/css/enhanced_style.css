@@ -299,6 +299,145 @@ body {
 }
 
 .ai-message .message-content {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: #ecf0f1;
+    border: 1px solid #34495e;
+    border-bottom-left-radius: 0.25rem;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ai-message .message-content::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 15px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid #2c3e50;
+}
+
+.ai-message .message-content .fa-robot {
+    color: #3498db;
+    font-size: 1.1rem;
+    margin-right: 0.5rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* AI回應專用樣式 */
+.ai-message .message-content h1,
+.ai-message .message-content h2,
+.ai-message .message-content h3,
+.ai-message .message-content h4,
+.ai-message .message-content h5,
+.ai-message .message-content h6 {
+    color: #3498db;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+}
+
+.ai-message .message-content h1 { font-size: 1.4rem; }
+.ai-message .message-content h2 { font-size: 1.3rem; }
+.ai-message .message-content h3 { font-size: 1.2rem; }
+.ai-message .message-content h4 { font-size: 1.1rem; }
+
+.ai-message .message-content code {
+    background: #1a1a1a;
+    color: #e74c3c;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.3rem;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.9rem;
+    border: 1px solid #333;
+}
+
+.ai-message .message-content pre {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ai-message .message-content pre code {
+    background: transparent;
+    border: none;
+    color: #f8f8f2;
+    font-size: 0.85rem;
+    padding: 0;
+}
+
+.ai-message .message-content blockquote {
+    border-left: 4px solid #3498db;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    background: rgba(52, 152, 219, 0.1);
+    border-radius: 0.3rem;
+    font-style: italic;
+}
+
+.ai-message .message-content ul,
+.ai-message .message-content ol {
+    padding-left: 1.5rem;
+    margin: 0.8rem 0;
+}
+
+.ai-message .message-content li {
+    margin-bottom: 0.4rem;
+    line-height: 1.5;
+}
+
+.ai-message .message-content strong {
+    color: #3498db;
+    font-weight: 600;
+}
+
+.ai-message .message-content em {
+    color: #e67e22;
+    font-style: italic;
+}
+
+.ai-message .message-content p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.ai-message .message-content a {
+    color: #3498db;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+.ai-message .message-content a:hover {
+    color: #2980b9;
+}
+
+/* 載入動畫改進 */
+.ai-message.loading .message-content {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+    animation: loadingPulse 1.5s infinite;
+}
+
+@keyframes loadingPulse {
+    0%, 100% { 
+        background: linear-gradient(135deg, #34495e, #2c3e50);
+    }
+    50% { 
+        background: linear-gradient(135deg, #3498db, #2980b9);
+    }
+}
+
+.ai-message .message-content {
     background: var(--dark-bg);
     color: #ffffff;
     border: 1px solid var(--border-color);
