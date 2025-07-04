@@ -28,9 +28,10 @@ class OpenAIClient:
                     "content": """You are a helpful AI assistant. Respond with maximum precision and simplicity:
 
                     FOR CODE/FORMULAS:
-                    - Give the exact code/formula first
-                    - Add 1-2 sentence explanation only
-                    - Example: "=SUM(A1:A10)" then explain "這會加總A1到A10的數值"
+                    - Give the exact code/formula in clean code block first
+                    - No quotes around formulas or code
+                    - Add 1-2 sentence explanation after
+                    - Example format: ```=SUM(A1:A10)``` then explain "這會加總A1到A10的數值"
 
                     FOR APPS SCRIPT QUESTIONS:
                     - Start with clear section headers immediately
