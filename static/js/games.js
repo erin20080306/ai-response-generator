@@ -1321,42 +1321,107 @@ class GameCenter {
         document.head.appendChild(style);
     }
 
-    // 麻將遊戲
+    // 4人麻將遊戲
     startMahjong() {
         this.addMahjongStyles();
         
         const gameContent = `
             <div class="mahjong-game">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="game-header d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <strong>分數：</strong><span id="mahjongScore">0</span>
-                                <strong class="ms-3">時間：</strong><span id="mahjongTime">00:00</span>
-                            </div>
-                            <div>
-                                <button class="btn btn-warning btn-sm" id="mahjongHint">提示</button>
-                                <button class="btn btn-secondary btn-sm" id="mahjongShuffle">重新洗牌</button>
-                                <button class="btn btn-primary btn-sm" id="mahjongRestart">重新開始</button>
+                <div class="game-header mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>當前玩家：</strong><span id="currentPlayer">玩家1 (你)</span>
+                            <strong class="ms-3">圈風：</strong><span id="roundWind">東</span>
+                            <strong class="ms-3">局數：</strong><span id="gameRound">東1局</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-info btn-sm" id="mahjongRules">規則說明</button>
+                            <button class="btn btn-primary btn-sm" id="mahjongRestart">重新開始</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 對手手牌顯示 -->
+                <div class="opponents-area mb-3">
+                    <!-- 上家 (對面) -->
+                    <div class="opponent-top text-center mb-2">
+                        <div class="player-name">玩家3 (上家)</div>
+                        <div class="opponent-tiles" id="opponent2Cards"></div>
+                        <div class="exposed-tiles" id="opponent2Exposed"></div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- 左家 -->
+                        <div class="col-3">
+                            <div class="opponent-left">
+                                <div class="player-name">玩家4 (左家)</div>
+                                <div class="opponent-tiles vertical" id="opponent3Cards"></div>
+                                <div class="exposed-tiles" id="opponent3Exposed"></div>
                             </div>
                         </div>
-                        <div id="mahjongBoard" class="mahjong-board"></div>
+                        
+                        <!-- 中央牌桌 -->
+                        <div class="col-6">
+                            <div class="table-center">
+                                <div class="discarded-tiles" id="discardedTiles">
+                                    <div class="text-center mb-2"><small>牌桌中央</small></div>
+                                </div>
+                                <div class="game-actions mt-3" id="gameActions">
+                                    <button class="btn btn-success btn-sm me-2" id="drawTileBtn" style="display:none;">摸牌</button>
+                                    <button class="btn btn-warning btn-sm me-2" id="chiBtn" style="display:none;">吃</button>
+                                    <button class="btn btn-info btn-sm me-2" id="pengBtn" style="display:none;">碰</button>
+                                    <button class="btn btn-secondary btn-sm me-2" id="gangBtn" style="display:none;">槓</button>
+                                    <button class="btn btn-danger btn-sm" id="huBtn" style="display:none;">胡</button>
+                                    <button class="btn btn-light btn-sm" id="passBtn" style="display:none;">過</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 右家 -->
+                        <div class="col-3">
+                            <div class="opponent-right">
+                                <div class="player-name">玩家2 (右家)</div>
+                                <div class="opponent-tiles vertical" id="opponent1Cards"></div>
+                                <div class="exposed-tiles" id="opponent1Exposed"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 玩家手牌和副露區 -->
+                <div class="player-area">
+                    <div class="player-name text-center mb-2">玩家1 (你) - <span id="playerWind">東</span>風</div>
+                    <div class="exposed-tiles mb-2" id="playerExposed"></div>
+                    <div class="player-tiles" id="playerTiles"></div>
+                    <div class="drawn-tile mt-2" id="drawnTile"></div>
+                </div>
+                
+                <!-- 動作選擇模態框 -->
+                <div class="action-modal" id="actionModal" style="display:none;">
+                    <div class="action-content">
+                        <h5>選擇動作</h5>
+                        <div id="actionButtons"></div>
                     </div>
                 </div>
             </div>
         `;
 
-        const modal = this.createGameModal('麻將', gameContent);
-        // modal.show() 已經在 createGameModal 中處理
+        const modal = this.createGameModal('4人麻將', gameContent);
 
         setTimeout(() => {
-            this.initMahjongGame();
+            this.init4PlayerMahjong();
         }, 100);
     }
 
     initMahjongGame() {
         const board = document.getElementById('mahjongBoard');
         if (!board) return;
+        
+        // Clear any existing timers
+        if (window.mahjongTimer) {
+            clearInterval(window.mahjongTimer);
+            window.mahjongTimer = null;
+        }
         
         let score = 0;
         let startTime = Date.now();
@@ -1426,7 +1491,10 @@ class GameCenter {
                 tile1.classList.add('matched');
                 tile2.classList.add('matched');
                 score += 10;
-                document.getElementById('mahjongScore').textContent = score;
+                const scoreElement = document.getElementById('mahjongScore');
+                if (scoreElement) {
+                    scoreElement.textContent = score;
+                }
                 
                 if (tiles.every(tile => tile.classList.contains('matched'))) {
                     clearInterval(gameTimer);
@@ -1452,7 +1520,10 @@ class GameCenter {
             const elapsed = Math.floor((Date.now() - startTime) / 1000);
             const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
             const seconds = (elapsed % 60).toString().padStart(2, '0');
-            document.getElementById('mahjongTime').textContent = `${minutes}:${seconds}`;
+            const timeElement = document.getElementById('mahjongTime');
+            if (timeElement) {
+                timeElement.textContent = `${minutes}:${seconds}`;
+            }
         }
         
         function showHint() {
@@ -1481,13 +1552,510 @@ class GameCenter {
         document.getElementById('mahjongRestart')?.addEventListener('click', () => {
             score = 0;
             startTime = Date.now();
-            document.getElementById('mahjongScore').textContent = score;
+            const scoreElement = document.getElementById('mahjongScore');
+            if (scoreElement) {
+                scoreElement.textContent = score;
+            }
             selectedTiles = [];
             initBoard();
         });
         
         initBoard();
-        gameTimer = setInterval(updateTimer, 1000);
+        window.mahjongTimer = setInterval(updateTimer, 1000);
+    }
+
+    // 新的4人麻將遊戲初始化
+    init4PlayerMahjong() {
+        // Clear any existing timers
+        if (window.mahjongTimer) {
+            clearInterval(window.mahjongTimer);
+            window.mahjongTimer = null;
+        }
+        
+        // 初始化遊戲狀態
+        const gameState = {
+            currentPlayer: 0, // 0=玩家, 1-3=AI
+            round: 0, // 東南西北圈
+            game: 0, // 1-4局
+            wind: ['東', '南', '西', '北'],
+            players: [
+                { name: '玩家1 (你)', wind: '東', hand: [], exposed: [], discarded: [] },
+                { name: '玩家2 (右家)', wind: '南', hand: [], exposed: [], discarded: [] },
+                { name: '玩家3 (上家)', wind: '西', hand: [], exposed: [], discarded: [] },
+                { name: '玩家4 (左家)', wind: '北', hand: [], exposed: [], discarded: [] }
+            ],
+            tiles: [],
+            wallTiles: [],
+            lastDiscarded: null,
+            gameOver: false,
+            playerCanChi: false,
+            playerCanPeng: false,
+            playerCanGang: false,
+            playerCanHu: false
+        };
+        
+        // 麻將牌組
+        const MAHJONG_TILES = {
+            // 萬字牌 (1-9)
+            wan: ['一萬', '二萬', '三萬', '四萬', '五萬', '六萬', '七萬', '八萬', '九萬'],
+            // 筒子牌 (1-9)  
+            tong: ['一筒', '二筒', '三筒', '四筒', '五筒', '六筒', '七筒', '八筒', '九筒'],
+            // 條子牌 (1-9)
+            tiao: ['一條', '二條', '三條', '四條', '五條', '六條', '七條', '八條', '九條'],
+            // 風牌
+            feng: ['東風', '南風', '西風', '北風'],
+            // 三元牌
+            sanyuan: ['紅中', '發財', '白板']
+        };
+        
+        // 初始化牌堆
+        function initTiles() {
+            gameState.wallTiles = [];
+            
+            // 每種數字牌4張
+            [...MAHJONG_TILES.wan, ...MAHJONG_TILES.tong, ...MAHJONG_TILES.tiao].forEach(tile => {
+                for (let i = 0; i < 4; i++) {
+                    gameState.wallTiles.push(tile);
+                }
+            });
+            
+            // 風牌和三元牌各4張
+            [...MAHJONG_TILES.feng, ...MAHJONG_TILES.sanyuan].forEach(tile => {
+                for (let i = 0; i < 4; i++) {
+                    gameState.wallTiles.push(tile);
+                }
+            });
+            
+            // 洗牌
+            for (let i = gameState.wallTiles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [gameState.wallTiles[i], gameState.wallTiles[j]] = [gameState.wallTiles[j], gameState.wallTiles[i]];
+            }
+        }
+        
+        // 發牌
+        function dealTiles() {
+            // 清空所有玩家手牌
+            gameState.players.forEach(player => {
+                player.hand = [];
+                player.exposed = [];
+                player.discarded = [];
+            });
+            
+            // 每人發13張牌
+            for (let round = 0; round < 13; round++) {
+                gameState.players.forEach(player => {
+                    if (gameState.wallTiles.length > 0) {
+                        player.hand.push(gameState.wallTiles.pop());
+                    }
+                });
+            }
+            
+            // 玩家手牌排序
+            gameState.players[0].hand.sort();
+        }
+        
+        // 摸牌
+        function drawTile(playerIndex) {
+            if (gameState.wallTiles.length > 0) {
+                const tile = gameState.wallTiles.pop();
+                gameState.players[playerIndex].hand.push(tile);
+                if (playerIndex === 0) {
+                    gameState.players[0].hand.sort();
+                }
+                return tile;
+            }
+            return null;
+        }
+        
+        // 打牌
+        function discardTile(playerIndex, tileIndex) {
+            const player = gameState.players[playerIndex];
+            if (tileIndex < player.hand.length) {
+                const discardedTile = player.hand.splice(tileIndex, 1)[0];
+                player.discarded.push(discardedTile);
+                gameState.lastDiscarded = discardedTile;
+                
+                // 檢查其他玩家是否可以吃碰槓胡
+                checkPlayerActions();
+                
+                return discardedTile;
+            }
+            return null;
+        }
+        
+        // 檢查玩家可以進行的動作
+        function checkPlayerActions() {
+            if (gameState.currentPlayer === 0 || !gameState.lastDiscarded) return;
+            
+            const playerHand = gameState.players[0].hand;
+            const lastTile = gameState.lastDiscarded;
+            
+            // 重置動作狀態
+            gameState.playerCanChi = false;
+            gameState.playerCanPeng = false;
+            gameState.playerCanGang = false;
+            gameState.playerCanHu = false;
+            
+            // 檢查碰 (需要2張相同牌)
+            const sameCount = playerHand.filter(tile => tile === lastTile).length;
+            if (sameCount >= 2) {
+                gameState.playerCanPeng = true;
+            }
+            
+            // 檢查槓 (需要3張相同牌)
+            if (sameCount >= 3) {
+                gameState.playerCanGang = true;
+            }
+            
+            // 檢查吃 (只能吃上家的牌，形成順子)
+            if (gameState.currentPlayer === 3) { // 上家是左家 (player 3)
+                gameState.playerCanChi = canFormSequence(playerHand, lastTile);
+            }
+            
+            // 檢查胡 (簡化版胡牌檢查)
+            gameState.playerCanHu = canWin([...playerHand, lastTile]);
+            
+            // 顯示動作按鈕
+            showActionButtons();
+        }
+        
+        // 檢查是否可以形成順子
+        function canFormSequence(hand, tile) {
+            // 簡化版順子檢查 - 只檢查數字牌
+            if (!tile.includes('萬') && !tile.includes('筒') && !tile.includes('條')) {
+                return false;
+            }
+            
+            const tileNum = parseInt(tile.charAt(0)) || getTileNumber(tile.charAt(0));
+            if (!tileNum || tileNum < 1 || tileNum > 9) return false;
+            
+            const suitTiles = hand.filter(t => t.includes(tile.slice(-1)));
+            const numbers = suitTiles.map(t => parseInt(t.charAt(0)) || getTileNumber(t.charAt(0)));
+            
+            // 檢查能否形成順子
+            return (numbers.includes(tileNum - 1) && numbers.includes(tileNum + 1)) ||
+                   (numbers.includes(tileNum - 2) && numbers.includes(tileNum - 1)) ||
+                   (numbers.includes(tileNum + 1) && numbers.includes(tileNum + 2));
+        }
+        
+        // 轉換中文數字
+        function getTileNumber(char) {
+            const nums = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9};
+            return nums[char];
+        }
+        
+        // 簡化版胡牌檢查
+        function canWin(hand) {
+            if (hand.length !== 14) return false;
+            
+            const tileCounts = {};
+            hand.forEach(tile => {
+                tileCounts[tile] = (tileCounts[tile] || 0) + 1;
+            });
+            
+            // 檢查是否有將牌 (一對)
+            let pairs = 0;
+            let triplets = 0;
+            
+            Object.values(tileCounts).forEach(count => {
+                if (count === 2) pairs++;
+                if (count === 3) triplets++;
+                if (count === 4) triplets++; // 槓算作刻子
+            });
+            
+            // 簡化版：4個刻子+1個對子 = 胡牌
+            return pairs === 1 && triplets === 4;
+        }
+        
+        // 顯示動作按鈕
+        function showActionButtons() {
+            const actions = ['chiBtn', 'pengBtn', 'gangBtn', 'huBtn', 'passBtn'];
+            const canDo = [gameState.playerCanChi, gameState.playerCanPeng, gameState.playerCanGang, gameState.playerCanHu, true];
+            
+            actions.forEach((btnId, index) => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.style.display = canDo[index] ? 'inline-block' : 'none';
+                }
+            });
+        }
+        
+        // 隱藏動作按鈕
+        function hideActionButtons() {
+            const actions = ['chiBtn', 'pengBtn', 'gangBtn', 'huBtn', 'passBtn', 'drawTileBtn'];
+            actions.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.style.display = 'none';
+                }
+            });
+        }
+        
+        // AI玩家自動打牌
+        function aiPlay(playerIndex) {
+            const player = gameState.players[playerIndex];
+            
+            // AI摸牌
+            const drawnTile = drawTile(playerIndex);
+            if (!drawnTile) {
+                gameState.gameOver = true;
+                alert('牌摸完了，平局！');
+                return;
+            }
+            
+            // AI隨機打牌 (簡化版AI邏輯)
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * player.hand.length);
+                const discardedTile = discardTile(playerIndex, randomIndex);
+                
+                updateDisplay();
+                
+                // 如果當前不是玩家回合且沒有動作，繼續下一位
+                if (!gameState.playerCanChi && !gameState.playerCanPeng && !gameState.playerCanGang && !gameState.playerCanHu) {
+                    nextTurn();
+                }
+            }, 1000);
+        }
+        
+        // 下一回合
+        function nextTurn() {
+            if (gameState.gameOver) return;
+            
+            gameState.currentPlayer = (gameState.currentPlayer + 1) % 4;
+            updateCurrentPlayer();
+            
+            if (gameState.currentPlayer === 0) {
+                // 玩家回合 - 顯示摸牌按鈕
+                const drawBtn = document.getElementById('drawTileBtn');
+                if (drawBtn) {
+                    drawBtn.style.display = 'inline-block';
+                }
+                hideActionButtons();
+            } else {
+                // AI回合
+                hideActionButtons();
+                aiPlay(gameState.currentPlayer);
+            }
+        }
+        
+        // 更新當前玩家顯示
+        function updateCurrentPlayer() {
+            const currentPlayerElement = document.getElementById('currentPlayer');
+            if (currentPlayerElement) {
+                currentPlayerElement.textContent = gameState.players[gameState.currentPlayer].name;
+            }
+        }
+        
+        // 更新遊戲顯示
+        function updateDisplay() {
+            // 更新玩家手牌
+            updatePlayerHand();
+            // 更新對手手牌（背面）
+            updateOpponentHands();
+            // 更新棄牌區
+            updateDiscardedTiles();
+            // 更新副露區
+            updateExposedTiles();
+        }
+        
+        // 更新玩家手牌顯示
+        function updatePlayerHand() {
+            const playerTilesElement = document.getElementById('playerTiles');
+            if (!playerTilesElement) return;
+            
+            playerTilesElement.innerHTML = '';
+            gameState.players[0].hand.forEach((tile, index) => {
+                const tileElement = document.createElement('div');
+                tileElement.className = 'mahjong-tile';
+                tileElement.textContent = tile;
+                tileElement.onclick = () => {
+                    if (gameState.currentPlayer === 0) {
+                        // 玩家打牌
+                        discardTile(0, index);
+                        updateDisplay();
+                        nextTurn();
+                    }
+                };
+                playerTilesElement.appendChild(tileElement);
+            });
+        }
+        
+        // 更新對手手牌顯示（背面）
+        function updateOpponentHands() {
+            [1, 2, 3].forEach((playerIndex, opponentIndex) => {
+                const element = document.getElementById(`opponent${opponentIndex}Cards`);
+                if (!element) return;
+                
+                element.innerHTML = '';
+                gameState.players[playerIndex].hand.forEach(() => {
+                    const tileElement = document.createElement('div');
+                    tileElement.className = 'mahjong-tile opponent-back';
+                    tileElement.textContent = '🀫';
+                    element.appendChild(tileElement);
+                });
+            });
+        }
+        
+        // 更新棄牌區顯示
+        function updateDiscardedTiles() {
+            const discardedElement = document.getElementById('discardedTiles');
+            if (!discardedElement) return;
+            
+            // 保留標題
+            discardedElement.innerHTML = '<div class="text-center mb-2"><small>牌桌中央</small></div>';
+            
+            gameState.players.forEach(player => {
+                player.discarded.forEach(tile => {
+                    const tileElement = document.createElement('div');
+                    tileElement.className = 'mahjong-tile discarded';
+                    tileElement.textContent = tile;
+                    discardedElement.appendChild(tileElement);
+                });
+            });
+        }
+        
+        // 更新副露區顯示
+        function updateExposedTiles() {
+            gameState.players.forEach((player, index) => {
+                const elementId = index === 0 ? 'playerExposed' : `opponent${index-1}Exposed`;
+                const element = document.getElementById(elementId);
+                if (!element) return;
+                
+                element.innerHTML = '';
+                player.exposed.forEach(meld => {
+                    const meldElement = document.createElement('div');
+                    meldElement.className = 'meld-group';
+                    meld.forEach(tile => {
+                        const tileElement = document.createElement('div');
+                        tileElement.className = 'mahjong-tile exposed';
+                        tileElement.textContent = tile;
+                        meldElement.appendChild(tileElement);
+                    });
+                    element.appendChild(meldElement);
+                });
+            });
+        }
+        
+        // 遊戲按鈕事件處理
+        function setupEventListeners() {
+            // 摸牌按鈕
+            document.getElementById('drawTileBtn')?.addEventListener('click', () => {
+                if (gameState.currentPlayer === 0) {
+                    const drawnTile = drawTile(0);
+                    if (drawnTile) {
+                        updateDisplay();
+                        // 顯示摸到的牌
+                        const drawnTileElement = document.getElementById('drawnTile');
+                        if (drawnTileElement) {
+                            drawnTileElement.innerHTML = `<div class="mahjong-tile drawn">剛摸到: ${drawnTile}</div>`;
+                        }
+                    }
+                    document.getElementById('drawTileBtn').style.display = 'none';
+                }
+            });
+            
+            // 吃牌按鈕
+            document.getElementById('chiBtn')?.addEventListener('click', () => {
+                // 簡化版吃牌邏輯
+                alert('吃牌功能（簡化版）');
+                hideActionButtons();
+                nextTurn();
+            });
+            
+            // 碰牌按鈕
+            document.getElementById('pengBtn')?.addEventListener('click', () => {
+                const lastTile = gameState.lastDiscarded;
+                const playerHand = gameState.players[0].hand;
+                
+                // 移除兩張相同的牌
+                const indices = [];
+                playerHand.forEach((tile, index) => {
+                    if (tile === lastTile && indices.length < 2) {
+                        indices.push(index);
+                    }
+                });
+                
+                // 從後往前移除，避免索引問題
+                indices.reverse().forEach(index => playerHand.splice(index, 1));
+                
+                // 添加到副露區
+                gameState.players[0].exposed.push([lastTile, lastTile, lastTile]);
+                
+                updateDisplay();
+                hideActionButtons();
+                
+                // 碰牌後玩家繼續打牌
+                gameState.currentPlayer = 0;
+                updateCurrentPlayer();
+            });
+            
+            // 槓牌按鈕
+            document.getElementById('gangBtn')?.addEventListener('click', () => {
+                alert('槓牌功能（簡化版）');
+                hideActionButtons();
+                nextTurn();
+            });
+            
+            // 胡牌按鈕
+            document.getElementById('huBtn')?.addEventListener('click', () => {
+                alert('恭喜胡牌！遊戲結束！');
+                gameState.gameOver = true;
+            });
+            
+            // 過按鈕
+            document.getElementById('passBtn')?.addEventListener('click', () => {
+                hideActionButtons();
+                nextTurn();
+            });
+            
+            // 重新開始按鈕
+            document.getElementById('mahjongRestart')?.addEventListener('click', () => {
+                startNewGame();
+            });
+            
+            // 規則說明按鈕
+            document.getElementById('mahjongRules')?.addEventListener('click', () => {
+                const rules = `
+                4人麻將基本規則：
+                
+                1. 目標：組成4個順子/刻子 + 1個對子 = 胡牌
+                2. 順子：同花色連續3張牌（如一二三萬）
+                3. 刻子：3張相同的牌
+                4. 對子：2張相同的牌（將牌）
+                
+                動作說明：
+                - 吃：上家打的牌可以與手牌組成順子
+                - 碰：任何人打的牌在手牌中有2張相同的
+                - 槓：任何人打的牌在手牌中有3張相同的
+                - 胡：可以組成胡牌組合
+                
+                這是簡化版麻將，重點體驗遊戲流程！
+                `;
+                alert(rules);
+            });
+        }
+        
+        // 開始新遊戲
+        function startNewGame() {
+            gameState.currentPlayer = 0;
+            gameState.gameOver = false;
+            initTiles();
+            dealTiles();
+            updateDisplay();
+            updateCurrentPlayer();
+            hideActionButtons();
+            
+            // 顯示摸牌按鈕
+            const drawBtn = document.getElementById('drawTileBtn');
+            if (drawBtn) {
+                drawBtn.style.display = 'inline-block';
+            }
+        }
+        
+        // 初始化遊戲
+        setupEventListeners();
+        startNewGame();
     }
 
     addMahjongStyles() {
@@ -1497,59 +2065,168 @@ class GameCenter {
         style.id = 'mahjong-styles';
         style.textContent = `
             .mahjong-game {
-                padding: 20px;
-            }
-            .mahjong-board {
-                display: grid;
-                grid-template-columns: repeat(6, 1fr);
-                grid-template-rows: repeat(6, 1fr);
-                gap: 5px;
-                max-width: 360px;
-                margin: 0 auto;
+                padding: 15px;
+                max-width: 100%;
+                overflow-x: auto;
             }
             .mahjong-tile {
-                width: 50px;
-                height: 60px;
-                background: linear-gradient(145deg, #f0f0f0, #d0d0d0);
-                border: 2px solid #999;
-                border-radius: 6px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 24px;
+                display: inline-block;
+                width: 30px;
+                height: 40px;
+                border: 1px solid #333;
+                background: #f8f9fa;
+                text-align: center;
+                line-height: 38px;
+                margin: 1px;
                 cursor: pointer;
-                transition: all 0.3s ease;
-                user-select: none;
+                font-size: 12px;
+                border-radius: 3px;
+                transition: all 0.2s;
+                vertical-align: top;
             }
             .mahjong-tile:hover {
+                background: #e9ecef;
                 transform: translateY(-2px);
-                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             }
             .mahjong-tile.selected {
-                background: linear-gradient(145deg, #ffd700, #ffed4e);
-                border-color: #ff6b6b;
+                background: #007bff;
+                color: white;
                 transform: translateY(-3px);
             }
-            .mahjong-tile.matched {
-                background: linear-gradient(145deg, #c8e6c9, #a5d6a7);
-                opacity: 0.5;
-                pointer-events: none;
+            .mahjong-tile.discarded {
+                background: #6c757d;
+                color: white;
+                cursor: default;
+                opacity: 0.8;
             }
-            .mahjong-tile.hint {
-                animation: hint-pulse 1s ease-in-out;
-                border-color: #4ecdc4;
+            .mahjong-tile.drawn {
+                background: #28a745;
+                color: white;
+                animation: pulse 1s ease-in-out;
             }
-            .mahjong-tile.shake {
-                animation: shake 0.5s ease-in-out;
+            .mahjong-tile.exposed {
+                background: #17a2b8;
+                color: white;
             }
-            @keyframes hint-pulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.1); }
+            .opponent-tiles .mahjong-tile {
+                background: #343a40;
+                color: #343a40;
+                width: 25px;
+                height: 35px;
+                line-height: 33px;
             }
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-3px); }
-                75% { transform: translateX(3px); }
+            .opponent-back {
+                background: #495057 !important;
+                color: #6c757d !important;
+                font-size: 10px;
+            }
+            .vertical .mahjong-tile {
+                display: block;
+                margin: 1px auto;
+            }
+            .table-center {
+                background: #2d5a2d;
+                border-radius: 10px;
+                padding: 15px;
+                min-height: 200px;
+            }
+            .discarded-tiles {
+                background: rgba(255,255,255,0.1);
+                border-radius: 5px;
+                padding: 10px;
+                min-height: 120px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: flex-start;
+                align-content: flex-start;
+            }
+            .exposed-tiles {
+                min-height: 45px;
+                border: 1px dashed #ccc;
+                border-radius: 5px;
+                padding: 5px;
+                margin: 5px 0;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .player-tiles {
+                text-align: center;
+                padding: 10px;
+                background: rgba(0,123,255,0.1);
+                border-radius: 5px;
+                min-height: 50px;
+            }
+            .action-modal {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                border: 2px solid #333;
+                border-radius: 10px;
+                padding: 20px;
+                z-index: 2000;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            }
+            .action-content {
+                text-align: center;
+                color: #333;
+            }
+            .action-content button {
+                margin: 5px;
+            }
+            .player-name {
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 5px;
+            }
+            .meld-group {
+                border: 1px solid #007bff;
+                border-radius: 3px;
+                margin: 2px;
+                padding: 2px;
+                display: inline-block;
+            }
+            .opponents-area {
+                margin-bottom: 20px;
+            }
+            .opponent-top {
+                margin-bottom: 15px;
+            }
+            .opponent-left, .opponent-right {
+                padding: 10px;
+            }
+            .game-actions {
+                text-align: center;
+            }
+            .game-actions button {
+                margin: 3px;
+            }
+            .drawn-tile {
+                text-align: center;
+                margin: 10px 0;
+                font-weight: bold;
+                color: #28a745;
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            @media (max-width: 768px) {
+                .mahjong-tile {
+                    width: 25px;
+                    height: 35px;
+                    font-size: 10px;
+                    line-height: 33px;
+                }
+                .opponent-tiles .mahjong-tile {
+                    width: 20px;
+                    height: 30px;
+                    line-height: 28px;
+                }
             }
         `;
         document.head.appendChild(style);
