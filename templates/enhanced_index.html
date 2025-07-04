@@ -660,10 +660,33 @@
                                         </div>
                                         <div class="card-body">
                                             <div id="gameContainer" class="game-container">
-                                                <div class="text-center text-muted">
+                                                <div class="text-center text-muted" id="gameWelcome">
                                                     <i class="fas fa-gamepad fa-3x mb-3"></i>
                                                     <h5>請選擇一個遊戲開始</h5>
                                                     <p>點擊上方的遊戲卡片來載入遊戲</p>
+                                                </div>
+                                                
+                                                <!-- Tetris Game Container -->
+                                                <div id="tetrisGame" style="display: none;">
+                                                    <div class="tetris-container">
+                                                        <h5 class="text-center mb-3">🎮 俄羅斯方塊</h5>
+                                                        <canvas id="tetrisCanvas" width="300" height="600"></canvas>
+                                                        <div class="text-center mt-3">
+                                                            <small class="text-muted">
+                                                                方向鍵控制 | 空白鍵旋轉 | 下鍵加速
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Mahjong Game Container -->
+                                                <div id="mahjongGame" style="display: none;">
+                                                    <div id="mahjongBoard"></div>
+                                                </div>
+                                                
+                                                <!-- Farm Story Game Container -->
+                                                <div id="farmStoryGame" style="display: none;">
+                                                    <div id="farmStoryBoard"></div>
                                                 </div>
                                             </div>
                                         </div>

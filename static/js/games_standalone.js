@@ -22,29 +22,32 @@ let gameData = {
 
 // 全域遊戲載入函數
 function loadGame(gameType) {
-    const gameContainer = document.getElementById('gameContainer');
     const gameInfo = document.getElementById('gameInfo');
     const gameControls = document.getElementById('gameControls');
     
-    if (!gameContainer || !gameInfo || !gameControls) {
-        console.error('遊戲容器元素未找到');
-        return;
-    }
+    // 隱藏歡迎畫面
+    const gameWelcome = document.getElementById('gameWelcome');
+    if (gameWelcome) gameWelcome.style.display = 'none';
     
-    // 清除目前內容
-    gameContainer.innerHTML = '';
-    gameInfo.innerHTML = '';
-    gameControls.innerHTML = '';
+    // 隱藏所有遊戲容器
+    const allGames = ['tetrisGame', 'mahjongGame', 'farmStoryGame'];
+    allGames.forEach(gameId => {
+        const gameElement = document.getElementById(gameId);
+        if (gameElement) gameElement.style.display = 'none';
+    });
     
     // 根據遊戲類型載入不同的遊戲
     switch(gameType) {
         case 'tetris':
+            document.getElementById('tetrisGame').style.display = 'block';
             loadTetrisGame();
             break;
         case 'mahjong':
+            document.getElementById('mahjongGame').style.display = 'block';
             loadMahjongGame();
             break;
         case 'farm':
+            document.getElementById('farmStoryGame').style.display = 'block';
             loadFarmStoryGame();
             break;
         default:
@@ -54,45 +57,156 @@ function loadGame(gameType) {
 }
 
 function loadTetrisGame() {
-    const gameContainer = document.getElementById('gameContainer');
     const gameInfo = document.getElementById('gameInfo');
     const gameControls = document.getElementById('gameControls');
     
-    gameInfo.innerHTML = '<h6>俄羅斯方塊</h6><p>使用方向鍵移動方塊，空白鍵旋轉</p>';
-    gameControls.innerHTML = '<button class="btn btn-primary" onclick="startTetrisInPanel()">開始遊戲</button>';
+    if (gameInfo) {
+        gameInfo.innerHTML = `
+            <h6>🎮 俄羅斯方塊</h6>
+            <p><strong>目標：</strong>消除水平線獲得分數</p>
+            <p><strong>控制：</strong></p>
+            <ul class="small">
+                <li>← → 移動方塊</li>
+                <li>↓ 快速下降</li>
+                <li>↑ 或 空白鍵 旋轉</li>
+            </ul>
+        `;
+    }
     
-    startTetrisInPanel();
+    if (gameControls) {
+        gameControls.innerHTML = `
+            <button class="btn btn-success btn-sm w-100 mb-2" onclick="initTetrisGame()">
+                <i class="fas fa-play me-2"></i>開始新遊戲
+            </button>
+            <button class="btn btn-secondary btn-sm w-100" onclick="showGameWelcome()">
+                <i class="fas fa-arrow-left me-2"></i>返回遊戲選擇
+            </button>
+        `;
+    }
+    
+    setTimeout(() => {
+        initTetrisGame();
+    }, 100);
 }
 
 function loadMahjongGame() {
-    const gameContainer = document.getElementById('gameContainer');
     const gameInfo = document.getElementById('gameInfo');
     const gameControls = document.getElementById('gameControls');
     
-    gameInfo.innerHTML = '<h6>麻將</h6><p>4人麻將遊戲，點擊牌張進行遊戲</p>';
-    gameControls.innerHTML = '<button class="btn btn-primary" onclick="startMahjongInPanel()">開始遊戲</button>';
+    if (gameInfo) {
+        gameInfo.innerHTML = `
+            <h6>🀄 麻將遊戲</h6>
+            <p><strong>目標：</strong>收集牌組胡牌</p>
+            <p><strong>操作：</strong></p>
+            <ul class="small">
+                <li>點擊牌張出牌</li>
+                <li>點擊"摸牌"獲得新牌</li>
+                <li>保持14張牌胡牌</li>
+            </ul>
+        `;
+    }
     
-    startMahjongInPanel();
+    if (gameControls) {
+        gameControls.innerHTML = `
+            <button class="btn btn-success btn-sm w-100 mb-2" onclick="initMahjongGame()">
+                <i class="fas fa-play me-2"></i>開始新遊戲
+            </button>
+            <button class="btn btn-secondary btn-sm w-100" onclick="showGameWelcome()">
+                <i class="fas fa-arrow-left me-2"></i>返回遊戲選擇
+            </button>
+        `;
+    }
+    
+    setTimeout(() => {
+        initMahjongGame();
+    }, 100);
 }
 
 function loadFarmStoryGame() {
-    const gameContainer = document.getElementById('gameContainer');
     const gameInfo = document.getElementById('gameInfo');
     const gameControls = document.getElementById('gameControls');
     
-    gameInfo.innerHTML = `
-        <h6>農場物語</h6>
-        <p>獨立RPG遊戲</p>
-        <div class="game-stats">
-            <small>金錢: ${gameData.farmStory.money} | AI次數: ${gameData.farmStory.aiUsesLeft}/10</small>
-        </div>
-    `;
-    gameControls.innerHTML = `
-        <button class="btn btn-success" onclick="showGameStats()">查看狀態</button>
-        <button class="btn btn-warning" onclick="resetFarmGame()">重新開始</button>
-    `;
+    if (gameInfo) {
+        gameInfo.innerHTML = `
+            <h6>🚜 農場物語 RPG</h6>
+            <p><strong>角色扮演農場遊戲</strong></p>
+            <div class="game-stats">
+                <small>金錢: ${gameData.farmStory.money} | AI助手: ${gameData.farmStory.aiUsesLeft}/10次</small>
+            </div>
+            <p><strong>特色：</strong></p>
+            <ul class="small">
+                <li>4個NPC角色互動</li>
+                <li>3x3農田經營</li>
+                <li>商店、鐵匠、醫院</li>
+                <li>有限AI助手系統</li>
+            </ul>
+        `;
+    }
     
-    startFarmStoryInPanel();
+    if (gameControls) {
+        gameControls.innerHTML = `
+            <button class="btn btn-success btn-sm w-100 mb-2" onclick="initFarmStoryGame()">
+                <i class="fas fa-play me-2"></i>開始遊戲
+            </button>
+            <button class="btn btn-warning btn-sm w-100 mb-2" onclick="resetFarmGame()">
+                <i class="fas fa-redo me-2"></i>重新開始
+            </button>
+            <button class="btn btn-secondary btn-sm w-100" onclick="showGameWelcome()">
+                <i class="fas fa-arrow-left me-2"></i>返回遊戲選擇
+            </button>
+        `;
+    }
+    
+    setTimeout(() => {
+        initFarmStoryGame();
+    }, 100);
+}
+
+// 返回遊戲歡迎畫面
+function showGameWelcome() {
+    // 隱藏所有遊戲容器
+    const allGames = ['tetrisGame', 'mahjongGame', 'farmStoryGame'];
+    allGames.forEach(gameId => {
+        const gameElement = document.getElementById(gameId);
+        if (gameElement) gameElement.style.display = 'none';
+    });
+    
+    // 顯示歡迎畫面
+    const gameWelcome = document.getElementById('gameWelcome');
+    if (gameWelcome) gameWelcome.style.display = 'block';
+    
+    // 清除遊戲資訊和控制
+    const gameInfo = document.getElementById('gameInfo');
+    const gameControls = document.getElementById('gameControls');
+    
+    if (gameInfo) {
+        gameInfo.innerHTML = '<p>選擇遊戲後將顯示相關資訊</p>';
+    }
+    
+    if (gameControls) {
+        gameControls.innerHTML = '<p>遊戲載入後將顯示控制選項</p>';
+    }
+}
+
+// 重置農場遊戲
+function resetFarmGame() {
+    gameData.farmStory = {
+        aiUsesLeft: 10,
+        playerName: '小農夫',
+        money: 100,
+        crops: [],
+        tools: ['基礎鋤頭', '基礎澆水壺'],
+        currentScene: 'village',
+        relationships: {
+            '村長湯姆': 0,
+            '商店瑪麗': 0,
+            '鐵匠傑克': 0,
+            '醫生莉莉': 0
+        }
+    };
+    
+    // 重新載入農場遊戲
+    loadFarmStoryGame();
 }
 
 // 遊戲啟動函數
