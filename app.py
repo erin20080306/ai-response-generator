@@ -122,7 +122,7 @@ def chat():
                 # GS Code
                 gs_prompt = chat_history + [{
                     'role': 'user', 
-                    'content': f"{user_message}\n\n請提供完整專業的GS程式碼，要求：1. 標準Google Apps Script語法 2. 包含錯誤處理 3. 加入程式碼註解 4. 提供完整實作步驟 5. 說明如何測試函式"
+                    'content': f"{user_message}\n\n請只提供正確的GS程式碼，要求：1. 使用標準Google Apps Script函式語法 2. 確保函式可以在Apps Script環境正常執行 3. 提供正確的函式調用方式"
                 }]
                 gs_response = openai_client.get_response(gs_prompt)
                 responses.append(gs_response)
@@ -130,7 +130,7 @@ def chat():
                 # HTML Code
                 html_prompt = chat_history + [{
                     'role': 'user', 
-                    'content': f"{user_message}\n\n請提供完整專業的HTML程式碼，要求：1. 完整的HTML結構 2. 包含必要的CSS樣式 3. 完整的JavaScript功能 4. 詳細的部署教學 5. 說明如何與GS程式碼整合"
+                    'content': f"{user_message}\n\n請只提供HTML程式碼部分，並包含使用教學：1. 如何在Apps Script中建立HTML檔案 2. 如何部署和使用"
                 }]
                 html_response = openai_client.get_response(html_prompt)
                 responses.append(html_response)

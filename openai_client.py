@@ -34,12 +34,10 @@ class OpenAIClient:
                     - Keep code display clean and minimal
 
                     FOR APPS SCRIPT QUESTIONS:
-                    - Provide complete, production-ready code
-                    - Include proper error handling and validation
-                    - Add clear comments in code
-                    - Provide step-by-step implementation guide
-                    - Include example usage scenarios
-                    - Explain integration between GS and HTML parts
+                    - When asked for only GS code: provide GS code with brief setup tutorial
+                    - When asked for only HTML code: provide HTML code with usage tutorial
+                    - Include step-by-step instructions for each part
+                    - Explain where to paste the code and how to use it
 
                     FOR TECHNICAL QUESTIONS:
                     - Direct answer first
