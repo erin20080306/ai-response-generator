@@ -1470,10 +1470,22 @@ def create_collaboration_room():
         model_classes = get_models()
         CollaborationRoom = model_classes['CollaborationRoom']
         
+        # Create a system user if it doesn't exist
+        User = model_classes['User']
+        system_user = User.query.filter_by(username='system').first()
+        if not system_user:
+            system_user = User(
+                username='system',
+                email='system@localhost',
+                password_hash='system'
+            )
+            db.session.add(system_user)
+            db.session.commit()
+        
         new_room = CollaborationRoom(
             name=name,
             room_code=room_code,
-            created_by='system',  # 簡化實現，實際應該是用戶ID
+            created_by=system_user.id,
             max_participants=max_participants
         )
         

@@ -498,8 +498,8 @@ class EnhancedAIAssistant {
         }
 
         // 初始化協作功能
-        if (typeof Collaboration !== 'undefined') {
-            this.collaboration = new Collaboration(this);
+        if (typeof CollaborationManager !== 'undefined') {
+            this.collaboration = new CollaborationManager(this);
         }
 
         // 初始化遊戲中心
