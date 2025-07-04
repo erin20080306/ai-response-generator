@@ -85,6 +85,7 @@ class EnhancedAIAssistant {
         this.socket = null;
         this.currentUser = null;
         this.quickReplies = [];
+        this.fileClickHandler = null;
         
         this.init();
     }
@@ -216,28 +217,44 @@ class EnhancedAIAssistant {
 
             // 檔案選擇按鈕 (檔案面板) - 多種綁定方式
             if (selectFilesBtn && fileInputPanel) {
-                selectFilesBtn.addEventListener('click', (e) => {
-                    console.log('點擊選擇檔案按鈕');
+                // 移除所有現有事件監聽器並重新綁定
+                selectFilesBtn.removeEventListener('click', this.fileClickHandler);
+                
+                // 創建新的事件處理器
+                this.fileClickHandler = (e) => {
+                    console.log('點擊選擇檔案按鈕 - 事件觸發');
                     e.preventDefault();
                     e.stopPropagation();
-                    fileInputPanel.click();
-                });
+                    
+                    // 使用setTimeout確保事件處理完成
+                    setTimeout(() => {
+                        console.log('觸發檔案輸入框點擊');
+                        fileInputPanel.click();
+                    }, 10);
+                };
                 
-                // 添加額外的事件監聽器
-                selectFilesBtn.addEventListener('touchstart', (e) => {
-                    console.log('觸摸選擇檔案按鈕');
+                selectFilesBtn.addEventListener('click', this.fileClickHandler);
+                
+                // 也嘗試使用onclick直接設置
+                selectFilesBtn.onclick = (e) => {
+                    console.log('直接onclick事件觸發');
                     e.preventDefault();
                     fileInputPanel.click();
+                };
+                
+                // 添加鼠標事件監聽器
+                selectFilesBtn.addEventListener('mousedown', (e) => {
+                    console.log('鼠標按下事件');
                 });
                 
-                // 鍵盤訪問性
-                selectFilesBtn.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        console.log('鍵盤選擇檔案按鈕');
-                        e.preventDefault();
-                        fileInputPanel.click();
-                    }
+                selectFilesBtn.addEventListener('mouseup', (e) => {
+                    console.log('鼠標釋放事件');
                 });
+                
+                // 確保按鈕可點擊
+                selectFilesBtn.style.pointerEvents = 'auto';
+                selectFilesBtn.style.cursor = 'pointer';
+                
             } else {
                 console.log('選擇檔案按鈕或輸入框未找到:', { selectFilesBtn, fileInputPanel });
             }
