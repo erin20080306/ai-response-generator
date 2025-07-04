@@ -22,14 +22,16 @@ function loadGame(gameType) {
         case 'mahjong':
             loadMahjongGame();
             break;
+        case 'farm':
         case 'farm-story':
             loadFarmStoryGame();
             break;
         default:
+            console.warn('未知遊戲類型:', gameType);
             gameContainer.innerHTML = `
                 <div class="alert alert-warning">
                     <h5>遊戲類型不支援</h5>
-                    <p>請選擇支援的遊戲類型。</p>
+                    <p>請選擇支援的遊戲類型：俄羅斯方塊、麻將、農場物語</p>
                 </div>
             `;
     }
@@ -41,10 +43,24 @@ function loadTetrisGame() {
     gameContainer.innerHTML = `
         <div class="tetris-container">
             <h5 class="text-center mb-3">俄羅斯方塊</h5>
-            <div id="tetrisBoard" class="tetris-board"></div>
+            <div class="tetris-game-area">
+                <div id="tetrisBoard" class="tetris-board"></div>
+                <div class="tetris-controls">
+                    <button onclick="moveTetrisLeft()" class="btn btn-primary">←</button>
+                    <button onclick="rotateTetrisPiece()" class="btn btn-success">↻</button>
+                    <button onclick="moveTetrisRight()" class="btn btn-primary">→</button>
+                    <button onclick="dropTetrisPiece()" class="btn btn-warning">↓</button>
+                </div>
+                <div class="tetris-info">
+                    <div>分數: <span id="tetrisScore">0</span></div>
+                    <div>等級: <span id="tetrisLevel">1</span></div>
+                </div>
+            </div>
         </div>
     `;
-    startTetrisInPanel();
+    setTimeout(() => {
+        startTetrisInPanel();
+    }, 100);
 }
 
 function loadMahjongGame() {
@@ -52,10 +68,23 @@ function loadMahjongGame() {
     gameContainer.innerHTML = `
         <div class="mahjong-container">
             <h5 class="text-center mb-3">麻將</h5>
-            <div id="mahjongBoard" class="mahjong-board"></div>
+            <div class="mahjong-game-area">
+                <div id="mahjongBoard" class="mahjong-board"></div>
+                <div class="mahjong-controls">
+                    <button onclick="drawMahjongTile()" class="btn btn-primary">摸牌</button>
+                    <button onclick="discardMahjongTile()" class="btn btn-secondary">打牌</button>
+                    <button onclick="declareMahjongWin()" class="btn btn-success">胡牌</button>
+                </div>
+                <div class="mahjong-info">
+                    <div>分數: <span id="mahjongScore">0</span></div>
+                    <div>回合: <span id="mahjongRound">1</span></div>
+                </div>
+            </div>
         </div>
     `;
-    startMahjongInPanel();
+    setTimeout(() => {
+        startMahjongInPanel();
+    }, 100);
 }
 
 function loadFarmStoryGame() {
@@ -147,6 +176,16 @@ function loadFarmStoryGame() {
     `;
     
     startFarmStoryInPanel();
+    
+    // 初始化心形顯示和場景
+    setTimeout(() => {
+        if (typeof updateHeartDisplay === 'function') {
+            updateHeartDisplay();
+        }
+        if (typeof changeGameLocation === 'function') {
+            changeGameLocation('farm');
+        }
+    }, 200);
 }
 
 // 全域遊戲變數
