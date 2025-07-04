@@ -1863,11 +1863,8 @@ class GameCenter {
         function updatePlayerHand() {
             const playerTilesElement = document.getElementById('playerTiles');
             if (!playerTilesElement) {
-                console.error('找不到玩家手牌元素 #playerTiles');
                 return;
             }
-            
-            console.log('更新玩家手牌:', gameState.players[0].hand);
             playerTilesElement.innerHTML = '';
             gameState.players[0].hand.forEach((tile, index) => {
                 const tileElement = document.createElement('div');
@@ -2046,9 +2043,6 @@ class GameCenter {
             gameState.gameOver = false;
             initTiles();
             dealTiles();
-            
-            console.log('遊戲開始，玩家手牌:', gameState.players[0].hand);
-            
             updateDisplay();
             updateCurrentPlayer();
             hideActionButtons();
@@ -2082,6 +2076,7 @@ class GameCenter {
                 height: 40px;
                 border: 1px solid #333;
                 background: #f8f9fa;
+                color: #333 !important;
                 text-align: center;
                 line-height: 38px;
                 margin: 1px;
@@ -2090,6 +2085,7 @@ class GameCenter {
                 border-radius: 3px;
                 transition: all 0.2s;
                 vertical-align: top;
+                font-weight: bold;
             }
             .mahjong-tile:hover {
                 background: #e9ecef;
@@ -2102,18 +2098,18 @@ class GameCenter {
             }
             .mahjong-tile.discarded {
                 background: #6c757d;
-                color: white;
+                color: white !important;
                 cursor: default;
                 opacity: 0.8;
             }
             .mahjong-tile.drawn {
                 background: #28a745;
-                color: white;
+                color: white !important;
                 animation: pulse 1s ease-in-out;
             }
             .mahjong-tile.exposed {
                 background: #17a2b8;
-                color: white;
+                color: white !important;
             }
             .opponent-tiles .mahjong-tile {
                 background: #343a40;
