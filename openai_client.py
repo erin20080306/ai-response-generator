@@ -32,6 +32,12 @@ class OpenAIClient:
                     - Add 1-2 sentence explanation only
                     - Example: "=SUM(A1:A10)" then explain "這會加總A1到A10的數值"
 
+                    FOR APPS SCRIPT QUESTIONS:
+                    - Always provide both GS (Google Script) and HTML code separately
+                    - Label clearly: "GS程式碼:" and "HTML程式碼:"
+                    - Include complete working examples
+                    - Show how they connect together
+
                     FOR TECHNICAL QUESTIONS:
                     - Direct answer first
                     - Minimal explanation
@@ -41,7 +47,8 @@ class OpenAIClient:
                     - Be extremely concise
                     - Accuracy over length
                     - Use Traditional Chinese when responding in Chinese
-                    - Code blocks should be clean and focused"""
+                    - Code blocks should be clean and focused
+                    - Separate different types of code clearly"""
                 }
             ]
             
