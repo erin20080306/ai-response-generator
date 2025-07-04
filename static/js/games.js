@@ -1792,9 +1792,9 @@ class GameCenter {
                     return;
                 }
                 
-                const randomIndex = Math.floor(Math.random() * player.hand.length);
-                console.log(`AI玩家 ${playerIndex} 打出第 ${randomIndex} 張牌`);
-                const discardedTile = discardTile(playerIndex, randomIndex);
+                const bestDiscardIndex = selectBestDiscard(player.hand, playerIndex);
+                console.log(`AI玩家 ${playerIndex} 智能選擇打出第 ${bestDiscardIndex} 張牌`);
+                const discardedTile = discardTile(playerIndex, bestDiscardIndex);
                 
                 updateDisplay();
                 console.log(`AI玩家 ${playerIndex} 打出了 ${discardedTile}`);
@@ -1814,6 +1814,55 @@ class GameCenter {
                     }
                 }, 800);
             }, 1200);
+        }
+        
+        // 智能選牌邏輯（本地AI）
+        function selectBestDiscard(hand, playerIndex) {
+            // 1. 統計手牌
+            const tileCounts = {};
+            hand.forEach(tile => {
+                tileCounts[tile] = (tileCounts[tile] || 0) + 1;
+            });
+            
+            // 2. 優先級排序
+            const priorities = [];
+            
+            hand.forEach((tile, index) => {
+                let priority = 0;
+                
+                // 優先保留對子和刻子
+                if (tileCounts[tile] >= 2) {
+                    priority -= 20; // 不輕易打出對子
+                }
+                if (tileCounts[tile] >= 3) {
+                    priority -= 30; // 不輕易打出刻子
+                }
+                
+                // 優先打出字牌（風牌、三元牌）
+                if (tile.includes('風') || tile.includes('中') || tile.includes('發') || tile.includes('白')) {
+                    priority += 15;
+                }
+                
+                // 優先打出幺九牌（1和9）
+                if (tile.includes('一') || tile.includes('九')) {
+                    priority += 10;
+                }
+                
+                // 保留中間牌（容易形成順子）
+                if (tile.includes('四') || tile.includes('五') || tile.includes('六')) {
+                    priority -= 10;
+                }
+                
+                // 加入隨機因子
+                priority += Math.random() * 5;
+                
+                priorities.push({index, tile, priority});
+            });
+            
+            // 3. 選擇優先級最高的牌（數值越大越優先打出）
+            priorities.sort((a, b) => b.priority - a.priority);
+            
+            return priorities[0].index;
         }
         
         // 下一回合
@@ -1944,7 +1993,7 @@ class GameCenter {
         }
         
         // 執行特殊動作
-        function executeSpecialAction(action, tile) {
+        window.executeSpecialAction = function(action, tile) {
             const controlPanel = document.querySelector('.game-control-panel');
             if (controlPanel) {
                 const oldPrompt = controlPanel.querySelector('.game-prompt');
@@ -1968,7 +2017,7 @@ class GameCenter {
         }
         
         // 跳過動作
-        function passAction() {
+        window.passAction = function() {
             console.log('玩家選擇跳過特殊動作');
             
             const controlPanel = document.querySelector('.game-control-panel');

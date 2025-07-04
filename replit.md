@@ -102,6 +102,8 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 04, 2025. Redesigned Mahjong game UI with enhanced control panel layout, placing action buttons and prompts adjacent to player tiles for improved user experience
 - July 05, 2025. Fixed critical JavaScript syntax errors and restored Mahjong game interface functionality with proper horizontal layout
 - July 05, 2025. Enhanced AI player turn logic with improved error handling and special action detection for seamless 4-player gameplay
+- July 05, 2025. Resolved function scope issues by making executeSpecialAction and passAction globally accessible
+- July 05, 2025. Implemented local intelligent AI system for Mahjong players that doesn't require OpenAI API, with smart tile selection based on strategic priorities
 
 ## Enhanced Features Added
 
