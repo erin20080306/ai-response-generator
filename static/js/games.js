@@ -1707,18 +1707,31 @@ class GameCenter {
         
         // 打牌
         function discardTile(playerIndex, tileIndex) {
-            const player = gameState.players[playerIndex];
-            if (tileIndex < player.hand.length) {
-                const discardedTile = player.hand.splice(tileIndex, 1)[0];
-                player.discarded.push(discardedTile);
-                gameState.lastDiscarded = discardedTile;
-                
-                // 檢查其他玩家是否可以吃碰槓胡
-                checkPlayerActions();
-                
-                return discardedTile;
+            console.log(`打牌: 玩家${playerIndex}, 牌索引${tileIndex}`);
+            
+            if (!gameState.players || !gameState.players[playerIndex]) {
+                console.error(`玩家 ${playerIndex} 不存在`);
+                return null;
             }
-            return null;
+            
+            const player = gameState.players[playerIndex];
+            console.log(`玩家手牌:`, player.hand);
+            
+            if (!player.hand || tileIndex >= player.hand.length || tileIndex < 0) {
+                console.error(`無效的牌索引: ${tileIndex}, 手牌長度: ${player.hand ? player.hand.length : 0}`);
+                return null;
+            }
+            
+            const discardedTile = player.hand.splice(tileIndex, 1)[0];
+            player.discarded.push(discardedTile);
+            gameState.lastDiscarded = discardedTile;
+            
+            console.log(`玩家 ${playerIndex} 打出了 ${discardedTile}`);
+            
+            // 檢查其他玩家是否可以吃碰槓胡
+            checkPlayerActions();
+            
+            return discardedTile;
         }
         
         // 檢查玩家可以進行的動作
@@ -2161,6 +2174,7 @@ class GameCenter {
         
         // 更新遊戲顯示
         function updateDisplay() {
+            console.log('更新遊戲顯示');
             // 更新玩家手牌
             updatePlayerHand();
             // 更新對手手牌（背面）
@@ -2169,6 +2183,21 @@ class GameCenter {
             updateDiscardedTiles();
             // 更新副露區
             updateExposedTiles();
+            // 更新遊戲信息
+            updateGameInfo();
+        }
+        
+        // 更新遊戲信息
+        function updateGameInfo() {
+            const remainingElement = document.getElementById('remainingTiles');
+            if (remainingElement) {
+                remainingElement.textContent = gameState.wallTiles.length;
+            }
+            
+            const currentPlayerElement = document.getElementById('currentPlayer');
+            if (currentPlayerElement) {
+                currentPlayerElement.textContent = gameState.players[gameState.currentPlayer].name;
+            }
         }
         
         // 更新玩家手牌顯示
@@ -2196,18 +2225,41 @@ class GameCenter {
         
         // 更新對手手牌顯示（背面）
         function updateOpponentHands() {
-            [1, 2, 3].forEach((playerIndex, opponentIndex) => {
-                const element = document.getElementById(`opponent${opponentIndex}Cards`);
-                if (!element) return;
-                
-                element.innerHTML = '';
-                gameState.players[playerIndex].hand.forEach(() => {
+            // 更新玩家2 (右家)
+            const player2Element = document.getElementById('opponent1Cards');
+            if (player2Element && gameState.players[1]) {
+                player2Element.innerHTML = '';
+                gameState.players[1].hand.forEach(() => {
                     const tileElement = document.createElement('div');
                     tileElement.className = 'mahjong-tile opponent-back';
                     tileElement.textContent = '🀫';
-                    element.appendChild(tileElement);
+                    player2Element.appendChild(tileElement);
                 });
-            });
+            }
+            
+            // 更新玩家3 (上家)
+            const player3Element = document.getElementById('opponent2Cards');
+            if (player3Element && gameState.players[2]) {
+                player3Element.innerHTML = '';
+                gameState.players[2].hand.forEach(() => {
+                    const tileElement = document.createElement('div');
+                    tileElement.className = 'mahjong-tile opponent-back';
+                    tileElement.textContent = '🀫';
+                    player3Element.appendChild(tileElement);
+                });
+            }
+            
+            // 更新玩家4 (左家)
+            const player4Element = document.getElementById('opponent3Cards');
+            if (player4Element && gameState.players[3]) {
+                player4Element.innerHTML = '';
+                gameState.players[3].hand.forEach(() => {
+                    const tileElement = document.createElement('div');
+                    tileElement.className = 'mahjong-tile opponent-back';
+                    tileElement.textContent = '🀫';
+                    player4Element.appendChild(tileElement);
+                });
+            }
         }
         
         // 更新棄牌區顯示
