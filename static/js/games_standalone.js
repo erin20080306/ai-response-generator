@@ -209,6 +209,78 @@ function resetFarmGame() {
     loadFarmStoryGame();
 }
 
+// 森林場景互動功能
+window.collectForestItems = function() {
+    const earnings = Math.floor(Math.random() * 50) + 30;
+    gameState.player.money += earnings;
+    gameState.player.energy -= 5;
+    showMessage(`🌰 在森林中採集到野果和堅果！獲得 ${earnings} 金幣。`);
+    updateDisplay();
+};
+
+window.restInForest = function() {
+    const recovery = Math.floor(Math.random() * 30) + 20;
+    gameState.player.energy = Math.min(100, gameState.player.energy + recovery);
+    showMessage(`🛀 在清澈的溪水邊休息，恢復了 ${recovery} 點體力。`);
+    updateDisplay();
+};
+
+window.exploreForest = function() {
+    const treasureChance = Math.random();
+    gameState.player.energy -= 15;
+    
+    if (treasureChance > 0.7) {
+        const treasure = Math.floor(Math.random() * 100) + 50;
+        gameState.player.money += treasure;
+        showMessage(`🔍 深入探索森林，發現了古老的寶箱！獲得 ${treasure} 金幣。`);
+    } else if (treasureChance > 0.4) {
+        showMessage(`🔍 在森林深處發現了美麗的瀑布，但沒有找到特別的東西。`);
+    } else {
+        showMessage(`🔍 在茂密的樹林中迷路了一會兒，幸好找到了回去的路。`);
+    }
+    
+    updateDisplay();
+};
+
+// 礦坑場景互動功能
+window.digForOre = function() {
+    const oreValue = Math.floor(Math.random() * 80) + 40;
+    gameState.player.money += oreValue;
+    gameState.player.energy -= 20;
+    showMessage(`⛏️ 辛苦挖掘後找到了有價值的礦石！獲得 ${oreValue} 金幣。`);
+    updateDisplay();
+};
+
+window.searchForGems = function() {
+    const gemChance = Math.random();
+    gameState.player.energy -= 25;
+    
+    if (gemChance > 0.6) {
+        const gemValue = Math.floor(Math.random() * 200) + 100;
+        gameState.player.money += gemValue;
+        showMessage(`💎 幸運地發現了閃亮的寶石！獲得 ${gemValue} 金幣。`);
+    } else {
+        showMessage(`💎 在岩石中搜尋了很久，但只找到了一些普通的石頭。`);
+    }
+    
+    updateDisplay();
+};
+
+window.useMinecart = function() {
+    const rideOutcome = Math.random();
+    gameState.player.energy -= 10;
+    
+    if (rideOutcome > 0.5) {
+        const bonus = Math.floor(Math.random() * 60) + 30;
+        gameState.player.money += bonus;
+        showMessage(`🚗 礦車帶你到了一個新的區域，發現了遺留的金幣！獲得 ${bonus} 金幣。`);
+    } else {
+        showMessage(`🚗 礦車搖搖晃晃地在軌道上行駛，給你帶來了刺激的體驗。`);
+    }
+    
+    updateDisplay();
+};
+
 // 遊戲啟動函數
 function startTetrisInPanel() {
     const gameContainer = document.getElementById('gameContainer');
@@ -642,9 +714,26 @@ function initFarmStoryGame() {
                         </div>
                     </div>
                     
+                    <!-- 村莊視覺場景 -->
+                    <div class="scene-visual mb-3">
+                        <div class="village-scene">
+                            <div class="sky">☀️ ☁️ ☁️</div>
+                            <div class="village-buildings">
+                                <div class="building town-hall">🏛️<br><small>村公所</small></div>
+                                <div class="building shop">🏪<br><small>商店</small></div>
+                                <div class="building blacksmith">⚒️<br><small>鐵匠</small></div>
+                                <div class="building clinic">🏥<br><small>診所</small></div>
+                            </div>
+                            <div class="village-ground">
+                                <div class="path">🛤️🛤️🛤️🛤️🛤️🛤️</div>
+                                <div class="decorations">🌸🌳🌸🪴🌳🌸</div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="scene-content">
                         <h6>🏘️ 村莊廣場</h6>
-                        <p>陽光灿爛的一天，村莊裡很熱鬧。你可以拜訪村民或前往其他地點。</p>
+                        <p>陽光燦爛的一天，村莊裡很熱鬧。噴泉在廣場中央潺潺流淌，鳥兒在樹梢歌唱。</p>
                         
                         <div class="npcs-area mb-3">
                             <h6>村民：</h6>
@@ -698,15 +787,32 @@ function initFarmStoryGame() {
         } else if (gameState.currentScene === 'farm') {
             content = `
                 <div class="farm-scene">
-                    <h6>🚜 我的農場</h6>
-                    <p>這是你的農場，有9塊農田可以種植作物。</p>
+                    <!-- 農場視覺場景 -->
+                    <div class="scene-visual mb-3">
+                        <div class="farm-landscape">
+                            <div class="farm-sky">☀️ ☁️ 🦅 ☁️</div>
+                            <div class="farm-background">
+                                <div class="barn">🏚️<br><small>穀倉</small></div>
+                                <div class="farmhouse">🏡<br><small>農舍</small></div>
+                                <div class="well">🪣<br><small>水井</small></div>
+                            </div>
+                            <div class="farm-fields">
+                                <div class="field-border">🌾🌾🌾🌾🌾🌾🌾</div>
+                                <div class="main-farmland">
+                                    <h6>🚜 我的農場</h6>
+                                    <p>青翠的田野在你面前展開，微風吹過作物，帶來清新的泥土芬芳。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="farm-grid mb-3">
                         ${gameState.farm.plots.map((plot, index) => `
                             <div class="farm-plot ${plot ? 'planted' : 'empty'} ${gameState.farm.water_status[index] ? 'watered' : ''}" 
                                  onclick="managePlot(${index})">
-                                ${plot ? `🌱${plot}` : '⬜'}
+                                ${plot ? `🌱` : '🟫'}
                                 ${gameState.farm.water_status[index] ? '💧' : ''}
+                                ${plot ? `<small>${plot}</small>` : ''}
                             </div>
                         `).join('')}
                     </div>
@@ -720,6 +826,68 @@ function initFarmStoryGame() {
                     
                     <div class="inventory-display">
                         <small>種子: 🥕${gameState.inventory.seeds.carrot} 🌽${gameState.inventory.seeds.corn}</small>
+                    </div>
+                </div>
+            `;
+        } else if (gameState.currentScene === 'forest') {
+            content = `
+                <div class="forest-scene">
+                    <div class="scene-visual mb-3">
+                        <div class="forest-landscape">
+                            <div class="forest-sky">🌅 ☁️ 🦋 ☁️</div>
+                            <div class="forest-canopy">🌳🌲🌳🌲🌳🌲🌳</div>
+                            <div class="forest-ground">
+                                <div class="forest-path">🍄 🌿 🦔 🌿 🍄</div>
+                                <div class="forest-items">🌰 🍓 🌸 🌿 🌰</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="scene-content">
+                        <h6>🌲 神秘森林</h6>
+                        <p>茂密的森林充滿生機，陽光透過樹葉灑下斑駁光影，你可以聽到鳥兒的歌聲和溪水潺潺。</p>
+                        
+                        <div class="forest-actions mb-3">
+                            <button class="btn btn-success btn-sm me-2" onclick="collectForestItems()">🌰 採集野果</button>
+                            <button class="btn btn-info btn-sm me-2" onclick="restInForest()">🛀 在溪邊休息</button>
+                            <button class="btn btn-warning btn-sm me-2" onclick="exploreForest()">🔍 深入探索</button>
+                            <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 回村莊</button>
+                        </div>
+                        
+                        <div class="forest-info">
+                            <small class="text-muted">森林中有許多珍貴資源等待發現</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (gameState.currentScene === 'mine') {
+            content = `
+                <div class="mine-scene">
+                    <div class="scene-visual mb-3">
+                        <div class="mine-landscape">
+                            <div class="mine-entrance">⛰️ 🕳️ ⛰️</div>
+                            <div class="mine-interior">
+                                <div class="mine-walls">🪨💎🪨⚱️🪨💎🪨</div>
+                                <div class="mine-floor">⛏️ 🔦 💰 🔦 ⛏️</div>
+                                <div class="mine-tracks">🛤️🛤️🛤️🛤️🛤️</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="scene-content">
+                        <h6>⛏️ 古老礦坑</h6>
+                        <p>昏暗的礦坑深處閃爍著寶石的光芒，礦車軌道延伸向黑暗深處，空氣中瀰漫著泥土和金屬的味道。</p>
+                        
+                        <div class="mine-actions mb-3">
+                            <button class="btn btn-warning btn-sm me-2" onclick="digForOre()">⛏️ 挖掘礦石</button>
+                            <button class="btn btn-danger btn-sm me-2" onclick="searchForGems()">💎 尋找寶石</button>
+                            <button class="btn btn-info btn-sm me-2" onclick="useMinecart()">🚗 乘坐礦車</button>
+                            <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 回村莊</button>
+                        </div>
+                        
+                        <div class="mine-info">
+                            <small class="text-muted">小心！挖掘會消耗大量體力</small>
+                        </div>
                     </div>
                 </div>
             `;
@@ -805,16 +973,12 @@ function initFarmStoryGame() {
     };
     
     window.goToForest = function() {
-        showMessage('🌲 你在森林中散步，發現了一些野果！獲得了50金幣。');
-        gameState.player.money += 50;
-        gameState.player.energy -= 10;
+        gameState.currentScene = 'forest';
         updateDisplay();
     };
     
     window.goToMine = function() {
-        showMessage('⛏️ 你在礦坑中挖掘，找到了寶石！獲得了100金幣，但消耗了體力。');
-        gameState.player.money += 100;
-        gameState.player.energy -= 20;
+        gameState.currentScene = 'mine';
         updateDisplay();
     };
     
