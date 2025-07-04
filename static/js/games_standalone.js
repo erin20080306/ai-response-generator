@@ -140,31 +140,644 @@ function startFarmStoryInPanel() {
 function initTetrisGame() {
     console.log('初始化俄羅斯方塊遊戲');
     const canvas = document.getElementById('tetrisCanvas');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = 'white';
-        ctx.font = '20px Arial';
-        ctx.fillText('俄羅斯方塊', 80, 50);
-        ctx.fillText('準備開始！', 90, 100);
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const BLOCK_SIZE = 20;
+    const BOARD_WIDTH = 15;
+    const BOARD_HEIGHT = 30;
+    
+    // 遊戲狀態
+    let gameBoard = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
+    let currentPiece = null;
+    let currentX = 0;
+    let currentY = 0;
+    let score = 0;
+    let gameRunning = false;
+    
+    // 方塊形狀
+    const pieces = [
+        [[1,1,1,1]], // I
+        [[1,1],[1,1]], // O
+        [[0,1,0],[1,1,1]], // T
+        [[0,1,1],[1,1,0]], // S
+        [[1,1,0],[0,1,1]], // Z
+        [[1,0,0],[1,1,1]], // J
+        [[0,0,1],[1,1,1]]  // L
+    ];
+    
+    const colors = ['#000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500'];
+    
+    function drawBlock(x, y, color) {
+        ctx.fillStyle = colors[color];
+        ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+        ctx.strokeStyle = '#FFF';
+        ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
     }
+    
+    function drawBoard() {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        for (let y = 0; y < BOARD_HEIGHT; y++) {
+            for (let x = 0; x < BOARD_WIDTH; x++) {
+                if (gameBoard[y][x]) {
+                    drawBlock(x, y, gameBoard[y][x]);
+                }
+            }
+        }
+        
+        // 繪製當前方塊
+        if (currentPiece) {
+            for (let y = 0; y < currentPiece.length; y++) {
+                for (let x = 0; x < currentPiece[y].length; x++) {
+                    if (currentPiece[y][x]) {
+                        drawBlock(currentX + x, currentY + y, 1);
+                    }
+                }
+            }
+        }
+        
+        // 顯示分數
+        ctx.fillStyle = '#FFF';
+        ctx.font = '16px Arial';
+        ctx.fillText(`分數: ${score}`, 10, canvas.height - 10);
+    }
+    
+    function newPiece() {
+        const pieceIndex = Math.floor(Math.random() * pieces.length);
+        currentPiece = pieces[pieceIndex];
+        currentX = Math.floor(BOARD_WIDTH / 2) - Math.floor(currentPiece[0].length / 2);
+        currentY = 0;
+        
+        if (collision()) {
+            gameRunning = false;
+            alert('遊戲結束！分數：' + score);
+        }
+    }
+    
+    function collision() {
+        for (let y = 0; y < currentPiece.length; y++) {
+            for (let x = 0; x < currentPiece[y].length; x++) {
+                if (currentPiece[y][x]) {
+                    const newX = currentX + x;
+                    const newY = currentY + y;
+                    
+                    if (newX < 0 || newX >= BOARD_WIDTH || newY >= BOARD_HEIGHT) {
+                        return true;
+                    }
+                    if (newY >= 0 && gameBoard[newY][newX]) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    function placePiece() {
+        for (let y = 0; y < currentPiece.length; y++) {
+            for (let x = 0; x < currentPiece[y].length; x++) {
+                if (currentPiece[y][x]) {
+                    gameBoard[currentY + y][currentX + x] = 1;
+                }
+            }
+        }
+        
+        // 檢查並清除完整行
+        for (let y = BOARD_HEIGHT - 1; y >= 0; y--) {
+            if (gameBoard[y].every(cell => cell !== 0)) {
+                gameBoard.splice(y, 1);
+                gameBoard.unshift(Array(BOARD_WIDTH).fill(0));
+                score += 100;
+                y++; // 重新檢查同一行
+            }
+        }
+        
+        newPiece();
+    }
+    
+    function moveDown() {
+        currentY++;
+        if (collision()) {
+            currentY--;
+            placePiece();
+        }
+    }
+    
+    function moveLeft() {
+        currentX--;
+        if (collision()) {
+            currentX++;
+        }
+    }
+    
+    function moveRight() {
+        currentX++;
+        if (collision()) {
+            currentX--;
+        }
+    }
+    
+    function rotatePiece() {
+        const rotated = currentPiece[0].map((_, i) => 
+            currentPiece.map(row => row[i]).reverse()
+        );
+        const originalPiece = currentPiece;
+        currentPiece = rotated;
+        
+        if (collision()) {
+            currentPiece = originalPiece;
+        }
+    }
+    
+    // 鍵盤控制
+    document.addEventListener('keydown', function(e) {
+        if (!gameRunning) return;
+        
+        switch(e.key) {
+            case 'ArrowLeft':
+                moveLeft();
+                break;
+            case 'ArrowRight':
+                moveRight();
+                break;
+            case 'ArrowDown':
+                moveDown();
+                break;
+            case 'ArrowUp':
+            case ' ':
+                rotatePiece();
+                break;
+        }
+        drawBoard();
+    });
+    
+    // 開始遊戲
+    gameRunning = true;
+    newPiece();
+    
+    // 遊戲循環
+    const gameLoop = setInterval(() => {
+        if (!gameRunning) {
+            clearInterval(gameLoop);
+            return;
+        }
+        moveDown();
+        drawBoard();
+    }, 500);
+    
+    drawBoard();
 }
 
 function initMahjongGame() {
     const board = document.getElementById('mahjongBoard');
-    if (board) {
+    if (!board) return;
+    
+    // 麻將牌組
+    const tiles = [
+        '🀇', '🀈', '🀉', '🀊', '🀋', '🀌', '🀍', '🀎', '🀏', // 萬子
+        '🀐', '🀑', '🀒', '🀓', '🀔', '🀕', '🀖', '🀗', '🀘', // 筒子
+        '🀙', '🀚', '🀛', '🀜', '🀝', '🀞', '🀟', '🀠', '🀡', // 索子
+        '🀄', '🀅', '🀆', // 三元牌
+        '🀀', '🀁', '🀂', '🀃' // 四風牌
+    ];
+    
+    // 遊戲狀態
+    let playerHand = [];
+    let discardPile = [];
+    let currentPlayer = 0;
+    let gameStarted = false;
+    
+    // 初始化牌組
+    function shuffleTiles() {
+        const shuffled = [];
+        tiles.forEach(tile => {
+            for (let i = 0; i < 4; i++) {
+                shuffled.push(tile);
+            }
+        });
+        return shuffled.sort(() => Math.random() - 0.5);
+    }
+    
+    // 發牌
+    function dealCards() {
+        const deck = shuffleTiles();
+        playerHand = deck.slice(0, 13);
+        gameStarted = true;
+        updateDisplay();
+    }
+    
+    // 更新顯示
+    function updateDisplay() {
         board.innerHTML = `
-            <div class="text-center">
-                <p>4人麻將遊戲準備中...</p>
-                <div class="mahjong-tiles">
-                    <div class="tile" onclick="playTile(this)">🀄</div>
-                    <div class="tile" onclick="playTile(this)">🀅</div>
-                    <div class="tile" onclick="playTile(this)">🀆</div>
-                    <div class="tile" onclick="playTile(this)">🀇</div>
+            <div class="mahjong-game">
+                <div class="game-status mb-3">
+                    <h6>麻將遊戲 - 玩家手牌</h6>
+                    <p class="text-info">點擊牌張出牌，空位摸牌</p>
                 </div>
-                <p class="mt-3">點擊牌張進行遊戲</p>
+                
+                <div class="player-hand mb-3">
+                    <div class="hand-label">您的手牌 (${playerHand.length}張)：</div>
+                    <div class="tiles-container">
+                        ${playerHand.map((tile, index) => 
+                            `<div class="mahjong-tile" onclick="discardTile(${index})">${tile}</div>`
+                        ).join('')}
+                        <div class="mahjong-tile draw-tile" onclick="drawTile()">摸牌</div>
+                    </div>
+                </div>
+                
+                <div class="discard-area mb-3">
+                    <div class="discard-label">棄牌區：</div>
+                    <div class="discard-tiles">
+                        ${discardPile.map(tile => 
+                            `<div class="discarded-tile">${tile}</div>`
+                        ).join('')}
+                    </div>
+                </div>
+                
+                <div class="game-actions">
+                    <button class="btn btn-success me-2" onclick="checkWin()">檢查胡牌</button>
+                    <button class="btn btn-warning me-2" onclick="restartMahjong()">重新開始</button>
+                    <button class="btn btn-info" onclick="showMahjongHelp()">遊戲說明</button>
+                </div>
+                
+                <div class="game-info mt-3">
+                    <small class="text-muted">
+                        目標：收集相同或順序的牌組成胡牌
+                    </small>
+                </div>
             </div>
         `;
     }
+    
+    // 棄牌
+    window.discardTile = function(index) {
+        if (index >= 0 && index < playerHand.length) {
+            const discardedTile = playerHand.splice(index, 1)[0];
+            discardPile.push(discardedTile);
+            updateDisplay();
+            
+            if (playerHand.length === 0) {
+                alert('恭喜！您已出完所有牌！');
+            }
+        }
+    };
+    
+    // 摸牌
+    window.drawTile = function() {
+        if (playerHand.length < 14) {
+            const randomTile = tiles[Math.floor(Math.random() * tiles.length)];
+            playerHand.push(randomTile);
+            updateDisplay();
+        } else {
+            alert('手牌已滿！請先出牌。');
+        }
+    };
+    
+    // 檢查胡牌
+    window.checkWin = function() {
+        if (playerHand.length === 14) {
+            alert('恭喜可能胡牌！（簡化版本）');
+        } else {
+            alert('需要14張牌才能胡牌。目前：' + playerHand.length + '張');
+        }
+    };
+    
+    // 重新開始
+    window.restartMahjong = function() {
+        playerHand = [];
+        discardPile = [];
+        dealCards();
+    };
+    
+    // 遊戲說明
+    window.showMahjongHelp = function() {
+        alert('麻將遊戲說明：\n' +
+              '1. 點擊手牌出牌到棄牌區\n' +
+              '2. 點擊"摸牌"從牌堆摸新牌\n' +
+              '3. 保持手牌14張並組成胡牌\n' +
+              '4. 這是簡化版本，主要體驗出牌摸牌');
+    };
+    
+    // 開始遊戲
+    dealCards();
+}
+
+function initFarmStoryGame() {
+    const board = document.getElementById('farmStoryBoard');
+    if (!board) return;
+    
+    // 遊戲狀態
+    let gameState = {
+        player: {
+            name: '農場主',
+            health: 100,
+            energy: 100,
+            money: 500,
+            level: 1,
+            experience: 0
+        },
+        inventory: {
+            seeds: { carrot: 5, corn: 3 },
+            tools: { hoe: 1, watering_can: 1 },
+            crops: { carrot: 0, corn: 0 },
+            items: { energy_potion: 2 }
+        },
+        farm: {
+            plots: Array(9).fill(null), // 3x3 農田
+            water_status: Array(9).fill(false)
+        },
+        npcs: {
+            mayor_tom: { friendship: 50, quests: [] },
+            shop_mary: { friendship: 30, quests: [] },
+            blacksmith_jack: { friendship: 20, quests: [] },
+            doctor_lily: { friendship: 40, quests: [] }
+        },
+        aiUsesLeft: 10,
+        currentScene: 'village'
+    };
+    
+    function showVillageScene() {
+        gameState.currentScene = 'village';
+        updateDisplay();
+    }
+    
+    function updateDisplay() {
+        let content = '';
+        
+        if (gameState.currentScene === 'village') {
+            content = `
+                <div class="farm-story-rpg">
+                    <div class="player-status mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>🧑‍🌾 ${gameState.player.name} (等級 ${gameState.player.level})</h6>
+                                <div class="progress mb-1" style="height: 15px;">
+                                    <div class="progress-bar bg-success" style="width: ${gameState.player.health}%">${gameState.player.health}/100 ❤️</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 15px;">
+                                    <div class="progress-bar bg-info" style="width: ${gameState.player.energy}%">${gameState.player.energy}/100 ⚡</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1">💰 金錢: ${gameState.player.money}</p>
+                                <p class="mb-1">⭐ 經驗: ${gameState.player.experience}</p>
+                                <p class="mb-0">🤖 AI助手剩餘: ${gameState.aiUsesLeft}次</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="scene-content">
+                        <h6>🏘️ 村莊廣場</h6>
+                        <p>陽光灿爛的一天，村莊裡很熱鬧。你可以拜訪村民或前往其他地點。</p>
+                        
+                        <div class="npcs-area mb-3">
+                            <h6>村民：</h6>
+                            <div class="row">
+                                <div class="col-6 col-md-3 mb-2">
+                                    <button class="btn btn-outline-primary btn-sm w-100" onclick="talkToNPC('村長湯姆')">
+                                        👨‍💼 村長湯姆<br><small>友好度: ${gameState.npcs.mayor_tom.friendship}</small>
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3 mb-2">
+                                    <button class="btn btn-outline-success btn-sm w-100" onclick="talkToNPC('商店瑪麗')">
+                                        👩‍💼 商店瑪麗<br><small>友好度: ${gameState.npcs.shop_mary.friendship}</small>
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3 mb-2">
+                                    <button class="btn btn-outline-warning btn-sm w-100" onclick="talkToNPC('鐵匠傑克')">
+                                        🔨 鐵匠傑克<br><small>友好度: ${gameState.npcs.blacksmith_jack.friendship}</small>
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3 mb-2">
+                                    <button class="btn btn-outline-info btn-sm w-100" onclick="talkToNPC('醫生莉莉')">
+                                        👩‍⚕️ 醫生莉莉<br><small>友好度: ${gameState.npcs.doctor_lily.friendship}</small>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="locations-area mb-3">
+                            <h6>地點：</h6>
+                            <div class="row">
+                                <div class="col-6 col-md-4 mb-2">
+                                    <button class="btn btn-success w-100" onclick="goToFarm()">🚜 我的農場</button>
+                                </div>
+                                <div class="col-6 col-md-4 mb-2">
+                                    <button class="btn btn-secondary w-100" onclick="goToForest()">🌲 森林</button>
+                                </div>
+                                <div class="col-6 col-md-4 mb-2">
+                                    <button class="btn btn-dark w-100" onclick="goToMine()">⛏️ 礦坑</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="quick-actions">
+                            <button class="btn btn-info btn-sm me-2" onclick="showInventory()">🎒 背包</button>
+                            <button class="btn btn-warning btn-sm me-2" onclick="useAIHelper()">🤖 AI助手</button>
+                            <button class="btn btn-light btn-sm" onclick="showGameStats()">📊 統計</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (gameState.currentScene === 'farm') {
+            content = `
+                <div class="farm-scene">
+                    <h6>🚜 我的農場</h6>
+                    <p>這是你的農場，有9塊農田可以種植作物。</p>
+                    
+                    <div class="farm-grid mb-3">
+                        ${gameState.farm.plots.map((plot, index) => `
+                            <div class="farm-plot ${plot ? 'planted' : 'empty'} ${gameState.farm.water_status[index] ? 'watered' : ''}" 
+                                 onclick="managePlot(${index})">
+                                ${plot ? `🌱${plot}` : '⬜'}
+                                ${gameState.farm.water_status[index] ? '💧' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="farm-actions mb-3">
+                        <button class="btn btn-success btn-sm me-2" onclick="plantCrops()">🌱 種植</button>
+                        <button class="btn btn-primary btn-sm me-2" onclick="waterCrops()">💧 澆水</button>
+                        <button class="btn btn-warning btn-sm me-2" onclick="harvestCrops()">🌾 收穫</button>
+                        <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 回村莊</button>
+                    </div>
+                    
+                    <div class="inventory-display">
+                        <small>種子: 🥕${gameState.inventory.seeds.carrot} 🌽${gameState.inventory.seeds.corn}</small>
+                    </div>
+                </div>
+            `;
+        }
+        
+        board.innerHTML = content;
+    }
+    
+    // NPC對話系統
+    window.talkToNPC = function(npcName) {
+        let dialogue = '';
+        
+        switch(npcName) {
+            case '村長湯姆':
+                dialogue = `
+                    <div class="dialogue-box">
+                        <h6>👨‍💼 村長湯姆</h6>
+                        <p>"歡迎回到農場！你祖父會為你感到驕傲的。需要什麼幫助嗎？"</p>
+                        <div class="dialogue-options">
+                            <button class="btn btn-primary btn-sm me-2" onclick="gainFriendship('mayor_tom', 5); showMessage('村長湯姆對你更友好了！')">💬 聊天 (+5友好度)</button>
+                            <button class="btn btn-info btn-sm me-2" onclick="getQuest('mayor_tom')">📋 接受任務</button>
+                            <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">👋 離開</button>
+                        </div>
+                    </div>
+                `;
+                break;
+            case '商店瑪麗':
+                dialogue = `
+                    <div class="dialogue-box">
+                        <h6>👩‍💼 商店瑪麗</h6>
+                        <p>"歡迎光臨！我這裡有最新鮮的種子和工具！"</p>
+                        <div class="shop-items mb-3">
+                            <div class="row">
+                                <div class="col-6">
+                                    <button class="btn btn-outline-warning btn-sm w-100 mb-1" onclick="buyItem('carrot_seeds', 50)">🥕 蘿蔔種子 (50金)</button>
+                                    <button class="btn btn-outline-success btn-sm w-100" onclick="buyItem('corn_seeds', 80)">🌽 玉米種子 (80金)</button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-outline-info btn-sm w-100 mb-1" onclick="buyItem('energy_potion', 100)">⚡ 能量藥水 (100金)</button>
+                                    <button class="btn btn-outline-primary btn-sm w-100" onclick="sellCrops()">💰 賣出作物</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 離開商店</button>
+                    </div>
+                `;
+                break;
+            case '鐵匠傑克':
+                dialogue = `
+                    <div class="dialogue-box">
+                        <h6>🔨 鐵匠傑克</h6>
+                        <p>"需要升級你的農具嗎？好工具能讓工作事半功倍！"</p>
+                        <div class="upgrade-options mb-3">
+                            <button class="btn btn-warning btn-sm me-2" onclick="upgradeTools('hoe', 200)">⛏️ 升級鋤頭 (200金)</button>
+                            <button class="btn btn-info btn-sm me-2" onclick="upgradeTools('watering_can', 150)">🪣 升級澆水器 (150金)</button>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 離開</button>
+                    </div>
+                `;
+                break;
+            case '醫生莉莉':
+                dialogue = `
+                    <div class="dialogue-box">
+                        <h6>👩‍⚕️ 醫生莉莉</h6>
+                        <p>"農場生活辛苦，要記得照顧好身體哦！"</p>
+                        <div class="healing-options mb-3">
+                            <button class="btn btn-success btn-sm me-2" onclick="restoreHealth(50, 0)">❤️ 免費治療 (+50健康)</button>
+                            <button class="btn btn-info btn-sm me-2" onclick="restoreHealth(100, 150)">💊 完全治療 (150金)</button>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 離開</button>
+                    </div>
+                `;
+                break;
+        }
+        
+        board.innerHTML = dialogue;
+    };
+    
+    // 地點移動
+    window.goToFarm = function() {
+        gameState.currentScene = 'farm';
+        updateDisplay();
+    };
+    
+    window.goToForest = function() {
+        showMessage('🌲 你在森林中散步，發現了一些野果！獲得了50金幣。');
+        gameState.player.money += 50;
+        gameState.player.energy -= 10;
+        updateDisplay();
+    };
+    
+    window.goToMine = function() {
+        showMessage('⛏️ 你在礦坑中挖掘，找到了寶石！獲得了100金幣，但消耗了體力。');
+        gameState.player.money += 100;
+        gameState.player.energy -= 20;
+        updateDisplay();
+    };
+    
+    // 農場管理
+    window.managePlot = function(plotIndex) {
+        const plot = gameState.farm.plots[plotIndex];
+        if (plot) {
+            if (Math.random() > 0.5) {
+                showMessage(`收穫了${plot}！獲得作物和經驗。`);
+                gameState.inventory.crops[plot] = (gameState.inventory.crops[plot] || 0) + 1;
+                gameState.player.experience += 10;
+                gameState.farm.plots[plotIndex] = null;
+                gameState.farm.water_status[plotIndex] = false;
+            } else {
+                showMessage('作物還沒成熟，再等等吧！');
+            }
+        } else {
+            if (gameState.inventory.seeds.carrot > 0) {
+                gameState.farm.plots[plotIndex] = 'carrot';
+                gameState.inventory.seeds.carrot--;
+                showMessage('種下了蘿蔔種子！');
+            } else {
+                showMessage('沒有種子了！去商店買一些吧。');
+            }
+        }
+        updateDisplay();
+    };
+    
+    // 購買系統
+    window.buyItem = function(item, cost) {
+        if (gameState.player.money >= cost) {
+            gameState.player.money -= cost;
+            switch(item) {
+                case 'carrot_seeds':
+                    gameState.inventory.seeds.carrot += 5;
+                    showMessage('購買了5個蘿蔔種子！');
+                    break;
+                case 'corn_seeds':
+                    gameState.inventory.seeds.corn += 3;
+                    showMessage('購買了3個玉米種子！');
+                    break;
+                case 'energy_potion':
+                    gameState.inventory.items.energy_potion++;
+                    showMessage('購買了能量藥水！');
+                    break;
+            }
+            gainFriendship('shop_mary', 2);
+        } else {
+            showMessage('金錢不足！');
+        }
+    };
+    
+    // AI助手系統
+    window.useAIHelper = function() {
+        if (gameState.aiUsesLeft > 0) {
+            gameState.aiUsesLeft--;
+            showMessage(`🤖 AI助手：「建議你先種植作物，然後定期澆水。記得照顧好健康！」\n剩餘使用次數：${gameState.aiUsesLeft}`);
+        } else {
+            showMessage('AI助手使用次數已用完！');
+        }
+    };
+    
+    // 輔助函數
+    window.gainFriendship = function(npc, amount) {
+        gameState.npcs[npc].friendship = Math.min(100, gameState.npcs[npc].friendship + amount);
+    };
+    
+    window.showMessage = function(message) {
+        alert(message);
+        updateDisplay();
+    };
+    
+    window.showVillageScene = showVillageScene;
+    window.updateGameInfo = updateDisplay;
+    
+    // 開始遊戲
+    showVillageScene();
 }
 
 function playTile(tile) {

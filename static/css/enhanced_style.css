@@ -886,3 +886,163 @@ body {
     border-radius: 8px;
     background: var(--bs-success-bg-subtle);
 }
+
+/* Game Styles */
+.tetris-container {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+#tetrisCanvas {
+    border: 2px solid var(--bs-primary);
+    background: #000;
+    border-radius: 5px;
+}
+
+.mahjong-game {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.tiles-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.mahjong-tile {
+    background: var(--bs-light);
+    color: var(--bs-dark);
+    border: 2px solid var(--bs-secondary);
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s;
+    min-width: 45px;
+    text-align: center;
+}
+
+.mahjong-tile:hover {
+    background: var(--bs-warning);
+    transform: translateY(-2px);
+}
+
+.draw-tile {
+    background: var(--bs-info) !important;
+    color: white !important;
+    font-size: 12px !important;
+}
+
+.discard-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    min-height: 50px;
+    border: 1px dashed var(--bs-secondary);
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.discarded-tile {
+    background: var(--bs-secondary);
+    color: var(--bs-light);
+    padding: 5px 8px;
+    border-radius: 3px;
+    font-size: 16px;
+}
+
+.farm-story-rpg {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.player-status {
+    background: var(--darker-bg);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.dialogue-box {
+    background: var(--darker-bg);
+    border: 2px solid var(--primary-color);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 15px 0;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.dialogue-options {
+    margin-top: 15px;
+}
+
+.shop-items, .upgrade-options, .healing-options {
+    background: var(--dark-bg);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.farm-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.farm-plot {
+    width: 80px;
+    height: 80px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--darker-bg);
+}
+
+.farm-plot.empty {
+    border-color: var(--warning-color);
+}
+
+.farm-plot.planted {
+    border-color: var(--success-color);
+    background: rgba(25, 135, 84, 0.1);
+}
+
+.farm-plot.watered {
+    border-color: var(--info-color);
+    box-shadow: 0 0 10px rgba(13, 202, 240, 0.3);
+}
+
+.farm-plot:hover {
+    transform: scale(1.05);
+    border-width: 3px;
+}
+
+.inventory-display {
+    background: var(--dark-bg);
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+}
+
+.npcs-area, .locations-area {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.scene-content {
+    background: var(--darker-bg);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
