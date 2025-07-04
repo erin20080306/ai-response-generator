@@ -3617,43 +3617,21 @@ class GameCenter {
             this.updateFarmDisplay();
         }, 10000); // 每10秒為一天
     }
-        }
+
+    // 推進季節
+    advanceSeason() {
+        const seasons = ['spring', 'summer', 'autumn', 'winter'];
+        const currentIndex = seasons.indexOf(this.gameState.world.season);
+        this.gameState.world.season = seasons[(currentIndex + 1) % 4];
+        this.showMessage(`季節變化！現在是${this.gameState.world.season}季`);
+    }
+
+    addFarmGameStyles() {
+        if (document.getElementById('farmGameStyles')) return;
         
-        function updatePlotDisplay(plot, index) {
-            const plotData = gameState.farmPlots[index];
-            plot.className = 'farm-plot';
-            
-            switch(plotData.state) {
-                case 'empty':
-                    plot.textContent = '🟫';
-                    break;
-                case 'tilled':
-                    plot.textContent = plotData.watered ? '💧' : '🟤';
-                    break;
-                case 'planted':
-                    const stages = ['🌱', '🌿', '🌾', '🌽'];
-                    plot.textContent = stages[plotData.growthStage] || '🌱';
-                    if (plotData.watered) plot.classList.add('watered');
-                    break;
-                case 'ready':
-                    plot.textContent = '🌽';
-                    plot.classList.add('ready');
-                    break;
-            }
-        }
-        
-        function useTool(plotIndex) {
-            const plot = gameState.farmPlots[plotIndex];
-            const plotElement = document.querySelector(`[data-index="${plotIndex}"]`);
-            
-            switch(gameState.currentTool) {
-                case 'hoe':
-                    if (plot.state === 'empty') {
-                        plot.state = 'tilled';
-                        addExp(2);
-                        logAction('翻土完成');
-                    }
-                    break;
+        const style = document.createElement('style');
+        style.id = 'farmGameStyles';
+        style.textContent = `
                     
                 case 'seed':
                     if (plot.state === 'tilled' && gameState.money >= 10) {
