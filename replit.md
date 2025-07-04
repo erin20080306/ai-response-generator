@@ -96,6 +96,9 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 04, 2025. Expanded gaming suite with Tetris, Mahjong, and Farm Story games including AI interaction limits
 - July 04, 2025. Added cheat code system to Farm Story game, allowing mid-game AI assistant cheat activation
 - July 04, 2025. Enhanced QR code generator with download functionality and customizable settings
+- July 04, 2025. Added HR administrative spreadsheet templates including attendance tracking, payroll, performance reviews, and recruitment management
+- July 04, 2025. Implemented PowerPoint presentation generation using python-pptx with AI-powered content creation and structured slides
+- July 04, 2025. Developed Canva-style design generator using DALL-E 3 for creating professional graphics with customizable templates, styles, and color schemes
 
 ## Enhanced Features Added
 

@@ -10,6 +10,10 @@ from barcode.writer import ImageWriter
 from datetime import datetime
 from io import BytesIO
 from PIL import Image
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
+from pptx.enum.text import PP_ALIGN
 from flask import Flask, render_template, request, jsonify, session, send_file, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
@@ -355,6 +359,8 @@ def generate_document():
             return generate_ai_document(data)
         elif method == 'template':
             return generate_template_document(data)
+        elif method == 'ppt':
+            return generate_ppt_document(data)
         else:
             return jsonify({'success': False, 'error': '無效的生成方法'})
             
@@ -620,6 +626,108 @@ def create_word_document(structure, language):
     except Exception as e:
         logging.error(f"Word 文件創建錯誤: {e}")
         return jsonify({'success': False, 'error': f'Word 文件創建失敗: {str(e)}'})
+
+def generate_ppt_document(data):
+    """生成PowerPoint文件"""
+    try:
+        description = data.get('description', '')
+        language = data.get('language', 'zh-TW')
+        
+        if not openai_client.is_configured():
+            return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
+        
+        # 使用AI生成PPT結構
+        prompt = f"""
+        請根據以下描述生成一個PowerPoint簡報的結構：
+        描述：{description}
+        語言：{language}
+        
+        請返回JSON格式，包含以下內容：
+        {{
+            "title": "簡報標題",
+            "slides": [
+                {{
+                    "title": "投影片標題",
+                    "content": "投影片內容（支援換行符號\\n）",
+                    "bullets": ["要點1", "要點2", "要點3"]
+                }}
+            ]
+        }}
+        請確保投影片數量不超過10張，每張投影片要點不超過5個。
+        """
+        
+        response = openai_client.get_response([{'role': 'user', 'content': prompt}])
+        structure = json.loads(response)
+        
+        # 創建PPT
+        prs = Presentation()
+        
+        # 標題頁
+        title_slide = prs.slides.add_slide(prs.slide_layouts[0])
+        title = title_slide.shapes.title
+        subtitle = title_slide.placeholders[1]
+        
+        title.text = structure.get('title', '未命名簡報')
+        subtitle.text = f"Generated on {datetime.now().strftime('%Y-%m-%d')}"
+        
+        # 內容頁
+        for slide_data in structure.get('slides', []):
+            slide = prs.slides.add_slide(prs.slide_layouts[1])
+            
+            # 標題
+            title_shape = slide.shapes.title
+            title_shape.text = slide_data.get('title', '')
+            
+            # 內容
+            content_placeholder = slide.placeholders[1]
+            text_frame = content_placeholder.text_frame
+            text_frame.clear()
+            
+            # 添加內容段落
+            content = slide_data.get('content', '')
+            if content:
+                p = text_frame.paragraphs[0]
+                p.text = content
+                p.font.size = Pt(18)
+            
+            # 添加要點
+            bullets = slide_data.get('bullets', [])
+            for bullet in bullets:
+                p = text_frame.add_paragraph()
+                p.text = bullet
+                p.level = 1
+                p.font.size = Pt(16)
+        
+        # 保存文件
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pptx')
+        prs.save(temp_file.name)
+        temp_file.close()
+        
+        filename = f"{structure.get('title', 'presentation')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pptx"
+        
+        # 將檔案保存到靜態目錄以便下載
+        import uuid
+        file_id = str(uuid.uuid4())
+        static_path = f'static/downloads/{file_id}_{filename}'
+        os.makedirs('static/downloads', exist_ok=True)
+        
+        import shutil
+        shutil.copy2(temp_file.name, static_path)
+        
+        # 返回下載資訊
+        return jsonify({
+            'success': True,
+            'download_url': f'/download/{file_id}_{filename}',
+            'filename': filename,
+            'title': structure.get('title', 'Presentation'),
+            'type': 'ppt',
+            'description': description,
+            'slide_count': len(structure.get('slides', [])) + 1
+        })
+        
+    except Exception as e:
+        logging.error(f"PPT生成錯誤: {e}")
+        return jsonify({'success': False, 'error': f'PPT生成失敗: {str(e)}'})
 
 def upload_to_google_sheets(file_path, title):
     """上傳到 Google Sheets"""
@@ -908,6 +1016,85 @@ def generate_barcode():
     except Exception as e:
         logging.error(f"Error generating barcode: {str(e)}")
         return jsonify({'error': f'Failed to generate barcode: {str(e)}'}), 500
+
+@app.route('/generate_design', methods=['POST'])
+def generate_design():
+    """Canva式設計圖片生成"""
+    try:
+        data = request.json
+        design_type = data.get('design_type', 'poster')
+        content = data.get('content', '')
+        style = data.get('style', 'modern')
+        color_scheme = data.get('color_scheme', 'blue')
+        
+        if not content:
+            return jsonify({'error': 'Content is required'}), 400
+        
+        if not openai_client.is_configured():
+            return jsonify({'error': 'OpenAI API not configured'}), 500
+        
+        # 設計類型對應的尺寸
+        dimensions = {
+            'poster': '1080x1350',
+            'banner': '1920x1080', 
+            'card': '1080x1080',
+            'flyer': '816x1056',
+            'cover': '1640x924'
+        }
+        
+        # 生成詳細的設計提示
+        design_prompt = f"""
+        Create a professional {design_type} design with the following specifications:
+        
+        Content: {content}
+        Style: {style}
+        Color scheme: {color_scheme}
+        Dimensions: {dimensions.get(design_type, '1080x1080')}
+        
+        Design requirements:
+        - Clean, modern layout
+        - Professional typography
+        - Appropriate use of white space
+        - {color_scheme} color palette
+        - {style} aesthetic
+        - High-quality, print-ready design
+        - Include the content text prominently
+        - Add relevant visual elements or icons
+        - Ensure good contrast and readability
+        """
+        
+        # 使用DALL-E生成圖片
+        try:
+            response = openai_client.client.images.generate(
+                model="dall-e-3",
+                prompt=design_prompt,
+                size="1024x1024",
+                quality="standard",
+                n=1
+            )
+            
+            image_url = response.data[0].url
+            
+            # 下載圖片並轉換為base64
+            img_response = requests.get(image_url)
+            img_base64 = base64.b64encode(img_response.content).decode()
+            
+            return jsonify({
+                'success': True,
+                'image': f'data:image/png;base64,{img_base64}',
+                'download_data': img_base64,
+                'design_type': design_type,
+                'style': style,
+                'color_scheme': color_scheme
+            })
+            
+        except Exception as e:
+            logging.error(f"DALL-E generation error: {str(e)}")
+            return jsonify({'error': f'Failed to generate design: {str(e)}'}), 500
+            
+    except Exception as e:
+        logging.error(f"Design generation error: {str(e)}")
+        return jsonify({'error': f'Failed to generate design: {str(e)}'}), 500
 
 @app.route('/download/<filename>')
 def download_file(filename):

@@ -277,6 +277,12 @@ class EnhancedAIAssistant {
             barcodeBtn.addEventListener('click', () => this.openBarcodeGenerator());
         }
 
+        // Canva式設計生成器
+        const designBtn = document.getElementById('designBtn');
+        if (designBtn) {
+            designBtn.addEventListener('click', () => this.openDesignGenerator());
+        }
+
         // 密碼生成器
         const passwordGenBtn = document.getElementById('passwordGenBtn');
         if (passwordGenBtn) {
@@ -1463,6 +1469,263 @@ class EnhancedAIAssistant {
         });
         
         barcodeModal.show();
+    }
+
+    openDesignGenerator() {
+        const modalContent = `
+            <div class="modal fade" id="designModal" tabindex="-1" aria-labelledby="designModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="designModalLabel">
+                                <i class="fas fa-palette me-2"></i>Canva式設計生成器
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">設計設定</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">內容文字</label>
+                                                <textarea id="designContent" class="form-control" rows="3" placeholder="輸入要顯示的文字內容"></textarea>
+                                            </div>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">設計類型</label>
+                                                    <select id="designType" class="form-select">
+                                                        <option value="poster">海報</option>
+                                                        <option value="banner">橫幅</option>
+                                                        <option value="card">卡片</option>
+                                                        <option value="flyer">傳單</option>
+                                                        <option value="cover">封面</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">設計風格</label>
+                                                    <select id="designStyle" class="form-select">
+                                                        <option value="modern">現代</option>
+                                                        <option value="minimalist">簡約</option>
+                                                        <option value="vintage">復古</option>
+                                                        <option value="corporate">企業</option>
+                                                        <option value="creative">創意</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label">色彩主題</label>
+                                                <select id="designColor" class="form-select">
+                                                    <option value="blue">藍色</option>
+                                                    <option value="red">紅色</option>
+                                                    <option value="green">綠色</option>
+                                                    <option value="purple">紫色</option>
+                                                    <option value="orange">橙色</option>
+                                                    <option value="pink">粉色</option>
+                                                    <option value="black">黑色</option>
+                                                    <option value="colorful">多彩</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <button type="button" id="generateDesignBtn" class="btn btn-primary w-100">
+                                                <i class="fas fa-magic me-2"></i>生成設計
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">設計預覽</h6>
+                                            <button type="button" id="downloadDesignBtn" class="btn btn-outline-success btn-sm" style="display: none;">
+                                                <i class="fas fa-download me-1"></i>下載
+                                            </button>
+                                        </div>
+                                        <div class="card-body text-center">
+                                            <div id="designPreview" class="design-preview">
+                                                <i class="fas fa-palette fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted">設計將在這裡顯示</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="designInfo" class="card mt-3" style="display: none;">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">設計信息</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <small class="text-muted">類型：</small>
+                                                    <span id="designTypeInfo"></span>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <small class="text-muted">風格：</small>
+                                                    <span id="designStyleInfo"></span>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-sm-6">
+                                                    <small class="text-muted">顏色：</small>
+                                                    <span id="designColorInfo"></span>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <small class="text-muted">尺寸：</small>
+                                                    <span id="designSizeInfo">1024x1024</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                            <button type="button" class="btn btn-outline-primary" id="clearDesignBtn">清除</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalContent);
+        const designModal = new bootstrap.Modal(document.getElementById('designModal'));
+        
+        // 事件處理
+        let currentDesignData = null;
+        
+        document.getElementById('generateDesignBtn').addEventListener('click', async () => {
+            const content = document.getElementById('designContent').value.trim();
+            const designType = document.getElementById('designType').value;
+            const style = document.getElementById('designStyle').value;
+            const color = document.getElementById('designColor').value;
+            
+            if (!content) {
+                this.showNotification('請輸入設計內容', 'warning');
+                return;
+            }
+            
+            const generateBtn = document.getElementById('generateDesignBtn');
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>生成中...';
+            
+            try {
+                const response = await fetch('/generate_design', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        design_type: designType,
+                        style: style,
+                        color_scheme: color
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('designPreview').innerHTML = 
+                        `<img src="${data.image}" class="img-fluid rounded" style="max-width: 100%; height: auto;" alt="生成的設計">`;
+                    
+                    // 更新設計信息
+                    const typeLabels = {
+                        'poster': '海報',
+                        'banner': '橫幅',
+                        'card': '卡片',
+                        'flyer': '傳單',
+                        'cover': '封面'
+                    };
+                    
+                    const styleLabels = {
+                        'modern': '現代',
+                        'minimalist': '簡約',
+                        'vintage': '復古',
+                        'corporate': '企業',
+                        'creative': '創意'
+                    };
+                    
+                    const colorLabels = {
+                        'blue': '藍色',
+                        'red': '紅色',
+                        'green': '綠色',
+                        'purple': '紫色',
+                        'orange': '橙色',
+                        'pink': '粉色',
+                        'black': '黑色',
+                        'colorful': '多彩'
+                    };
+                    
+                    document.getElementById('designTypeInfo').textContent = typeLabels[designType] || designType;
+                    document.getElementById('designStyleInfo').textContent = styleLabels[style] || style;
+                    document.getElementById('designColorInfo').textContent = colorLabels[color] || color;
+                    document.getElementById('designInfo').style.display = 'block';
+                    
+                    // 啟用下載按鈕
+                    const downloadBtn = document.getElementById('downloadDesignBtn');
+                    downloadBtn.style.display = 'block';
+                    currentDesignData = data.download_data;
+                    
+                    this.showNotification('設計生成成功！', 'success');
+                } else {
+                    this.showNotification('生成失敗：' + (data.error || '未知錯誤'), 'error');
+                }
+                
+            } catch (error) {
+                console.error('設計生成錯誤:', error);
+                this.showNotification('生成失敗，請檢查網路連接', 'error');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-magic me-2"></i>生成設計';
+            }
+        });
+        
+        // 下載功能
+        document.getElementById('downloadDesignBtn').addEventListener('click', () => {
+            if (currentDesignData) {
+                const content = document.getElementById('designContent').value.trim();
+                const designType = document.getElementById('designType').value;
+                const filename = `design_${designType}_${Date.now()}.png`;
+                
+                const link = document.createElement('a');
+                link.href = `data:image/png;base64,${currentDesignData}`;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                this.showNotification('設計已下載！', 'success');
+            }
+        });
+        
+        // 清除功能
+        document.getElementById('clearDesignBtn').addEventListener('click', () => {
+            document.getElementById('designContent').value = '';
+            document.getElementById('designType').value = 'poster';
+            document.getElementById('designStyle').value = 'modern';
+            document.getElementById('designColor').value = 'blue';
+            document.getElementById('designPreview').innerHTML = `
+                <i class="fas fa-palette fa-3x text-muted mb-3"></i>
+                <p class="text-muted">設計將在這裡顯示</p>
+            `;
+            document.getElementById('designInfo').style.display = 'none';
+            document.getElementById('downloadDesignBtn').style.display = 'none';
+            currentDesignData = null;
+        });
+        
+        // 清理函數
+        document.getElementById('designModal').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('designModal').remove();
+        });
+        
+        designModal.show();
     }
 }
 
