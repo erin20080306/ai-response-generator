@@ -598,10 +598,10 @@ function startPlayerTurn() {
         enablePlayerActions(true);
         updateMahjongDisplay();
     } else {
-        // 電腦回合 - 自動執行
+        // 電腦回合 - 自動執行（加快速度）
         setTimeout(() => {
             executeComputerTurn();
-        }, 1000);
+        }, 500);
     }
 }
 
@@ -684,7 +684,7 @@ function animateComputerDiscard(tile, playerIndex) {
     // 檢查玩家是否可以吃/碰/胡
     setTimeout(() => {
         checkPlayerActions(tile);
-    }, 500);
+    }, 300);
 }
 
 // 檢查玩家可執行的動作
