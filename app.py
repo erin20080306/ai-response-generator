@@ -67,7 +67,7 @@ with app.app_context():
 @app.route('/')
 def index():
     """Render the enhanced main chat interface"""
-    return render_template('enhanced_index_clean.html')
+    return render_template('enhanced_index.html')
 
 @app.route('/simple')
 def simple_index():
