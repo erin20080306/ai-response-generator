@@ -1622,6 +1622,8 @@ class GameCenter {
             playerCanGang: false,
             playerCanHu: false
         };
+        
+        // 使用局部變量引用全局gameState
         const gameState = window.gameState;
         
         // 麻將牌組
@@ -2148,16 +2150,16 @@ class GameCenter {
         // 更新玩家手牌顯示
         function updatePlayerHand() {
             const playerTilesElement = document.getElementById('playerTiles');
-            if (!playerTilesElement) {
+            if (!playerTilesElement || !window.gameState || !window.gameState.players || !window.gameState.players[0]) {
                 return;
             }
             playerTilesElement.innerHTML = '';
-            gameState.players[0].hand.forEach((tile, index) => {
+            window.gameState.players[0].hand.forEach((tile, index) => {
                 const tileElement = document.createElement('div');
                 tileElement.className = 'mahjong-tile';
                 tileElement.textContent = tile;
                 tileElement.onclick = () => {
-                    if (gameState.currentPlayer === 0) {
+                    if (window.gameState.currentPlayer === 0) {
                         // 玩家打牌
                         discardTile(0, index);
                         updateDisplay();
