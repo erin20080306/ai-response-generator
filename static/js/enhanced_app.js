@@ -537,9 +537,10 @@ class EnhancedAIAssistant {
             console.log('解析後端數據:', data);
 
             if (data.success) {
-                // 顯示 AI 回應 - 暫時禁用打字機效果以避免截斷問題
+                // 顯示 AI 回應
                 console.log('顯示AI回應:', data.response);
-                this.addMessage(data.response, 'ai', false);
+                const useTypewriter = this.settings.typewriterEffect;
+                this.addMessage(data.response, 'ai', useTypewriter);
                 
                 this.showNotification('AI回應成功', 'success');
 
@@ -743,35 +744,36 @@ class EnhancedAIAssistant {
     }
 
     typewriterEffect(element, text, icon) {
-        const speed = parseInt(this.settings.typingSpeed);
-        const delay = Math.max(20, Math.min(100, 101 - speed));
+        const speed = parseInt(this.settings.typingSpeed) || 50;
+        const delay = Math.max(10, Math.min(80, 101 - speed));
         
         let index = 0;
         const cursor = '<span class="typewriter-cursor">|</span>';
         
+        // 清空元素內容
+        element.innerHTML = icon;
+        
         const type = () => {
-            if (index <= text.length) {
-                const currentText = text.substring(0, index);
+            if (index < text.length) {
+                const currentText = text.substring(0, index + 1);
                 const formattedText = this.formatMessage(currentText);
-                const showCursor = index < text.length ? cursor : '';
                 
-                element.innerHTML = icon + formattedText + showCursor;
+                element.innerHTML = icon + formattedText + cursor;
                 
                 // 滾動到底部
                 this.scrollToBottom();
                 
                 index++;
-                
-                if (index <= text.length) {
-                    setTimeout(type, delay);
-                } else {
-                    // 完成後高亮程式碼
-                    this.highlightCode(element);
-                }
+                setTimeout(type, delay);
+            } else {
+                // 完成時移除游標
+                element.innerHTML = icon + this.formatMessage(text);
+                this.highlightCode(element);
             }
         };
         
-        type();
+        // 開始打字效果
+        setTimeout(type, delay);
     }
 
     formatMessage(text) {
