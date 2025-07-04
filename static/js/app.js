@@ -118,79 +118,39 @@ class AIAssistant {
     }
 
     typewriterEffect(element, text, icon) {
-        // Check if text contains code blocks
-        if (text.includes('```')) {
-            this.typewriterWithCodeBlocks(element, text, icon);
-        } else {
-            this.simpleTypewriter(element, text, icon);
-        }
-    }
-
-    simpleTypewriter(element, text, icon) {
-        element.innerHTML = icon; // Start with just the icon
+        // Simple implementation to avoid duplication
+        element.innerHTML = icon;
+        let displayedText = '';
         let index = 0;
-        const cursor = '<span class="typewriter-cursor">|</span>';
         
         const typeInterval = setInterval(() => {
-            if (index <= text.length) {
-                const currentText = text.substring(0, index);
-                const escapedText = this.escapeHtml(currentText).replace(/\n/g, '<br>');
-                element.innerHTML = icon + escapedText + (index < text.length ? cursor : '');
+            if (index < text.length) {
+                displayedText += text[index];
+                const safeText = displayedText.replace(/&/g, '&amp;')
+                                            .replace(/</g, '&lt;')
+                                            .replace(/>/g, '&gt;')
+                                            .replace(/\n/g, '<br>');
+                element.innerHTML = icon + safeText + '<span class="typewriter-cursor">|</span>';
                 index++;
                 this.scrollToBottom();
             } else {
-                // Apply final formatting after typewriter is complete
+                // Complete - apply final formatting
                 element.innerHTML = icon + this.formatMessage(text);
                 this.highlightCode(element);
                 clearInterval(typeInterval);
+                this.scrollToBottom();
             }
-        }, 50);
+        }, 30);
+    }
+
+    simpleTypewriter(element, text, icon) {
+        // This method is now unified with typewriterEffect
+        this.typewriterEffect(element, text, icon);
     }
 
     typewriterWithCodeBlocks(element, text, icon) {
-        element.innerHTML = icon; // Start with just the icon
-        const parts = this.splitTextWithCodeBlocks(text);
-        let partIndex = 0;
-        
-        const processNextPart = () => {
-            if (partIndex >= parts.length) {
-                this.highlightCode(element);
-                return;
-            }
-            
-            const part = parts[partIndex];
-            
-            if (part.isCode) {
-                // Show code blocks instantly
-                const currentContent = element.innerHTML;
-                element.innerHTML = currentContent + this.formatCodeBlock(part.content);
-                partIndex++;
-                this.scrollToBottom();
-                setTimeout(processNextPart, 100);
-            } else {
-                // Type regular text character by character
-                let charIndex = 0;
-                const cursor = '<span class="typewriter-cursor">|</span>';
-                
-                const typeInterval = setInterval(() => {
-                    if (charIndex <= part.content.length) {
-                        const currentText = part.content.substring(0, charIndex);
-                        const escapedText = this.escapeHtml(currentText).replace(/\n/g, '<br>');
-                        const baseContent = element.innerHTML.replace(cursor, '');
-                        element.innerHTML = baseContent + escapedText + (charIndex < part.content.length ? cursor : '');
-                        charIndex++;
-                        this.scrollToBottom();
-                    } else {
-                        element.innerHTML = element.innerHTML.replace(cursor, '');
-                        partIndex++;
-                        clearInterval(typeInterval);
-                        setTimeout(processNextPart, 100);
-                    }
-                }, 50);
-            }
-        };
-        
-        processNextPart();
+        // Use the same simple approach for text with code blocks
+        this.typewriterEffect(element, text, icon);
     }
 
     splitTextWithCodeBlocks(text) {
