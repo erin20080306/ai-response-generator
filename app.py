@@ -66,8 +66,8 @@ with app.app_context():
 
 @app.route('/')
 def index():
-    """Render the simple enhanced chat interface with avatar"""
-    return render_template('simple_enhanced.html')
+    """Render the original style AI assistant with typewriter effect"""
+    return render_template('original_with_avatar.html')
 
 @app.route('/simple')
 def simple_index():

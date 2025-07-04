@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 智能助手</title>
+    
+    <!-- Bootstrap CSS with Replit dark theme -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        body { background-color: #1a1a1a; color: #ffffff; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .chat-messages { height: 400px; overflow-y: auto; background-color: #2a2a2a; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .message { margin-bottom: 15px; padding: 10px; border-radius: 8px; }
+        .message.user { background-color: #007bff; text-align: right; }
+        .message.assistant { background-color: #333; }
+        .avatar-mini { width: 50px; height: 50px; border: 2px solid #007bff; border-radius: 50%; padding: 3px; background: #f8f9fa; display: inline-flex; justify-content: center; align-items: center; margin-right: 10px; }
+        .game-canvas { background-color: #000; border: 2px solid #444; border-radius: 5px; }
+        .game-controls { margin-top: 10px; }
+        .btn-game { margin: 2px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Mini Avatar -->
+        <div class="d-flex align-items-center mb-3">
+            <div id="avatarMini" class="avatar-mini">
+                <svg width="40" height="40" viewBox="0 0 120 120">
+                    <circle cx="60" cy="45" r="25" fill="#FFE4B5" stroke="#D2B48C" stroke-width="2"/>
+                    <circle cx="52" cy="40" r="3" fill="#333"/>
+                    <circle cx="68" cy="40" r="3" fill="#333"/>
+                    <path d="M 50 50 Q 60 58 70 50" stroke="#333" stroke-width="2" fill="none"/>
+                    <path d="M 35 35 Q 60 15 85 35" fill="#8B4513" id="hair"/>
+                    <rect x="45" y="70" width="30" height="35" fill="#4169E1" rx="5" id="body"/>
+                </svg>
+            </div>
+            <div class="flex-grow-1">
+                <h4 class="mb-0" id="aiName">AI助手</h4>
+                <small class="text-muted" id="aiPersonality">友善的助手</small>
+            </div>
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#settings">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
+
+        <!-- Settings Panel (Collapsible) -->
+        <div class="collapse mb-3" id="settings">
+            <div class="card">
+                <div class="card-body">
+                    <h6>個人化設定</h6>
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <input type="text" class="form-control form-control-sm" id="nameInput" value="AI助手" placeholder="AI名稱">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <select class="form-select form-select-sm" id="personalitySelect">
+                                <option value="friendly">友善的</option>
+                                <option value="professional">專業的</option>
+                                <option value="playful">活潑的</option>
+                                <option value="wise">智慧的</option>
+                                <option value="creative">創意的</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <select class="form-select form-select-sm" id="hairColorSelect">
+                                <option value="#8B4513">棕髮</option>
+                                <option value="#000000">黑髮</option>
+                                <option value="#FFD700">金髮</option>
+                                <option value="#FF6347">紅髮</option>
+                                <option value="#4169E1">藍髮</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button class="btn btn-primary btn-sm w-100" onclick="saveSettings()">保存</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chatMessages" class="chat-messages">
+            <div class="message assistant">
+                <strong>AI助手:</strong> 你好！我是你的AI助手。有什麼可以幫助你的嗎？
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-group mb-3">
+            <textarea id="messageInput" class="form-control" placeholder="輸入你的訊息..." rows="3"></textarea>
+            <button id="sendBtn" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> 發送
+            </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mb-3">
+            <div class="col-6 col-md-2 mb-2">
+                <button class="btn btn-outline-secondary w-100 btn-sm" onclick="clearHistory()">
+                    <i class="fas fa-trash"></i> 清除
+                </button>
+            </div>
+            <div class="col-6 col-md-2 mb-2">
+                <button class="btn btn-outline-info w-100 btn-sm" onclick="generateImage()">
+                    <i class="fas fa-image"></i> 圖片
+                </button>
+            </div>
+            <div class="col-6 col-md-2 mb-2">
+                <button class="btn btn-outline-warning w-100 btn-sm" onclick="generateQR()">
+                    <i class="fas fa-qrcode"></i> QR碼
+                </button>
+            </div>
+            <div class="col-6 col-md-2 mb-2">
+                <button class="btn btn-outline-success w-100 btn-sm" onclick="generateDoc()">
+                    <i class="fas fa-file"></i> 文件
+                </button>
+            </div>
+            <div class="col-6 col-md-2 mb-2">
+                <button class="btn btn-outline-danger w-100 btn-sm" onclick="showGames()">
+                    <i class="fas fa-gamepad"></i> 遊戲
+                </button>
+            </div>
+            <div class="col-6 col-md-2 mb-2">
+                <button class="btn btn-outline-purple w-100 btn-sm" onclick="generateAvatar()">
+                    <i class="fas fa-user"></i> 頭像
+                </button>
+            </div>
+        </div>
+
+        <!-- Games Section -->
+        <div id="gamesSection" class="card mb-3" style="display: none;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">遊戲中心</h5>
+                <button class="btn btn-sm btn-outline-secondary" onclick="hideGames()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-primary w-100" onclick="startTetris()">
+                            <i class="fas fa-th"></i> 俄羅斯方塊
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-success w-100" onclick="startMahjong()">
+                            <i class="fas fa-dice"></i> 麻將
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-warning w-100" onclick="startPinball()">
+                            <i class="fas fa-circle"></i> 彈珠台
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Game Canvas -->
+                <div id="gameArea" style="display: none;">
+                    <h6 id="gameTitle">遊戲</h6>
+                    <canvas id="gameCanvas" class="game-canvas" width="400" height="400"></canvas>
+                    <div class="game-controls">
+                        <button class="btn btn-danger btn-sm btn-game" onclick="closeGame()">
+                            <i class="fas fa-stop"></i> 結束遊戲
+                        </button>
+                        <span id="gameScore" class="ms-3">分數: 0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // AI Avatar Settings
+        let avatarSettings = {
+            name: 'AI助手',
+            personality: 'friendly',
+            hairColor: '#8B4513',
+            bodyColor: '#4169E1'
+        };
+
+        // DOM Elements
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatMessages = document.getElementById('chatMessages');
+
+        // Game Variables
+        let currentGame = null;
+        const gameCanvas = document.getElementById('gameCanvas');
+        const ctx = gameCanvas.getContext('2d');
+        let gameLoop = null;
+
+        // Core Chat Functions
+        function addMessage(content, type, useTypewriter = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            if (type === 'user') {
+                messageDiv.innerHTML = `<strong>你:</strong> ${content}`;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } else {
+                // AI response with typewriter effect
+                const nameSpan = document.createElement('strong');
+                nameSpan.textContent = `${avatarSettings.name}: `;
+                messageDiv.appendChild(nameSpan);
+                
+                const contentSpan = document.createElement('span');
+                messageDiv.appendChild(contentSpan);
+                chatMessages.appendChild(messageDiv);
+                
+                if (useTypewriter) {
+                    typewriterEffect(contentSpan, content);
+                } else {
+                    contentSpan.innerHTML = content;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }
+        }
+
+        function typewriterEffect(element, text, speed = 30) {
+            element.innerHTML = '';
+            let i = 0;
+            
+            // Handle HTML content properly
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = text;
+            const plainText = tempDiv.textContent || tempDiv.innerText || '';
+            
+            function typeChar() {
+                if (i < plainText.length) {
+                    element.textContent += plainText.charAt(i);
+                    i++;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    setTimeout(typeChar, speed);
+                } else {
+                    // After typing is complete, set the full HTML content
+                    element.innerHTML = text;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }
+            
+            typeChar();
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            messageInput.value = '';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: message,
+                        avatar_settings: avatarSettings
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    addMessage(data.response, 'assistant', true);
+                } else {
+                    addMessage(`錯誤: ${data.error}`, 'assistant');
+                }
+            } catch (error) {
+                addMessage(`連線錯誤: ${error.message}`, 'assistant');
+            }
+        }
+
+        async function clearHistory() {
+            try {
+                const response = await fetch('/clear_history', { method: 'POST' });
+                if (response.ok) {
+                    chatMessages.innerHTML = `<div class="message assistant">
+                        <strong>${avatarSettings.name}:</strong> 聊天記錄已清除！
+                    </div>`;
+                }
+            } catch (error) {
+                addMessage('清除記錄失敗', 'assistant');
+            }
+        }
+
+        // Avatar Functions
+        function updateAvatar() {
+            const name = document.getElementById('nameInput').value;
+            const personality = document.getElementById('personalitySelect').value;
+            const hairColor = document.getElementById('hairColorSelect').value;
+
+            avatarSettings = { ...avatarSettings, name, personality, hairColor };
+
+            document.getElementById('aiName').textContent = name;
+            
+            const personalityTexts = {
+                'friendly': '友善的助手',
+                'professional': '專業的顧問',
+                'playful': '活潑的夥伴',
+                'wise': '智慧的導師',
+                'creative': '創意的靈感'
+            };
+            
+            document.getElementById('aiPersonality').textContent = personalityTexts[personality];
+            document.getElementById('hair').setAttribute('fill', hairColor);
+        }
+
+        function saveSettings() {
+            updateAvatar();
+            localStorage.setItem('aiAvatarSettings', JSON.stringify(avatarSettings));
+            addMessage('設定已保存！', 'assistant');
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('aiAvatarSettings');
+            if (saved) {
+                avatarSettings = JSON.parse(saved);
+                document.getElementById('nameInput').value = avatarSettings.name;
+                document.getElementById('personalitySelect').value = avatarSettings.personality;
+                document.getElementById('hairColorSelect').value = avatarSettings.hairColor;
+                updateAvatar();
+            }
+        }
+
+        // Quick Action Functions
+        async function generateImage() {
+            const prompt = window.prompt('請描述你想要的圖片:');
+            if (prompt) {
+                addMessage(`正在生成圖片: ${prompt}`, 'assistant');
+                
+                try {
+                    const response = await fetch('/generate_image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt })
+                    });
+
+                    const data = await response.json();
+                    if (data.success && data.image_url) {
+                        addMessage(`<img src="${data.image_url}" alt="Generated Image" class="img-fluid rounded" style="max-width: 300px;">`, 'assistant');
+                    } else {
+                        addMessage('圖片生成失敗：' + (data.error || '未知錯誤'), 'assistant');
+                    }
+                } catch (error) {
+                    addMessage('圖片生成錯誤：' + error.message, 'assistant');
+                }
+            }
+        }
+
+        function generateQR() {
+            const text = window.prompt('請輸入要生成QR碼的文字:');
+            if (text) {
+                window.open(`/generate_qr?text=${encodeURIComponent(text)}`, '_blank');
+            }
+        }
+
+        function generateDoc() {
+            const type = window.prompt('選擇文件類型:\n1. Excel\n2. Word\n3. PowerPoint', '1');
+            if (type) {
+                const docType = type === '1' ? 'excel' : type === '2' ? 'word' : 'ppt';
+                window.open(`/generate_document?type=${docType}&template=1`, '_blank');
+            }
+        }
+
+        async function generateAvatar() {
+            const description = `Create a professional AI assistant avatar with ${avatarSettings.personality} personality`;
+            
+            try {
+                const response = await fetch('/generate_image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: description,
+                        context: 'avatar'
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success && data.image_url) {
+                    document.getElementById('avatarMini').innerHTML = 
+                        `<img src="${data.image_url}" alt="AI Avatar" class="img-fluid rounded-circle" style="width: 40px; height: 40px;">`;
+                    addMessage('AI頭像生成成功！', 'assistant');
+                } else {
+                    addMessage('頭像生成失敗：' + (data.error || '未知錯誤'), 'assistant');
+                }
+            } catch (error) {
+                addMessage('頭像生成錯誤：' + error.message, 'assistant');
+            }
+        }
+
+        // Game Functions
+        function showGames() {
+            document.getElementById('gamesSection').style.display = 'block';
+        }
+
+        function hideGames() {
+            closeGame();
+            document.getElementById('gamesSection').style.display = 'none';
+        }
+
+        function startTetris() {
+            currentGame = 'tetris';
+            document.getElementById('gameTitle').textContent = '俄羅斯方塊';
+            document.getElementById('gameArea').style.display = 'block';
+            
+            // Simple Tetris Implementation
+            const pieces = [
+                [[1,1,1,1]], // I piece
+                [[1,1],[1,1]], // O piece
+                [[0,1,0],[1,1,1]], // T piece
+                [[1,1,0],[0,1,1]], // S piece
+                [[0,1,1],[1,1,0]]  // Z piece
+            ];
+            
+            let board = Array(20).fill().map(() => Array(10).fill(0));
+            let currentPiece = pieces[Math.floor(Math.random() * pieces.length)];
+            let pieceX = 4, pieceY = 0;
+            let score = 0;
+            
+            function drawBoard() {
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, 400, 400);
+                
+                // Draw board
+                for (let y = 0; y < 20; y++) {
+                    for (let x = 0; x < 10; x++) {
+                        if (board[y][x]) {
+                            ctx.fillStyle = '#00f';
+                            ctx.fillRect(x * 20, y * 20, 20, 20);
+                            ctx.strokeStyle = '#fff';
+                            ctx.strokeRect(x * 20, y * 20, 20, 20);
+                        }
+                    }
+                }
+                
+                // Draw current piece
+                ctx.fillStyle = '#f00';
+                for (let y = 0; y < currentPiece.length; y++) {
+                    for (let x = 0; x < currentPiece[y].length; x++) {
+                        if (currentPiece[y][x]) {
+                            ctx.fillRect((pieceX + x) * 20, (pieceY + y) * 20, 20, 20);
+                            ctx.strokeStyle = '#fff';
+                            ctx.strokeRect((pieceX + x) * 20, (pieceY + y) * 20, 20, 20);
+                        }
+                    }
+                }
+                
+                document.getElementById('gameScore').textContent = `分數: ${score}`;
+            }
+            
+            function gameStep() {
+                pieceY++;
+                if (pieceY + currentPiece.length > 20) {
+                    // Place piece
+                    for (let y = 0; y < currentPiece.length; y++) {
+                        for (let x = 0; x < currentPiece[y].length; x++) {
+                            if (currentPiece[y][x]) {
+                                board[pieceY - 1 + y][pieceX + x] = 1;
+                            }
+                        }
+                    }
+                    
+                    // New piece
+                    currentPiece = pieces[Math.floor(Math.random() * pieces.length)];
+                    pieceX = 4;
+                    pieceY = 0;
+                    score += 10;
+                }
+                drawBoard();
+            }
+            
+            drawBoard();
+            gameLoop = setInterval(gameStep, 500);
+        }
+
+        function startMahjong() {
+            currentGame = 'mahjong';
+            document.getElementById('gameTitle').textContent = '麻將';
+            document.getElementById('gameArea').style.display = 'block';
+            
+            ctx.fillStyle = '#006400';
+            ctx.fillRect(0, 0, 400, 400);
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
+            ctx.fillText('麻將 - 4人遊戲', 10, 30);
+            
+            // Draw mahjong tiles
+            const tiles = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '東', '南', '西', '北'];
+            for (let i = 0; i < 13; i++) {
+                ctx.strokeStyle = '#fff';
+                ctx.strokeRect(20 + i * 25, 350, 20, 30);
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px Arial';
+                ctx.fillText(tiles[i % tiles.length], 22 + i * 25, 368);
+            }
+            
+            document.getElementById('gameScore').textContent = '手牌: 13張';
+        }
+
+        function startPinball() {
+            currentGame = 'pinball';
+            document.getElementById('gameTitle').textContent = '彈珠台';
+            document.getElementById('gameArea').style.display = 'block';
+            
+            let ballX = 200, ballY = 200;
+            let ballVX = 2, ballVY = 2;
+            let score = 0;
+            
+            function drawPinball() {
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, 400, 400);
+                
+                // Draw flippers
+                ctx.fillStyle = '#888';
+                ctx.fillRect(100, 350, 60, 10);
+                ctx.fillRect(240, 350, 60, 10);
+                
+                // Draw ball
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(ballX, ballY, 5, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Move ball
+                ballX += ballVX;
+                ballY += ballVY;
+                
+                // Bounce off walls
+                if (ballX <= 5 || ballX >= 395) ballVX *= -1;
+                if (ballY <= 5 || ballY >= 395) ballVY *= -1;
+                
+                // Score
+                if (ballY < 100) score++;
+                
+                document.getElementById('gameScore').textContent = `分數: ${score}`;
+            }
+            
+            gameLoop = setInterval(drawPinball, 50);
+        }
+
+        function closeGame() {
+            if (gameLoop) {
+                clearInterval(gameLoop);
+                gameLoop = null;
+            }
+            document.getElementById('gameArea').style.display = 'none';
+            currentGame = null;
+        }
+
+        // Event Listeners
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Auto-update avatar settings
+        document.getElementById('nameInput').addEventListener('input', updateAvatar);
+        document.getElementById('personalitySelect').addEventListener('change', updateAvatar);
+        document.getElementById('hairColorSelect').addEventListener('change', updateAvatar);
+
+        // Keyboard controls for games
+        document.addEventListener('keydown', (e) => {
+            if (currentGame === 'tetris') {
+                // Tetris controls would go here
+            } else if (currentGame === 'pinball') {
+                // Pinball controls would go here
+            }
+        });
+
+        // Load settings on page load
+        loadSettings();
+    </script>
+</body>
+</html>
