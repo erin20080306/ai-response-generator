@@ -81,7 +81,7 @@ class EnhancedAIAssistant {
         this.chatHistory = [];
         this.fileHandler = null;
         this.voiceHandler = null;
-        this.collaboration = null;
+
         this.socket = null;
         this.currentUser = null;
         this.quickReplies = [];
@@ -365,21 +365,7 @@ class EnhancedAIAssistant {
         }
     }
 
-    setupCollaborationEvents() {
-        const createRoomBtn = document.getElementById('createRoomBtn');
-        const joinRoomBtn = document.getElementById('joinRoomBtn');
-        const roomNameInput = document.getElementById('roomName');
-        const roomCodeInput = document.getElementById('roomCode');
-        const maxParticipantsSelect = document.getElementById('maxParticipants');
 
-        if (createRoomBtn) {
-            createRoomBtn.addEventListener('click', () => this.createRoom());
-        }
-
-        if (joinRoomBtn) {
-            joinRoomBtn.addEventListener('click', () => this.joinRoom());
-        }
-    }
 
     setupToolEvents() {
         // 計算機
@@ -543,9 +529,7 @@ class EnhancedAIAssistant {
                 this.handleUserLeft(data);
             });
 
-            this.socket.on('room_update', (data) => {
-                this.handleRoomUpdate(data);
-            });
+
 
         } catch (error) {
             console.warn('Socket.IO 初始化失敗:', error);

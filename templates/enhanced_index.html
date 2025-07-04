@@ -59,11 +59,7 @@
                                 <i class="fas fa-cog me-2"></i>個人設定
                             </button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="collaborate-tab" data-bs-toggle="tab" data-bs-target="#collaborate-panel" type="button" role="tab">
-                                <i class="fas fa-users me-2"></i>協作功能
-                            </button>
-                        </li>
+
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="games-tab" data-bs-toggle="tab" data-bs-target="#games-panel" type="button" role="tab">
                                 <i class="fas fa-gamepad me-2"></i>遊戲中心
@@ -506,102 +502,6 @@
                                                 <button type="button" class="btn btn-outline-danger btn-sm" id="clearStorageBtn">
                                                     <i class="fas fa-trash me-2"></i>清除所有資料
                                                 </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Collaborate Panel -->
-                    <div class="tab-pane fade" id="collaborate-panel" role="tabpanel">
-                        <div class="panel-container">
-                            <h4 class="mb-4">協作功能</h4>
-                            
-                            <div class="row">
-                                <div class="col-lg-8">
-                                    <!-- Create Room -->
-                                    <div class="card mb-4">
-                                        <div class="card-header">
-                                            <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>創建協作房間</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="roomName" class="form-label">房間名稱</label>
-                                                    <input type="text" class="form-control" id="roomName" placeholder="輸入房間名稱">
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="maxParticipants" class="form-label">最大參與者</label>
-                                                    <select class="form-select" id="maxParticipants">
-                                                        <option value="2">2 人</option>
-                                                        <option value="5">5 人</option>
-                                                        <option value="10" selected>10 人</option>
-                                                        <option value="20">20 人</option>
-                                                        <option value="50">50 人</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <button type="button" class="btn btn-primary" id="createRoomBtn">
-                                                <i class="fas fa-door-open me-2"></i>創建房間
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Join Room -->
-                                    <div class="card mb-4">
-                                        <div class="card-header">
-                                            <h5 class="mb-0"><i class="fas fa-sign-in-alt me-2"></i>加入協作房間</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="input-group">
-                                                <input type="text" class="form-control" id="roomCode" placeholder="輸入房間代碼">
-                                                <button type="button" class="btn btn-primary" id="joinRoomBtn">
-                                                    <i class="fas fa-sign-in-alt me-2"></i>加入
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Active Rooms -->
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>活躍房間</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div id="activeRoomsList" class="active-rooms-list">
-                                                <!-- Active rooms will appear here -->
-                                                <div class="text-center text-muted">
-                                                    <i class="fas fa-door-closed fa-2x mb-2"></i>
-                                                    <p>暫無活躍房間</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-lg-4">
-                                    <!-- Current Room Info -->
-                                    <div class="card mb-4" id="currentRoomCard" style="display: none;">
-                                        <div class="card-header">
-                                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>當前房間</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div id="currentRoomInfo">
-                                                <!-- Current room info will appear here -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Participants -->
-                                    <div class="card" id="participantsCard" style="display: none;">
-                                        <div class="card-header">
-                                            <h5 class="mb-0"><i class="fas fa-users me-2"></i>參與者</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div id="participantsList" class="participants-list">
-                                                <!-- Participants will appear here -->
                                             </div>
                                         </div>
                                     </div>
