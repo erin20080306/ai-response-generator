@@ -720,29 +720,247 @@ function nextPlayer() {
     }
 }
 
-// AI行動邏輯
+// AI行動邏輯 - 逐步動畫
 function executeAITurn() {
     const currentPlayerIndex = gameData.mahjong.currentPlayer;
     const aiPlayer = gameData.mahjong.players[currentPlayerIndex];
     
-    // AI摸牌
-    if (gameData.mahjong.tilePool.length > 0 && aiPlayer.hand.length <= 13) {
-        const newTile = gameData.mahjong.tilePool.pop();
-        aiPlayer.hand.push(newTile);
-        gameData.mahjong.remainingTiles--;
-    }
+    // 顯示AI正在思考
+    showAIThinking(currentPlayerIndex);
     
-    // AI打牌（隨機選擇一張牌）
+    // 1. AI摸牌動畫
+    setTimeout(() => {
+        if (gameData.mahjong.tilePool.length > 0 && aiPlayer.hand.length <= 13) {
+            const newTile = gameData.mahjong.tilePool.pop();
+            aiPlayer.hand.push(newTile);
+            gameData.mahjong.remainingTiles--;
+            
+            // 顯示摸牌動畫
+            showDrawTileAnimation(currentPlayerIndex, newTile);
+            updateMahjongDisplay();
+            
+            // 2. 等待一下再打牌
+            setTimeout(() => {
+                aiDiscardTile(currentPlayerIndex);
+            }, 1000);
+        } else {
+            aiDiscardTile(currentPlayerIndex);
+        }
+    }, 800);
+}
+
+// AI思考提示
+function showAIThinking(playerIndex) {
+    const gameInfo = document.getElementById('mahjongGameInfo');
+    if (gameInfo) {
+        gameInfo.innerHTML = `<p class="thinking">💭 ${gameData.mahjong.players[playerIndex].name} 思考中...</p>`;
+    }
+}
+
+// 摸牌動畫
+function showDrawTileAnimation(playerIndex, tile) {
+    const gameInfo = document.getElementById('mahjongGameInfo');
+    if (gameInfo) {
+        gameInfo.innerHTML = `<p class="draw-tile">📥 ${gameData.mahjong.players[playerIndex].name} 摸牌: ${tile}</p>`;
+    }
+}
+
+// AI打牌邏輯
+function aiDiscardTile(playerIndex) {
+    const aiPlayer = gameData.mahjong.players[playerIndex];
+    
     if (aiPlayer.hand.length > 0) {
-        const randomIndex = Math.floor(Math.random() * aiPlayer.hand.length);
-        const discardedTile = aiPlayer.hand.splice(randomIndex, 1)[0];
+        // 智能打牌策略
+        const discardIndex = chooseDiscardTile(aiPlayer.hand);
+        const discardedTile = aiPlayer.hand.splice(discardIndex, 1)[0];
         gameData.mahjong.discardPile.push(discardedTile);
+        
+        // 顯示打牌動畫
+        showDiscardAnimation(playerIndex, discardedTile);
+        updateMahjongDisplay();
+        
+        // 檢查其他玩家是否可以吃碰胡
+        setTimeout(() => {
+            checkPlayerActions(discardedTile);
+        }, 500);
+    } else {
+        // 下一個玩家
+        nextPlayer();
+    }
+}
+
+// 智能選擇打牌
+function chooseDiscardTile(hand) {
+    // 簡單AI策略：優先打出孤張牌
+    const tileCounts = {};
+    hand.forEach(tile => {
+        tileCounts[tile] = (tileCounts[tile] || 0) + 1;
+    });
+    
+    // 尋找孤張牌
+    for (let i = 0; i < hand.length; i++) {
+        if (tileCounts[hand[i]] === 1) {
+            return i;
+        }
     }
     
-    // 下一個玩家
-    nextPlayer();
+    // 如果沒有孤張，隨機選擇
+    return Math.floor(Math.random() * hand.length);
+}
+
+// 打牌動畫
+function showDiscardAnimation(playerIndex, tile) {
+    const gameInfo = document.getElementById('mahjongGameInfo');
+    if (gameInfo) {
+        gameInfo.innerHTML = `<p class="discard-tile">🎯 ${gameData.mahjong.players[playerIndex].name} 打牌: ${tile}</p>`;
+    }
+}
+
+// 檢查玩家可執行的動作
+function checkPlayerActions(discardedTile) {
+    const playerHand = gameData.mahjong.players[0].hand;
+    const actions = [];
+    
+    // 檢查胡牌
+    if (canWin(playerHand, discardedTile)) {
+        actions.push('胡');
+    }
+    
+    // 檢查碰牌
+    if (canPeng(playerHand, discardedTile)) {
+        actions.push('碰');
+    }
+    
+    // 檢查吃牌
+    if (canChi(playerHand, discardedTile)) {
+        actions.push('吃');
+    }
+    
+    if (actions.length > 0) {
+        showActionPrompt(discardedTile, actions);
+    } else {
+        // 繼續下一個玩家
+        setTimeout(() => {
+            nextPlayer();
+        }, 1000);
+    }
+}
+
+// 顯示動作提示
+function showActionPrompt(discardedTile, actions) {
+    const gameInfo = document.getElementById('mahjongGameInfo');
+    if (gameInfo) {
+        let buttonHtml = actions.map(action => 
+            `<button onclick="executePlayerAction('${action}', '${discardedTile}')" class="action-btn ${action.toLowerCase()}-btn">${action}</button>`
+        ).join(' ');
+        
+        buttonHtml += `<button onclick="skipAction()" class="action-btn skip-btn">跳過</button>`;
+        
+        gameInfo.innerHTML = `
+            <div class="action-prompt">
+                <p>🎯 可以對 ${discardedTile} 執行動作：</p>
+                <div class="action-buttons">${buttonHtml}</div>
+            </div>
+        `;
+        
+        // 5秒後自動跳過
+        setTimeout(() => {
+            if (document.querySelector('.action-prompt')) {
+                skipAction();
+            }
+        }, 5000);
+    }
+}
+
+// 執行玩家動作
+function executePlayerAction(action, tile) {
+    const playerHand = gameData.mahjong.players[0].hand;
+    
+    switch(action) {
+        case '胡':
+            playerHand.push(tile);
+            alert('恭喜胡牌！分數 +2000');
+            gameData.mahjong.players[0].score += 2000;
+            initMahjongGame();
+            return;
+            
+        case '碰':
+            // 從手牌中移除兩張相同牌，加入打出的牌
+            const pengCount = playerHand.filter(t => t === tile).length;
+            if (pengCount >= 2) {
+                for (let i = 0; i < 2; i++) {
+                    const index = playerHand.indexOf(tile);
+                    if (index !== -1) playerHand.splice(index, 1);
+                }
+                playerHand.push(tile, tile, tile);
+                // 移除牌河中的牌
+                gameData.mahjong.discardPile.pop();
+                alert(`碰牌成功：${tile} ${tile} ${tile}`);
+            }
+            break;
+            
+        case '吃':
+            // 簡化吃牌邏輯
+            playerHand.push(tile);
+            gameData.mahjong.discardPile.pop();
+            alert(`吃牌：${tile}`);
+            break;
+    }
     
     updateMahjongDisplay();
+    
+    // 清除提示，繼續遊戲
+    const gameInfo = document.getElementById('mahjongGameInfo');
+    if (gameInfo) {
+        gameInfo.innerHTML = '<p>請選擇要打出的牌</p>';
+    }
+}
+
+// 跳過動作
+function skipAction() {
+    const gameInfo = document.getElementById('mahjongGameInfo');
+    if (gameInfo) {
+        gameInfo.innerHTML = '<p>繼續遊戲...</p>';
+    }
+    
+    setTimeout(() => {
+        nextPlayer();
+    }, 1000);
+}
+
+// 檢查胡牌
+function canWin(hand, newTile) {
+    const testHand = [...hand, newTile];
+    return testHand.length >= 14; // 簡化檢查
+}
+
+// 檢查碰牌
+function canPeng(hand, tile) {
+    const count = hand.filter(t => t === tile).length;
+    return count >= 2;
+}
+
+// 檢查吃牌
+function canChi(hand, tile) {
+    // 簡化檢查：只要手牌中有相關牌就可以吃
+    return hand.some(t => t !== tile && isSameSuit(t, tile));
+}
+
+// 檢查是否同花色
+function isSameSuit(tile1, tile2) {
+    const suits = {
+        '萬': ['🀇', '🀈', '🀉', '🀊', '🀋', '🀌', '🀍', '🀎', '🀏'],
+        '筒': ['🀐', '🀑', '🀒', '🀓', '🀔', '🀕', '🀖', '🀗', '🀘'],
+        '索': ['🀙', '🀚', '🀛', '🀜', '🀝', '🀞', '🀟', '🀠', '🀡'],
+        '字': ['🀀', '🀁', '🀂', '🀃', '🀄', '🀅', '🀆']
+    };
+    
+    for (const suit in suits) {
+        if (suits[suit].includes(tile1) && suits[suit].includes(tile2)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 

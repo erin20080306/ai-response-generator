@@ -110,6 +110,7 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 05, 2025. Simplified gaming system to focus on two core games: Tetris and Mahjong, removing Farm Story for better stability. Created new simple_games.js with original syntax and enhanced GBA-style animations
 - July 05, 2025. **STABLE VERSION (2fa47be0c8ae0b59f8440346cf402d370ba1f632)**: Implemented complete personalized AI assistant avatar system with typewriter effect. Created original-style interface maintaining clean design while integrating advanced personalization features. System includes custom AI names, personalities, visual avatars, and conversation styles. All games and utility functions working properly. Application stable and ready for deployment
 - July 05, 2025. **LAYOUT FIX**: Successfully resolved mahjong game layout overlap issue by restructuring control buttons placement. Moved control buttons completely outside game table area, added independent background styling, and implemented height constraints for player hand areas. All gaming interfaces now properly separated with no overlapping elements.
+- July 05, 2025. **ENHANCED MAHJONG AI**: Implemented sophisticated AI system with card-by-card dealing animation, intelligent tile selection strategy, and complete eat/pong/win detection. Added visual feedback with thinking animations, draw/discard notifications, and interactive action prompts. Players receive 5-second timeout for decision-making with automatic skip functionality.
 
 ## Enhanced Features Added
 
