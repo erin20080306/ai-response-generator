@@ -705,7 +705,15 @@ function initializeFarmGameState() {
             experience: 0,
             x: 300,
             y: 250,
-            currentScene: 'village'
+            currentScene: 'village',
+            currentTool: 'hoe',
+            inventory: {
+                seeds: 5,
+                water: 10,
+                crops: 0,
+                wood: 0,
+                stone: 0
+            }
         },
         inventory: {
             seeds: { carrot: 5, corn: 3, potato: 2 },
@@ -721,10 +729,13 @@ function initializeFarmGameState() {
         },
         aiUsesLeft: 10,
         currentWeather: 'sunny',
+        weather: 'sunny',
         timeOfDay: 'morning',
         season: 'spring',
         day: 1
     };
+    
+    console.log('農場遊戲狀態初始化完成:', window.farmGameState);
 }
 
 function showLoadingScreen() {
@@ -752,10 +763,30 @@ function showLoadingScreen() {
 }
 
 function hideLoadingScreen() {
-    document.querySelector('.game-loading').style.opacity = '0';
-    setTimeout(() => {
-        createMainGameInterface();
-    }, 500);
+    try {
+        // 確保遊戲狀態已初始化
+        if (!window.farmGameState) {
+            initializeFarmGameState();
+        }
+        
+        document.querySelector('.game-loading').style.opacity = '0';
+        setTimeout(() => {
+            createMainGameInterface();
+        }, 500);
+    } catch (error) {
+        console.error('遊戲載入錯誤:', error);
+        
+        // 顯示錯誤訊息並提供重試選項
+        const board = document.getElementById('farmStoryBoard');
+        board.innerHTML = `
+            <div class="game-error">
+                <div class="error-icon">⚠️</div>
+                <div class="error-message">遊戲載入失敗</div>
+                <div class="error-description">請重新嘗試載入遊戲</div>
+                <button class="btn btn-primary" onclick="startFarmStoryInPanel()">重新載入</button>
+            </div>
+        `;
+    }
 }
 
 function createMainGameInterface() {
@@ -872,7 +903,7 @@ function createMainGameInterface() {
 
 // 輔助函數
 function getWeatherIcon() {
-    const weather = farmGameState.currentWeather;
+    const weather = window.farmGameState?.weather || 'sunny';
     const icons = {
         'sunny': '☀️',
         'rainy': '🌧️',
@@ -1762,6 +1793,22 @@ function updateStatusDisplay() {
         statusElements[2].textContent = `${window.farmGameState.player.money}G`;
         statusElements[3].textContent = `Lv.${window.farmGameState.player.level}`;
         statusElements[4].textContent = `AI: ${window.farmGameState.aiUsesLeft}/10`;
+    }
+}
+
+// 修復 updateDisplay 函數缺失問題
+function updateDisplay() {
+    if (window.farmGameState) {
+        updateStatusDisplay();
+        updateInventoryDisplay();
+    }
+}
+
+// 修復背包顯示函數
+function updateInventoryDisplay() {
+    const inventoryContainer = document.querySelector('.inventory-items');
+    if (inventoryContainer && window.farmGameState) {
+        inventoryContainer.innerHTML = createInventoryHTML();
     }
 }
 

@@ -105,6 +105,8 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 05, 2025. Resolved function scope issues by making executeSpecialAction and passAction globally accessible
 - July 05, 2025. Implemented local intelligent AI system for Mahjong players that doesn't require OpenAI API, with smart tile selection based on strategic priorities
 - July 05, 2025. Completely rebuilt Farm Story game as narrative RPG with 4 NPCs (Mayor Tom, Shopkeeper Mary, Blacksmith Jack, Doctor Lily), branching dialogue system, multi-scene gameplay (farm/town/forest/mine), quest system, relationship tracking, and comprehensive inventory management
+- July 05, 2025. Fixed critical JavaScript initialization issues preventing game loading, added comprehensive Canvas effects integration to Farm Story gameplay with particle systems, tool animations, and harvest effects
+- July 05, 2025. Implemented complete dual architecture system: Flask backend for stable single-player mode and Node.js Express with Socket.IO for high-performance multiplayer gaming
 
 ## Enhanced Features Added
 
