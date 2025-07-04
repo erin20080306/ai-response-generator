@@ -537,12 +537,30 @@ class EnhancedAIAssistant {
             console.log('解析後端數據:', data);
 
             if (data.success) {
-                // 顯示 AI 回應
-                console.log('顯示AI回應:', data.response);
-                const useTypewriter = this.settings.typewriterEffect;
-                this.addMessage(data.response, 'ai', useTypewriter);
-                
-                this.showNotification('AI回應成功', 'success');
+                if (data.is_apps_script) {
+                    // APPS SCRIPT 問題：分別顯示 GS 和 HTML 回應
+                    console.log('顯示GS程式碼:', data.response);
+                    console.log('顯示HTML程式碼:', data.html_response);
+                    
+                    const useTypewriter = this.settings.typewriterEffect;
+                    
+                    // 先顯示 GS 程式碼
+                    this.addMessage(data.response, 'ai', useTypewriter);
+                    
+                    // 延遲一點再顯示 HTML 程式碼
+                    setTimeout(() => {
+                        this.addMessage(data.html_response, 'ai', useTypewriter);
+                    }, 1000);
+                    
+                    this.showNotification('APPS SCRIPT程式碼回應完成', 'success');
+                } else {
+                    // 一般回應
+                    console.log('顯示AI回應:', data.response);
+                    const useTypewriter = this.settings.typewriterEffect;
+                    this.addMessage(data.response, 'ai', useTypewriter);
+                    
+                    this.showNotification('AI回應成功', 'success');
+                }
 
             } else {
                 throw new Error(data.error || '發送訊息失敗');

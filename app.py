@@ -103,23 +103,54 @@ def chat():
             'content': user_message
         })
         
-        # Get AI response
-        ai_response = openai_client.get_response(chat_history)
-        
-        # Add AI response to history
-        chat_history.append({
-            'role': 'assistant',
-            'content': ai_response
-        })
-        
-        # Update session with limited history
-        session['chat_history'] = chat_history
-        session.modified = True
-        
-        return jsonify({
-            'response': ai_response,
-            'success': True
-        })
+        # Check if this is an APPS SCRIPT question
+        if 'apps script' in user_message.lower() or 'app script' in user_message.lower():
+            # Get AI response for GS code first
+            gs_prompt = chat_history + [{
+                'role': 'user', 
+                'content': f"{user_message}\n\n請只提供GS程式碼部分，不要HTML程式碼。"
+            }]
+            gs_response = openai_client.get_response(gs_prompt)
+            
+            # Get AI response for HTML code
+            html_prompt = chat_history + [{
+                'role': 'user', 
+                'content': f"{user_message}\n\n請只提供HTML程式碼部分，不要GS程式碼。"
+            }]
+            html_response = openai_client.get_response(html_prompt)
+            
+            # Add both to history as separate entries
+            chat_history.append({'role': 'assistant', 'content': gs_response})
+            chat_history.append({'role': 'assistant', 'content': html_response})
+            
+            # Update session
+            session['chat_history'] = chat_history
+            session.modified = True
+            
+            return jsonify({
+                'response': gs_response,
+                'html_response': html_response,
+                'is_apps_script': True,
+                'success': True
+            })
+        else:
+            # Regular single response
+            ai_response = openai_client.get_response(chat_history)
+            
+            # Add AI response to history
+            chat_history.append({
+                'role': 'assistant',
+                'content': ai_response
+            })
+            
+            # Update session with limited history
+            session['chat_history'] = chat_history
+            session.modified = True
+            
+            return jsonify({
+                'response': ai_response,
+                'success': True
+            })
         
     except Exception as e:
         logging.error(f"Error in chat endpoint: {str(e)}")
