@@ -1800,6 +1800,121 @@ class EnhancedAIAssistant {
         
         ModalManager.showModal(document.getElementById('designModal'), designModal);
     }
+
+    // 添加缺失的工具方法
+    openPasswordGenerator() {
+        if (typeof openPasswordGenerator === 'function') {
+            openPasswordGenerator();
+        } else {
+            this.showNotification('密碼生成器功能暫時不可用', 'error');
+        }
+    }
+
+    openCalculator() {
+        if (typeof openCalculator === 'function') {
+            openCalculator();
+        } else {
+            this.showNotification('計算器功能暫時不可用', 'error');
+        }
+    }
+
+    openURLShortener() {
+        const url = prompt('請輸入要縮短的網址:');
+        if (url) {
+            try {
+                // 驗證URL格式
+                new URL(url);
+                
+                // 這是一個簡單的縮短器，實際應用中應使用真實的API
+                const shortCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                const shortUrl = `https://short.ly/${shortCode}`;
+                
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write(`
+                    <html>
+                        <head><title>網址縮短器</title></head>
+                        <body style="font-family: Arial; text-align: center; padding: 20px;">
+                            <h2>網址縮短器</h2>
+                            <p><strong>原始網址:</strong></p>
+                            <div style="background: #f0f0f0; padding: 10px; margin: 10px; word-break: break-all; border: 1px solid #ccc;">
+                                ${url}
+                            </div>
+                            <p><strong>縮短網址:</strong></p>
+                            <div style="background: #e0f0ff; padding: 10px; margin: 10px; font-family: monospace; font-size: 18px; border: 1px solid #ccc;">
+                                ${shortUrl}
+                            </div>
+                            <button onclick="navigator.clipboard.writeText('${shortUrl}')">複製縮短網址</button>
+                            <br><br>
+                            <p class="text-muted">*這是示例功能，實際應用需要真實的縮短服務</p>
+                        </body>
+                    </html>
+                `);
+                
+            } catch (error) {
+                alert('請輸入有效的網址 (例如: https://example.com)');
+            }
+        }
+    }
+
+    openDateTimeConverter() {
+        const dateInput = prompt('請輸入日期時間 (例如: 2024-01-01 或 now):');
+        if (dateInput) {
+            try {
+                let date;
+                if (dateInput.toLowerCase() === 'now') {
+                    date = new Date();
+                } else {
+                    date = new Date(dateInput);
+                }
+                
+                if (isNaN(date.getTime())) {
+                    throw new Error('無效的日期格式');
+                }
+                
+                const timestamp = date.getTime();
+                const unixTimestamp = Math.floor(timestamp / 1000);
+                
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write(`
+                    <html>
+                        <head><title>時間轉換器</title></head>
+                        <body style="font-family: Arial; padding: 20px;">
+                            <h2>時間轉換器</h2>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr style="background: #f0f0f0;">
+                                    <th style="padding: 10px; border: 1px solid #ccc;">格式</th>
+                                    <th style="padding: 10px; border: 1px solid #ccc;">值</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ccc;">完整日期時間</td>
+                                    <td style="padding: 10px; border: 1px solid #ccc;">${date.toString()}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ccc;">ISO 8601</td>
+                                    <td style="padding: 10px; border: 1px solid #ccc;">${date.toISOString()}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ccc;">Unix 時間戳</td>
+                                    <td style="padding: 10px; border: 1px solid #ccc;">${unixTimestamp}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ccc;">毫秒時間戳</td>
+                                    <td style="padding: 10px; border: 1px solid #ccc;">${timestamp}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ccc;">本地時間</td>
+                                    <td style="padding: 10px; border: 1px solid #ccc;">${date.toLocaleString()}</td>
+                                </tr>
+                            </table>
+                        </body>
+                    </html>
+                `);
+                
+            } catch (error) {
+                alert('時間轉換錯誤：' + error.message);
+            }
+        }
+    }
 }
 
 // 初始化應用程式
