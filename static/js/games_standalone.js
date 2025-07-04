@@ -736,18 +736,31 @@ function initFarmStoryGame() {
                             <!-- 天空 -->
                             <rect width="600" height="180" fill="url(#skyGradient)"/>
                             
-                            <!-- 雲朵 -->
-                            <ellipse cx="100" cy="50" rx="25" ry="15" fill="white" opacity="0.8"/>
-                            <ellipse cx="110" cy="45" rx="30" ry="18" fill="white" opacity="0.7"/>
-                            <ellipse cx="450" cy="40" rx="20" ry="12" fill="white" opacity="0.8"/>
+                            <!-- 動畫雲朵 -->
+                            <g>
+                                <ellipse cx="100" cy="50" rx="25" ry="15" fill="white" opacity="0.8"/>
+                                <ellipse cx="110" cy="45" rx="30" ry="18" fill="white" opacity="0.7"/>
+                                <animateTransform attributeName="transform" type="translate" 
+                                    values="0,0; 50,-10; 0,0" dur="25s" repeatCount="indefinite"/>
+                            </g>
+                            <g>
+                                <ellipse cx="450" cy="40" rx="20" ry="12" fill="white" opacity="0.8"/>
+                                <animateTransform attributeName="transform" type="translate" 
+                                    values="0,0; -30,5; 0,0" dur="18s" repeatCount="indefinite"/>
+                            </g>
                             
-                            <!-- 太陽 -->
-                            <circle cx="520" cy="60" r="25" fill="#FFD700"/>
+                            <!-- 動畫太陽 -->
+                            <circle cx="520" cy="60" r="25" fill="#FFD700">
+                                <animate attributeName="r" values="25;28;25" dur="4s" repeatCount="indefinite"/>
+                            </circle>
                             <g stroke="#FFD700" stroke-width="2">
                                 <line x1="520" y1="20" x2="520" y2="10"/>
                                 <line x1="545" y1="35" x2="552" y2="28"/>
                                 <line x1="560" y1="60" x2="570" y2="60"/>
                                 <line x1="545" y1="85" x2="552" y2="92"/>
+                                <animateTransform attributeName="transform" type="rotate" 
+                                    values="0 520 60; 360 520 60" dur="20s" repeatCount="indefinite"/>
+                            </g>
                                 <line x1="495" y1="85" x2="488" y2="92"/>
                                 <line x1="480" y1="60" x2="470" y2="60"/>
                                 <line x1="495" y1="35" x2="488" y2="28"/>
@@ -768,6 +781,32 @@ function initFarmStoryGame() {
                             <rect x="145" y="165" width="12" height="12" fill="#87CEEB"/>
                             <text x="120" y="225" text-anchor="middle" font-size="10" fill="#333">村公所</text>
                             
+                            <!-- 村長湯姆 - 動畫NPC -->
+                            <g onclick="talkToNPC('村長湯姆')" style="cursor: pointer;">
+                                <!-- 身體 -->
+                                <ellipse cx="140" cy="240" rx="8" ry="15" fill="#4169E1"/>
+                                <!-- 頭部 -->
+                                <circle cx="140" cy="220" r="7" fill="#FDBCB4"/>
+                                <!-- 帽子 -->
+                                <ellipse cx="140" cy="216" rx="8" ry="4" fill="#8B4513"/>
+                                <!-- 手臂 -->
+                                <ellipse cx="130" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
+                                <ellipse cx="150" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
+                                <!-- 腿部 -->
+                                <ellipse cx="135" cy="255" rx="4" ry="12" fill="#000080"/>
+                                <ellipse cx="145" cy="255" rx="4" ry="12" fill="#000080"/>
+                                <!-- 揮手動畫 -->
+                                <animateTransform attributeName="transform" type="rotate" 
+                                    values="0 140 220; 3 140 220; 0 140 220" dur="3s" repeatCount="indefinite"/>
+                                
+                                <!-- 對話泡泡 -->
+                                <g opacity="0">
+                                    <ellipse cx="165" cy="205" rx="20" ry="10" fill="white" stroke="#333" stroke-width="1"/>
+                                    <text x="165" y="208" text-anchor="middle" font-size="8" fill="#333">歡迎來到村莊!</text>
+                                    <animate attributeName="opacity" values="0;1;0" dur="3s" begin="0s" repeatCount="indefinite"/>
+                                </g>
+                            </g>
+                            
                             <!-- 商店 -->
                             <rect x="200" y="155" width="70" height="55" fill="#FF6347"/>
                             <polygon points="200,155 235,130 270,155" fill="#8B0000"/>
@@ -775,12 +814,77 @@ function initFarmStoryGame() {
                             <rect x="235" y="170" width="25" height="15" fill="#87CEEB"/>
                             <text x="235" y="225" text-anchor="middle" font-size="10" fill="#333">商店</text>
                             
+                            <!-- 商店瑪麗 - 動畫NPC -->
+                            <g onclick="talkToNPC('商店瑪麗')" style="cursor: pointer;">
+                                <!-- 身體 -->
+                                <ellipse cx="255" cy="240" rx="8" ry="15" fill="#FF69B4"/>
+                                <!-- 頭部 -->
+                                <circle cx="255" cy="220" r="7" fill="#FDBCB4"/>
+                                <!-- 頭髮 -->
+                                <ellipse cx="255" cy="216" rx="8" ry="5" fill="#8B4513"/>
+                                <!-- 手臂 -->
+                                <ellipse cx="245" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
+                                <ellipse cx="265" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
+                                <!-- 腿部 -->
+                                <ellipse cx="250" cy="255" rx="4" ry="12" fill="#4169E1"/>
+                                <ellipse cx="260" cy="255" rx="4" ry="12" fill="#4169E1"/>
+                                <!-- 購物籃動畫 -->
+                                <rect x="268" y="230" width="6" height="4" fill="#8B4513">
+                                    <animateTransform attributeName="transform" type="translate" 
+                                        values="0,0; 2,-1; 0,0" dur="2s" repeatCount="indefinite"/>
+                                </rect>
+                                
+                                <!-- 對話泡泡 -->
+                                <g opacity="0">
+                                    <ellipse cx="280" cy="205" rx="22" ry="10" fill="white" stroke="#333" stroke-width="1"/>
+                                    <text x="280" y="208" text-anchor="middle" font-size="8" fill="#333">歡迎光臨商店!</text>
+                                    <animate attributeName="opacity" values="0;1;0" dur="2.5s" begin="1s" repeatCount="indefinite"/>
+                                </g>
+                            </g>
+                            
                             <!-- 鐵匠鋪 -->
                             <rect x="320" y="160" width="75" height="50" fill="#696969"/>
                             <polygon points="320,160 357.5,140 395,160" fill="#2F4F4F"/>
                             <rect x="330" y="180" width="12" height="18" fill="#654321"/>
                             <rect x="350" y="175" width="15" height="15" fill="#FF4500"/>
                             <text x="357" y="225" text-anchor="middle" font-size="10" fill="#333">鐵匠</text>
+                            
+                            <!-- 鐵匠傑克 - 動畫NPC -->
+                            <g onclick="talkToNPC('鐵匠傑克')" style="cursor: pointer;">
+                                <!-- 身體 -->
+                                <ellipse cx="375" cy="240" rx="9" ry="15" fill="#8B4513"/>
+                                <!-- 頭部 -->
+                                <circle cx="375" cy="220" r="7" fill="#FDBCB4"/>
+                                <!-- 鬍子 -->
+                                <ellipse cx="375" cy="225" rx="5" ry="3" fill="#8B4513"/>
+                                <!-- 手臂 -->
+                                <ellipse cx="365" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
+                                <ellipse cx="385" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
+                                <!-- 腿部 -->
+                                <ellipse cx="370" cy="255" rx="4" ry="12" fill="#654321"/>
+                                <ellipse cx="380" cy="255" rx="4" ry="12" fill="#654321"/>
+                                <!-- 錘子動畫 -->
+                                <rect x="388" y="225" width="3" height="10" fill="#8B4513"/>
+                                <circle cx="390" cy="223" r="3" fill="#C0C0C0">
+                                    <animateTransform attributeName="transform" type="rotate" 
+                                        values="0 390 225; -40 390 225; 0 390 225" dur="1.5s" repeatCount="indefinite"/>
+                                </circle>
+                                
+                                <!-- 火花效果 -->
+                                <circle cx="370" cy="240" r="1" fill="#FFD700" opacity="0">
+                                    <animate attributeName="opacity" values="0;1;0" dur="0.5s" begin="0.5s" repeatCount="indefinite"/>
+                                </circle>
+                                <circle cx="375" cy="242" r="1" fill="#FF6347" opacity="0">
+                                    <animate attributeName="opacity" values="0;1;0" dur="0.3s" begin="0.7s" repeatCount="indefinite"/>
+                                </circle>
+                                
+                                <!-- 對話泡泡 -->
+                                <g opacity="0">
+                                    <ellipse cx="400" cy="205" rx="25" ry="10" fill="white" stroke="#333" stroke-width="1"/>
+                                    <text x="400" y="208" text-anchor="middle" font-size="8" fill="#333">需要修理什麼嗎？</text>
+                                    <animate attributeName="opacity" values="0;1;0" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+                                </g>
+                            </g>
                             
                             <!-- 診所 -->
                             <rect x="450" y="155" width="70" height="55" fill="#FFF8DC"/>
@@ -792,7 +896,38 @@ function initFarmStoryGame() {
                             <rect x="485" y="164" width="8" height="4" fill="white"/>
                             <text x="485" y="225" text-anchor="middle" font-size="10" fill="#333">診所</text>
                             
-                            <!-- 樹木 -->
+                            <!-- 醫生莉莉 - 動畫NPC -->
+                            <g onclick="talkToNPC('醫生莉莉')" style="cursor: pointer;">
+                                <!-- 身體 -->
+                                <ellipse cx="505" cy="240" rx="8" ry="15" fill="white"/>
+                                <!-- 頭部 -->
+                                <circle cx="505" cy="220" r="7" fill="#FDBCB4"/>
+                                <!-- 頭髮 -->
+                                <ellipse cx="505" cy="216" rx="7" ry="4" fill="#DAA520"/>
+                                <!-- 手臂 -->
+                                <ellipse cx="495" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
+                                <ellipse cx="515" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
+                                <!-- 腿部 -->
+                                <ellipse cx="500" cy="255" rx="4" ry="12" fill="white"/>
+                                <ellipse cx="510" cy="255" rx="4" ry="12" fill="white"/>
+                                <!-- 聽診器 -->
+                                <ellipse cx="505" cy="230" rx="8" ry="2" fill="#C0C0C0" stroke="#000" stroke-width="0.5"/>
+                                <!-- 醫療包動畫 -->
+                                <rect x="518" y="230" width="8" height="6" fill="#FF0000" rx="1">
+                                    <animateTransform attributeName="transform" type="translate" 
+                                        values="0,0; 0,-2; 0,0" dur="2s" repeatCount="indefinite"/>
+                                </rect>
+                                <path d="M 522 232 L 522 234 M 520 233 L 524 233" stroke="white" stroke-width="0.8"/>
+                                
+                                <!-- 對話泡泡 -->
+                                <g opacity="0">
+                                    <ellipse cx="530" cy="205" rx="20" ry="10" fill="white" stroke="#333" stroke-width="1"/>
+                                    <text x="530" y="208" text-anchor="middle" font-size="8" fill="#333">保持健康哦!</text>
+                                    <animate attributeName="opacity" values="0;1;0" dur="3s" begin="2s" repeatCount="indefinite"/>
+                                </g>
+                            </g>
+                            
+                            <!-- 動畫樹木 -->
                             <circle cx="50" cy="195" r="15" fill="#228B22"/>
                             <rect x="47" y="200" width="6" height="20" fill="#8B4513"/>
                             <circle cx="550" cy="190" r="18" fill="#32CD32"/>
@@ -803,6 +938,37 @@ function initFarmStoryGame() {
                             <circle cx="250" cy="275" r="3" fill="#FFA500"/>
                             <circle cx="350" cy="270" r="3" fill="#9370DB"/>
                             <circle cx="450" cy="275" r="3" fill="#FF1493"/>
+                            
+                            <!-- 飛鳥動畫 -->
+                            <g>
+                                <ellipse cx="400" cy="90" rx="4" ry="1" fill="#333">
+                                    <animateTransform attributeName="transform" type="translate" 
+                                        values="0,0; 150,-30; 300,10" dur="15s" repeatCount="indefinite"/>
+                                </ellipse>
+                                <ellipse cx="405" cy="88" rx="3" ry="1" fill="#333">
+                                    <animateTransform attributeName="transform" type="translate" 
+                                        values="0,0; 150,-30; 300,10" dur="15s" begin="0.5s" repeatCount="indefinite"/>
+                                </ellipse>
+                            </g>
+                            
+                            <!-- 動畫樹木搖擺 -->
+                            <g>
+                                <circle cx="580" cy="200" r="18" fill="#228B22">
+                                    <animateTransform attributeName="transform" type="scale" 
+                                        values="1;1.05;1" dur="8s" repeatCount="indefinite"/>
+                                </circle>
+                                <rect x="577" y="210" width="6" height="25" fill="#8B4513"/>
+                            </g>
+                            
+                            <!-- 場景光芒效果 -->
+                            <circle cx="300" cy="280" r="3" fill="#FFD700" opacity="0">
+                                <animate attributeName="opacity" values="0;0.6;0" dur="4s" repeatCount="indefinite"/>
+                                <animateTransform attributeName="transform" type="scale" 
+                                    values="0;2;0" dur="4s" repeatCount="indefinite"/>
+                            </circle>
+                            
+                            <!-- 互動提示 -->
+                            <text x="300" y="25" text-anchor="middle" font-size="14" fill="white" font-weight="bold">🏘️ 寧靜村莊 - 點擊動畫人物對話互動！</text>
                         </svg>
                     </div>
                     
@@ -1378,6 +1544,103 @@ function initFarmStoryGame() {
         } else {
             showMessage('金錢不足！');
         }
+    };
+    
+    // 補充缺少的農場活動函數
+    window.waterCrops = function() {
+        if (farmGameState.player.energy >= 10) {
+            farmGameState.player.energy -= 10;
+            showMessage('澆水完成！作物正在茁壯成長。');
+        } else {
+            showMessage('精力不足！需要休息。');
+        }
+    };
+    
+    window.plantCrops = function() {
+        if (farmGameState.inventory.seeds.carrot > 0) {
+            farmGameState.inventory.seeds.carrot--;
+            farmGameState.player.energy -= 5;
+            showMessage('種下了蘿蔔種子！記得澆水。');
+        } else {
+            showMessage('沒有種子！去商店購買吧。');
+        }
+    };
+    
+    window.harvestCrops = function() {
+        const earned = Math.floor(Math.random() * 50) + 30;
+        farmGameState.player.money += earned;
+        farmGameState.player.experience += 15;
+        showMessage(`收穫成功！獲得${earned}金幣和15經驗。`);
+    };
+    
+    window.collectWood = function() {
+        if (farmGameState.player.energy >= 15) {
+            farmGameState.player.energy -= 15;
+            const wood = Math.floor(Math.random() * 3) + 1;
+            farmGameState.player.money += wood * 10;
+            showMessage(`收集了${wood}塊木材！獲得${wood * 10}金幣。`);
+        } else {
+            showMessage('精力不足！需要休息。');
+        }
+    };
+    
+    window.findBerries = function() {
+        if (farmGameState.player.energy >= 8) {
+            farmGameState.player.energy -= 8;
+            const berries = Math.floor(Math.random() * 5) + 2;
+            farmGameState.player.money += berries * 5;
+            showMessage(`找到了${berries}個漿果！獲得${berries * 5}金幣。`);
+        } else {
+            showMessage('精力不足！需要休息。');
+        }
+    };
+    
+    window.mineOre = function() {
+        if (farmGameState.player.energy >= 20) {
+            farmGameState.player.energy -= 20;
+            const ore = Math.floor(Math.random() * 2) + 1;
+            farmGameState.player.money += ore * 25;
+            showMessage(`挖到了${ore}塊礦石！獲得${ore * 25}金幣。`);
+        } else {
+            showMessage('精力不足！需要休息。');
+        }
+    };
+    
+    window.exploreDeeper = function() {
+        if (farmGameState.player.energy >= 25) {
+            farmGameState.player.energy -= 25;
+            const treasure = Math.floor(Math.random() * 100) + 50;
+            farmGameState.player.money += treasure;
+            showMessage(`探索更深處發現寶藏！獲得${treasure}金幣。`);
+        } else {
+            showMessage('精力不足！需要休息。');
+        }
+    };
+    
+    // 添加缺少的函數
+    window.showInventory = function() {
+        const inventory = farmGameState.inventory;
+        const inventoryText = `
+            背包物品：
+            種子：🥕 蘿蔔${inventory.seeds.carrot} 🌽 玉米${inventory.seeds.corn}
+            作物：🥕 ${inventory.crops.carrot} 🌽 ${inventory.crops.corn}
+            工具：⛏️ 鋤頭${inventory.tools.hoe} 🪣 澆水器${inventory.tools.watering_can}
+            藥水：⚡ 能量藥水${inventory.items.energy_potion}
+        `;
+        showMessage(inventoryText);
+    };
+    
+    window.showGameStats = function() {
+        const stats = `
+            遊戲統計：
+            玩家：${farmGameState.player.name} 等級${farmGameState.player.level}
+            健康：${farmGameState.player.health}/100
+            精力：${farmGameState.player.energy}/100
+            金錢：${farmGameState.player.money}
+            經驗：${farmGameState.player.experience}
+            AI助手剩餘：${farmGameState.aiUsesLeft}/10次
+        `;
+        showMessage(stats);
     };
     
     // 開始遊戲
