@@ -61,10 +61,18 @@ db = SQLAlchemy(app, model_class=Base)
 # Initialize OpenAI client
 openai_client = OpenAIClient()
 
-# Create database tables
+# Create database tables and initialize models globally
+_model_classes = None
+
+def get_models():
+    global _model_classes
+    if _model_classes is None:
+        import models
+        _model_classes = models.init_db(db)
+    return _model_classes
+
 with app.app_context():
-    import models
-    models.init_db(db)
+    get_models()  # Initialize models once
     db.create_all()
 
 @app.route('/')
@@ -1459,8 +1467,7 @@ def create_collaboration_room():
         room_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         
         # 使用資料庫模型創建房間
-        import models
-        model_classes = models.init_db(db)
+        model_classes = get_models()
         CollaborationRoom = model_classes['CollaborationRoom']
         
         new_room = CollaborationRoom(
@@ -1501,8 +1508,7 @@ def join_collaboration_room():
             return jsonify({'success': False, 'error': '房間代碼不能為空'})
         
         # 使用資料庫模型查詢房間
-        import models
-        model_classes = models.init_db(db)
+        model_classes = get_models()
         CollaborationRoom = model_classes['CollaborationRoom']
         RoomParticipant = model_classes['RoomParticipant']
         
@@ -1566,8 +1572,7 @@ def leave_collaboration_room():
             return jsonify({'success': False, 'error': '缺少必要參數'})
         
         # 使用資料庫模型
-        import models
-        model_classes = models.init_db(db)
+        model_classes = get_models()
         CollaborationRoom = model_classes['CollaborationRoom']
         RoomParticipant = model_classes['RoomParticipant']
         
@@ -1597,8 +1602,7 @@ def get_room_info(room_code):
     """獲取房間資訊"""
     try:
         # 使用資料庫模型
-        import models
-        model_classes = models.init_db(db)
+        model_classes = get_models()
         CollaborationRoom = model_classes['CollaborationRoom']
         RoomParticipant = model_classes['RoomParticipant']
         
