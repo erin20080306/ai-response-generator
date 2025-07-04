@@ -654,1004 +654,698 @@ function initMahjongGame() {
 let farmGameState = null;
 
 function initFarmStoryGame() {
+    // 載入專業遊戲UI樣式
+    const farmUILink = document.createElement('link');
+    farmUILink.rel = 'stylesheet';
+    farmUILink.href = '/static/css/farm_story_ui.css';
+    document.head.appendChild(farmUILink);
+    
+    // 創建專業遊戲介面
+    createProfessionalFarmUI();
+}
+
+function createProfessionalFarmUI() {
     const board = document.getElementById('farmStoryBoard');
     if (!board) return;
     
     // 初始化遊戲狀態
-    farmGameState = {
+    initializeFarmGameState();
+    
+    // 創建載入畫面
+    showLoadingScreen();
+    
+    // 延遲載入主遊戲介面
+    setTimeout(() => {
+        createMainGameInterface();
+        hideLoadingScreen();
+    }, 2000);
+}
+
+function initializeFarmGameState() {
+    window.farmGameState = {
         player: {
-            name: '農場主',
+            name: '農夫小明',
+            level: 1,
             health: 100,
             energy: 100,
             money: 500,
-            level: 1,
-            experience: 0
+            experience: 0,
+            x: 300,
+            y: 250,
+            currentScene: 'village'
         },
         inventory: {
-            seeds: { carrot: 5, corn: 3 },
-            tools: { hoe: 1, watering_can: 1 },
-            crops: { carrot: 0, corn: 0 },
-            items: { energy_potion: 2 }
-        },
-        farm: {
-            plots: Array(9).fill(null), // 3x3 農田
-            water_status: Array(9).fill(false)
+            seeds: { carrot: 5, corn: 3, potato: 2 },
+            crops: { carrot: 8, corn: 5, potato: 3 },
+            tools: { hoe: 1, watering_can: 1, axe: 1, pickaxe: 1 },
+            items: { energy_potion: 3, health_potion: 2 }
         },
         npcs: {
-            mayor_tom: { friendship: 50, quests: [] },
-            shop_mary: { friendship: 30, quests: [] },
-            blacksmith_jack: { friendship: 20, quests: [] },
-            doctor_lily: { friendship: 40, quests: [] }
+            mayor_tom: { friendship: 50, dialogue_count: 0 },
+            shop_mary: { friendship: 30, dialogue_count: 0 },
+            blacksmith_jack: { friendship: 40, dialogue_count: 0 },
+            doctor_lily: { friendship: 25, dialogue_count: 0 }
         },
         aiUsesLeft: 10,
-        currentScene: 'village'
+        currentWeather: 'sunny',
+        timeOfDay: 'morning',
+        season: 'spring',
+        day: 1
     };
+}
+
+function showLoadingScreen() {
+    const board = document.getElementById('farmStoryBoard');
+    board.innerHTML = `
+        <div class="game-loading">
+            <div class="loading-logo">🌱 農場物語</div>
+            <div class="loading-bar">
+                <div class="loading-progress" style="width: 0%"></div>
+            </div>
+            <div style="margin-top: 20px; color: #8B4513; font-weight: bold;">載入中...</div>
+        </div>
+    `;
     
-    // 將函數定義為全域可訪問
-    window.showVillageScene = function() {
-        farmGameState.currentScene = 'village';
-        window.window.updateDisplay();
-    };
-    
-    window.updateDisplay = function() {
-        let content = '';
-        
-        if (farmGameState.currentScene === 'village') {
-            content = `
-                <div class="farm-story-rpg">
-                    <div class="player-status mb-3">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>🧑‍🌾 ${farmGameState.player.name} (等級 ${farmGameState.player.level})</h6>
-                                <div class="progress mb-1" style="height: 15px;">
-                                    <div class="progress-bar bg-success" style="width: ${farmGameState.player.health}%">${farmGameState.player.health}/100 ❤️</div>
-                                </div>
-                                <div class="progress mb-2" style="height: 15px;">
-                                    <div class="progress-bar bg-info" style="width: ${farmGameState.player.energy}%">${farmGameState.player.energy}/100 ⚡</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <p class="mb-1">💰 金錢: ${farmGameState.player.money}</p>
-                                <p class="mb-1">⭐ 經驗: ${farmGameState.player.experience}</p>
-                                <p class="mb-0">🤖 AI助手剩餘: ${farmGameState.aiUsesLeft}次</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 村莊真實視覺場景 -->
-                    <div class="scene-visual mb-3">
-                        <svg viewBox="0 0 600 300" class="village-svg">
-                            <!-- 天空背景 -->
-                            <defs>
-                                <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#E0F6FF;stop-opacity:1" />
-                                </linearGradient>
-                                <linearGradient id="grassGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#90EE90;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#228B22;stop-opacity:1" />
-                                </linearGradient>
-                            </defs>
-                            
-                            <!-- 天空 -->
-                            <rect width="600" height="180" fill="url(#skyGradient)"/>
-                            
-                            <!-- 動畫雲朵 -->
-                            <g>
-                                <ellipse cx="100" cy="50" rx="25" ry="15" fill="white" opacity="0.8"/>
-                                <ellipse cx="110" cy="45" rx="30" ry="18" fill="white" opacity="0.7"/>
-                                <animateTransform attributeName="transform" type="translate" 
-                                    values="0,0; 50,-10; 0,0" dur="25s" repeatCount="indefinite"/>
-                            </g>
-                            <g>
-                                <ellipse cx="450" cy="40" rx="20" ry="12" fill="white" opacity="0.8"/>
-                                <animateTransform attributeName="transform" type="translate" 
-                                    values="0,0; -30,5; 0,0" dur="18s" repeatCount="indefinite"/>
-                            </g>
-                            
-                            <!-- 動畫太陽 -->
-                            <circle cx="520" cy="60" r="25" fill="#FFD700">
-                                <animate attributeName="r" values="25;28;25" dur="4s" repeatCount="indefinite"/>
-                            </circle>
-                            <g stroke="#FFD700" stroke-width="2">
-                                <line x1="520" y1="20" x2="520" y2="10"/>
-                                <line x1="545" y1="35" x2="552" y2="28"/>
-                                <line x1="560" y1="60" x2="570" y2="60"/>
-                                <line x1="545" y1="85" x2="552" y2="92"/>
-                                <animateTransform attributeName="transform" type="rotate" 
-                                    values="0 520 60; 360 520 60" dur="20s" repeatCount="indefinite"/>
-                            </g>
-                                <line x1="495" y1="85" x2="488" y2="92"/>
-                                <line x1="480" y1="60" x2="470" y2="60"/>
-                                <line x1="495" y1="35" x2="488" y2="28"/>
-                            </g>
-                            
-                            <!-- 地面 -->
-                            <rect x="0" y="180" width="600" height="120" fill="url(#grassGradient)"/>
-                            
-                            <!-- 道路 -->
-                            <path d="M 0 250 Q 150 240 300 250 Q 450 260 600 250" stroke="#8B4513" stroke-width="20" fill="none"/>
-                            <path d="M 0 255 Q 150 245 300 255 Q 450 265 600 255" stroke="#D2B48C" stroke-width="12" fill="none"/>
-                            
-                            <!-- 村公所 -->
-                            <rect x="80" y="150" width="80" height="60" fill="#B8860B"/>
-                            <polygon points="80,150 120,120 160,150" fill="#8B4513"/>
-                            <rect x="95" y="170" width="15" height="25" fill="#654321"/>
-                            <rect x="125" y="165" width="12" height="12" fill="#87CEEB"/>
-                            <rect x="145" y="165" width="12" height="12" fill="#87CEEB"/>
-                            <text x="120" y="225" text-anchor="middle" font-size="10" fill="#333">村公所</text>
-                            
-                            <!-- 村長湯姆 - 動畫NPC -->
-                            <g onclick="talkToNPC('村長湯姆')" style="cursor: pointer;">
-                                <!-- 身體 -->
-                                <ellipse cx="140" cy="240" rx="8" ry="15" fill="#4169E1"/>
-                                <!-- 頭部 -->
-                                <circle cx="140" cy="220" r="7" fill="#FDBCB4"/>
-                                <!-- 帽子 -->
-                                <ellipse cx="140" cy="216" rx="8" ry="4" fill="#8B4513"/>
-                                <!-- 手臂 -->
-                                <ellipse cx="130" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
-                                <ellipse cx="150" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
-                                <!-- 腿部 -->
-                                <ellipse cx="135" cy="255" rx="4" ry="12" fill="#000080"/>
-                                <ellipse cx="145" cy="255" rx="4" ry="12" fill="#000080"/>
-                                <!-- 揮手動畫 -->
-                                <animateTransform attributeName="transform" type="rotate" 
-                                    values="0 140 220; 3 140 220; 0 140 220" dur="3s" repeatCount="indefinite"/>
-                                
-                                <!-- 對話泡泡 -->
-                                <g opacity="0">
-                                    <ellipse cx="165" cy="205" rx="20" ry="10" fill="white" stroke="#333" stroke-width="1"/>
-                                    <text x="165" y="208" text-anchor="middle" font-size="8" fill="#333">歡迎來到村莊!</text>
-                                    <animate attributeName="opacity" values="0;1;0" dur="3s" begin="0s" repeatCount="indefinite"/>
-                                </g>
-                            </g>
-                            
-                            <!-- 商店 -->
-                            <rect x="200" y="155" width="70" height="55" fill="#FF6347"/>
-                            <polygon points="200,155 235,130 270,155" fill="#8B0000"/>
-                            <rect x="210" y="175" width="12" height="20" fill="#8B4513"/>
-                            <rect x="235" y="170" width="25" height="15" fill="#87CEEB"/>
-                            <text x="235" y="225" text-anchor="middle" font-size="10" fill="#333">商店</text>
-                            
-                            <!-- 商店瑪麗 - 動畫NPC -->
-                            <g onclick="talkToNPC('商店瑪麗')" style="cursor: pointer;">
-                                <!-- 身體 -->
-                                <ellipse cx="255" cy="240" rx="8" ry="15" fill="#FF69B4"/>
-                                <!-- 頭部 -->
-                                <circle cx="255" cy="220" r="7" fill="#FDBCB4"/>
-                                <!-- 頭髮 -->
-                                <ellipse cx="255" cy="216" rx="8" ry="5" fill="#8B4513"/>
-                                <!-- 手臂 -->
-                                <ellipse cx="245" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
-                                <ellipse cx="265" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
-                                <!-- 腿部 -->
-                                <ellipse cx="250" cy="255" rx="4" ry="12" fill="#4169E1"/>
-                                <ellipse cx="260" cy="255" rx="4" ry="12" fill="#4169E1"/>
-                                <!-- 購物籃動畫 -->
-                                <rect x="268" y="230" width="6" height="4" fill="#8B4513">
-                                    <animateTransform attributeName="transform" type="translate" 
-                                        values="0,0; 2,-1; 0,0" dur="2s" repeatCount="indefinite"/>
-                                </rect>
-                                
-                                <!-- 對話泡泡 -->
-                                <g opacity="0">
-                                    <ellipse cx="280" cy="205" rx="22" ry="10" fill="white" stroke="#333" stroke-width="1"/>
-                                    <text x="280" y="208" text-anchor="middle" font-size="8" fill="#333">歡迎光臨商店!</text>
-                                    <animate attributeName="opacity" values="0;1;0" dur="2.5s" begin="1s" repeatCount="indefinite"/>
-                                </g>
-                            </g>
-                            
-                            <!-- 鐵匠鋪 -->
-                            <rect x="320" y="160" width="75" height="50" fill="#696969"/>
-                            <polygon points="320,160 357.5,140 395,160" fill="#2F4F4F"/>
-                            <rect x="330" y="180" width="12" height="18" fill="#654321"/>
-                            <rect x="350" y="175" width="15" height="15" fill="#FF4500"/>
-                            <text x="357" y="225" text-anchor="middle" font-size="10" fill="#333">鐵匠</text>
-                            
-                            <!-- 鐵匠傑克 - 動畫NPC -->
-                            <g onclick="talkToNPC('鐵匠傑克')" style="cursor: pointer;">
-                                <!-- 身體 -->
-                                <ellipse cx="375" cy="240" rx="9" ry="15" fill="#8B4513"/>
-                                <!-- 頭部 -->
-                                <circle cx="375" cy="220" r="7" fill="#FDBCB4"/>
-                                <!-- 鬍子 -->
-                                <ellipse cx="375" cy="225" rx="5" ry="3" fill="#8B4513"/>
-                                <!-- 手臂 -->
-                                <ellipse cx="365" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
-                                <ellipse cx="385" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
-                                <!-- 腿部 -->
-                                <ellipse cx="370" cy="255" rx="4" ry="12" fill="#654321"/>
-                                <ellipse cx="380" cy="255" rx="4" ry="12" fill="#654321"/>
-                                <!-- 錘子動畫 -->
-                                <rect x="388" y="225" width="3" height="10" fill="#8B4513"/>
-                                <circle cx="390" cy="223" r="3" fill="#C0C0C0">
-                                    <animateTransform attributeName="transform" type="rotate" 
-                                        values="0 390 225; -40 390 225; 0 390 225" dur="1.5s" repeatCount="indefinite"/>
-                                </circle>
-                                
-                                <!-- 火花效果 -->
-                                <circle cx="370" cy="240" r="1" fill="#FFD700" opacity="0">
-                                    <animate attributeName="opacity" values="0;1;0" dur="0.5s" begin="0.5s" repeatCount="indefinite"/>
-                                </circle>
-                                <circle cx="375" cy="242" r="1" fill="#FF6347" opacity="0">
-                                    <animate attributeName="opacity" values="0;1;0" dur="0.3s" begin="0.7s" repeatCount="indefinite"/>
-                                </circle>
-                                
-                                <!-- 對話泡泡 -->
-                                <g opacity="0">
-                                    <ellipse cx="400" cy="205" rx="25" ry="10" fill="white" stroke="#333" stroke-width="1"/>
-                                    <text x="400" y="208" text-anchor="middle" font-size="8" fill="#333">需要修理什麼嗎？</text>
-                                    <animate attributeName="opacity" values="0;1;0" dur="3s" begin="1.5s" repeatCount="indefinite"/>
-                                </g>
-                            </g>
-                            
-                            <!-- 診所 -->
-                            <rect x="450" y="155" width="70" height="55" fill="#FFF8DC"/>
-                            <polygon points="450,155 485,135 520,155" fill="#DC143C"/>
-                            <rect x="460" y="175" width="12" height="20" fill="#8B4513"/>
-                            <rect x="480" y="170" width="15" height="15" fill="#87CEEB"/>
-                            <rect x="485" y="162" width="8" height="8" fill="#DC143C"/>
-                            <rect x="487" y="160" width="4" height="12" fill="white"/>
-                            <rect x="485" y="164" width="8" height="4" fill="white"/>
-                            <text x="485" y="225" text-anchor="middle" font-size="10" fill="#333">診所</text>
-                            
-                            <!-- 醫生莉莉 - 動畫NPC -->
-                            <g onclick="talkToNPC('醫生莉莉')" style="cursor: pointer;">
-                                <!-- 身體 -->
-                                <ellipse cx="505" cy="240" rx="8" ry="15" fill="white"/>
-                                <!-- 頭部 -->
-                                <circle cx="505" cy="220" r="7" fill="#FDBCB4"/>
-                                <!-- 頭髮 -->
-                                <ellipse cx="505" cy="216" rx="7" ry="4" fill="#DAA520"/>
-                                <!-- 手臂 -->
-                                <ellipse cx="495" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
-                                <ellipse cx="515" cy="235" rx="4" ry="10" fill="#FDBCB4"/>
-                                <!-- 腿部 -->
-                                <ellipse cx="500" cy="255" rx="4" ry="12" fill="white"/>
-                                <ellipse cx="510" cy="255" rx="4" ry="12" fill="white"/>
-                                <!-- 聽診器 -->
-                                <ellipse cx="505" cy="230" rx="8" ry="2" fill="#C0C0C0" stroke="#000" stroke-width="0.5"/>
-                                <!-- 醫療包動畫 -->
-                                <rect x="518" y="230" width="8" height="6" fill="#FF0000" rx="1">
-                                    <animateTransform attributeName="transform" type="translate" 
-                                        values="0,0; 0,-2; 0,0" dur="2s" repeatCount="indefinite"/>
-                                </rect>
-                                <path d="M 522 232 L 522 234 M 520 233 L 524 233" stroke="white" stroke-width="0.8"/>
-                                
-                                <!-- 對話泡泡 -->
-                                <g opacity="0">
-                                    <ellipse cx="530" cy="205" rx="20" ry="10" fill="white" stroke="#333" stroke-width="1"/>
-                                    <text x="530" y="208" text-anchor="middle" font-size="8" fill="#333">保持健康哦!</text>
-                                    <animate attributeName="opacity" values="0;1;0" dur="3s" begin="2s" repeatCount="indefinite"/>
-                                </g>
-                            </g>
-                            
-                            <!-- 動畫樹木 -->
-                            <circle cx="50" cy="195" r="15" fill="#228B22"/>
-                            <rect x="47" y="200" width="6" height="20" fill="#8B4513"/>
-                            <circle cx="550" cy="190" r="18" fill="#32CD32"/>
-                            <rect x="547" y="195" width="6" height="25" fill="#8B4513"/>
-                            
-                            <!-- 花朵 -->
-                            <circle cx="150" cy="270" r="3" fill="#FF69B4"/>
-                            <circle cx="250" cy="275" r="3" fill="#FFA500"/>
-                            <circle cx="350" cy="270" r="3" fill="#9370DB"/>
-                            <circle cx="450" cy="275" r="3" fill="#FF1493"/>
-                            
-                            <!-- 飛鳥動畫 -->
-                            <g>
-                                <ellipse cx="400" cy="90" rx="4" ry="1" fill="#333">
-                                    <animateTransform attributeName="transform" type="translate" 
-                                        values="0,0; 150,-30; 300,10" dur="15s" repeatCount="indefinite"/>
-                                </ellipse>
-                                <ellipse cx="405" cy="88" rx="3" ry="1" fill="#333">
-                                    <animateTransform attributeName="transform" type="translate" 
-                                        values="0,0; 150,-30; 300,10" dur="15s" begin="0.5s" repeatCount="indefinite"/>
-                                </ellipse>
-                            </g>
-                            
-                            <!-- 動畫樹木搖擺 -->
-                            <g>
-                                <circle cx="580" cy="200" r="18" fill="#228B22">
-                                    <animateTransform attributeName="transform" type="scale" 
-                                        values="1;1.05;1" dur="8s" repeatCount="indefinite"/>
-                                </circle>
-                                <rect x="577" y="210" width="6" height="25" fill="#8B4513"/>
-                            </g>
-                            
-                            <!-- 場景光芒效果 -->
-                            <circle cx="300" cy="280" r="3" fill="#FFD700" opacity="0">
-                                <animate attributeName="opacity" values="0;0.6;0" dur="4s" repeatCount="indefinite"/>
-                                <animateTransform attributeName="transform" type="scale" 
-                                    values="0;2;0" dur="4s" repeatCount="indefinite"/>
-                            </circle>
-                            
-                            <!-- 互動提示 -->
-                            <text x="300" y="25" text-anchor="middle" font-size="14" fill="white" font-weight="bold">🏘️ 寧靜村莊 - 點擊動畫人物對話互動！</text>
-                        </svg>
-                    </div>
-                    
-                    <div class="scene-content">
-                        <h6>🏘️ 村莊廣場</h6>
-                        <p>陽光燦爛的一天，村莊裡很熱鬧。噴泉在廣場中央潺潺流淌，鳥兒在樹梢歌唱。</p>
-                        
-                        <div class="npcs-area mb-3">
-                            <h6>村民：</h6>
-                            <div class="row">
-                                <div class="col-6 col-md-3 mb-2">
-                                    <button class="btn btn-outline-primary btn-sm w-100" onclick="talkToNPC('村長湯姆')">
-                                        👨‍💼 村長湯姆<br><small>友好度: ${farmGameState.npcs.mayor_tom.friendship}</small>
-                                    </button>
-                                </div>
-                                <div class="col-6 col-md-3 mb-2">
-                                    <button class="btn btn-outline-success btn-sm w-100" onclick="talkToNPC('商店瑪麗')">
-                                        👩‍💼 商店瑪麗<br><small>友好度: ${farmGameState.npcs.shop_mary.friendship}</small>
-                                    </button>
-                                </div>
-                                <div class="col-6 col-md-3 mb-2">
-                                    <button class="btn btn-outline-warning btn-sm w-100" onclick="talkToNPC('鐵匠傑克')">
-                                        🔨 鐵匠傑克<br><small>友好度: ${farmGameState.npcs.blacksmith_jack.friendship}</small>
-                                    </button>
-                                </div>
-                                <div class="col-6 col-md-3 mb-2">
-                                    <button class="btn btn-outline-info btn-sm w-100" onclick="talkToNPC('醫生莉莉')">
-                                        👩‍⚕️ 醫生莉莉<br><small>友好度: ${farmGameState.npcs.doctor_lily.friendship}</small>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="locations-area mb-3">
-                            <h6>地點：</h6>
-                            <div class="row">
-                                <div class="col-6 col-md-4 mb-2">
-                                    <button class="btn btn-success w-100" onclick="goToFarm()">🚜 我的農場</button>
-                                </div>
-                                <div class="col-6 col-md-4 mb-2">
-                                    <button class="btn btn-secondary w-100" onclick="goToForest()">🌲 森林</button>
-                                </div>
-                                <div class="col-6 col-md-4 mb-2">
-                                    <button class="btn btn-dark w-100" onclick="goToMine()">⛏️ 礦坑</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="quick-actions">
-                            <button class="btn btn-info btn-sm me-2" onclick="showInventory()">🎒 背包</button>
-                            <button class="btn btn-warning btn-sm me-2" onclick="useAIHelper()">🤖 AI助手</button>
-                            <button class="btn btn-light btn-sm" onclick="showGameStats()">📊 統計</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else if (farmGameState.currentScene === 'farm') {
-            content = `
-                <div class="farm-scene">
-                    <!-- 農場真實視覺場景 -->
-                    <div class="scene-visual mb-3">
-                        <svg viewBox="0 0 600 300" class="farm-svg">
-                            <!-- 農場天空 -->
-                            <rect width="600" height="160" fill="url(#farmSkyGradient)"/>
-                            <defs>
-                                <linearGradient id="farmSkyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#87CEEB;stop-opacity:1" />
-                                </linearGradient>
-                                <linearGradient id="fieldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#98FB98;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#6B8E23;stop-opacity:1" />
-                                </linearGradient>
-                            </defs>
-                            
-                            <!-- 雲朵 -->
-                            <ellipse cx="150" cy="40" rx="20" ry="12" fill="white" opacity="0.9"/>
-                            <ellipse cx="400" cy="50" rx="25" ry="15" fill="white" opacity="0.8"/>
-                            
-                            <!-- 太陽 -->
-                            <circle cx="500" cy="50" r="20" fill="#FFD700"/>
-                            
-                            <!-- 遠山 -->
-                            <polygon points="0,120 100,80 200,100 300,70 400,90 500,75 600,85 600,160 0,160" fill="#8FBC8F"/>
-                            
-                            <!-- 農場地面 -->
-                            <rect x="0" y="160" width="600" height="140" fill="url(#fieldGradient)"/>
-                            
-                            <!-- 農舍 -->
-                            <rect x="450" y="120" width="60" height="50" fill="#D2691E"/>
-                            <polygon points="450,120 480,95 510,120" fill="#8B4513"/>
-                            <rect x="465" y="140" width="10" height="20" fill="#654321"/>
-                            <rect x="485" y="135" width="12" height="12" fill="#87CEEB"/>
-                            <text x="480" y="185" text-anchor="middle" font-size="9" fill="white">農舍</text>
-                            
-                            <!-- 穀倉 -->
-                            <rect x="50" y="130" width="70" height="60" fill="#8B0000"/>
-                            <polygon points="50,130 85,110 120,130" fill="#654321"/>
-                            <rect x="65" y="155" width="40" height="25" fill="#654321"/>
-                            <rect x="75" y="165" width="20" height="15" fill="#2F4F4F"/>
-                            <text x="85" y="205" text-anchor="middle" font-size="9" fill="white">穀倉</text>
-                            
-                            <!-- 水井 -->
-                            <circle cx="200" cy="180" r="15" fill="#708090"/>
-                            <rect x="195" y="165" width="10" height="10" fill="#8B4513"/>
-                            <rect x="190" y="160" width="20" height="5" fill="#654321"/>
-                            <line x1="195" y1="165" x2="195" y2="155" stroke="#654321" stroke-width="2"/>
-                            <text x="200" y="210" text-anchor="middle" font-size="9" fill="white">水井</text>
-                            
-                            <!-- 農田區域 -->
-                            <rect x="250" y="200" width="300" height="80" fill="#8B4513" opacity="0.3"/>
-                            
-                            <!-- 作物行 -->
-                            <g stroke="#228B22" stroke-width="3" opacity="0.8">
-                                <line x1="270" y1="210" x2="530" y2="210"/>
-                                <line x1="270" y1="230" x2="530" y2="230"/>
-                                <line x1="270" y1="250" x2="530" y2="250"/>
-                                <line x1="270" y1="270" x2="530" y2="270"/>
-                            </g>
-                            
-                            <!-- 小樹 -->
-                            <circle cx="350" cy="180" r="8" fill="#228B22"/>
-                            <rect x="347" y="180" width="6" height="15" fill="#8B4513"/>
-                            
-                            <!-- 柵欄 -->
-                            <g stroke="#8B4513" stroke-width="2">
-                                <line x1="140" y1="170" x2="140" y2="190"/>
-                                <line x1="150" y1="170" x2="150" y2="190"/>
-                                <line x1="160" y1="170" x2="160" y2="190"/>
-                                <line x1="135" y1="175" x2="165" y2="175"/>
-                                <line x1="135" y1="185" x2="165" y2="185"/>
-                            </g>
-                            
-                            <text x="300" y="20" text-anchor="middle" font-size="14" fill="#2F4F4F" font-weight="bold">🚜 我的農場</text>
-                        </svg>
-                    </div>
-                    
-                    <div class="farm-grid mb-3">
-                        ${farmGameState.farm.plots.map((plot, index) => `
-                            <div class="farm-plot ${plot ? 'planted' : 'empty'} ${farmGameState.farm.water_status[index] ? 'watered' : ''}" 
-                                 onclick="managePlot(${index})">
-                                ${plot ? `🌱` : '🟫'}
-                                ${farmGameState.farm.water_status[index] ? '💧' : ''}
-                                ${plot ? `<small>${plot}</small>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                    
-                    <div class="farm-actions mb-3">
-                        <button class="btn btn-success btn-sm me-2" onclick="plantCrops()">🌱 種植</button>
-                        <button class="btn btn-primary btn-sm me-2" onclick="waterCrops()">💧 澆水</button>
-                        <button class="btn btn-warning btn-sm me-2" onclick="harvestCrops()">🌾 收穫</button>
-                        <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 回村莊</button>
-                    </div>
-                    
-                    <div class="inventory-display">
-                        <small>種子: 🥕${farmGameState.inventory.seeds.carrot} 🌽${farmGameState.inventory.seeds.corn}</small>
-                    </div>
-                </div>
-            `;
-        } else if (farmGameState.currentScene === 'forest') {
-            content = `
-                <div class="forest-scene">
-                    <div class="scene-visual mb-3">
-                        <svg viewBox="0 0 600 300" class="forest-svg">
-                            <defs>
-                                <linearGradient id="forestSkyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
-                                    <stop offset="50%" style="stop-color:#98FB98;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#228B22;stop-opacity:1" />
-                                </linearGradient>
-                                <radialGradient id="treeGradient" cx="50%" cy="50%" r="50%">
-                                    <stop offset="0%" style="stop-color:#32CD32;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#006400;stop-opacity:1" />
-                                </radialGradient>
-                            </defs>
-                            
-                            <!-- 森林背景 -->
-                            <rect width="600" height="300" fill="url(#forestSkyGradient)"/>
-                            
-                            <!-- 遠景樹林 -->
-                            <polygon points="0,150 50,100 100,120 150,90 200,110 250,95 300,105 350,85 400,100 450,80 500,95 550,85 600,90 600,300 0,300" fill="#2F4F4F" opacity="0.7"/>
-                            
-                            <!-- 大樹群 -->
-                            <!-- 樹1 -->
-                            <rect x="80" y="180" width="12" height="60" fill="#8B4513"/>
-                            <circle cx="86" cy="160" r="35" fill="url(#treeGradient)"/>
-                            
-                            <!-- 樹2 -->
-                            <rect x="200" y="170" width="15" height="70" fill="#654321"/>
-                            <circle cx="207" cy="145" r="40" fill="#228B22"/>
-                            
-                            <!-- 樹3 -->
-                            <rect x="350" y="185" width="10" height="55" fill="#8B4513"/>
-                            <circle cx="355" cy="165" r="30" fill="#32CD32"/>
-                            
-                            <!-- 樹4 -->
-                            <rect x="480" y="175" width="14" height="65" fill="#654321"/>
-                            <circle cx="487" cy="150" r="38" fill="#228B22"/>
-                            
-                            <!-- 樹5 (前景) -->
-                            <rect x="120" y="200" width="18" height="80" fill="#8B4513"/>
-                            <circle cx="129" cy="175" r="45" fill="#006400"/>
-                            
-                            <!-- 小徑 -->
-                            <path d="M 0 260 Q 150 250 300 260 Q 450 270 600 260" stroke="#D2B48C" stroke-width="25" fill="none" opacity="0.8"/>
-                            <path d="M 0 265 Q 150 255 300 265 Q 450 275 600 265" stroke="#F4A460" stroke-width="15" fill="none" opacity="0.6"/>
-                            
-                            <!-- 灌木叢 -->
-                            <ellipse cx="50" cy="240" rx="20" ry="12" fill="#228B22"/>
-                            <ellipse cx="280" cy="235" rx="25" ry="15" fill="#32CD32"/>
-                            <ellipse cx="520" cy="245" rx="18" ry="10" fill="#228B22"/>
-                            
-                            <!-- 蘑菇 -->
-                            <ellipse cx="160" cy="280" rx="6" ry="3" fill="#8B4513"/>
-                            <path d="M 160 277 Q 154 270 148 275 Q 154 265 160 270 Q 166 265 172 275 Q 166 270 160 277" fill="#DC143C"/>
-                            
-                            <ellipse cx="400" cy="285" rx="4" ry="2" fill="#8B4513"/>
-                            <path d="M 400 283 Q 396 278 392 281 Q 396 275 400 278 Q 404 275 408 281 Q 404 278 400 283" fill="#FF6347"/>
-                            
-                            <!-- 漿果 -->
-                            <circle cx="90" cy="275" r="3" fill="#DC143C"/>
-                            <circle cx="95" cy="278" r="2" fill="#8B0000"/>
-                            <circle cx="340" cy="270" r="3" fill="#9370DB"/>
-                            <circle cx="345" cy="273" r="2" fill="#4B0082"/>
-                            
-                            <!-- 蝴蝶 -->
-                            <g transform="translate(250,120)">
-                                <ellipse cx="0" cy="0" rx="3" ry="2" fill="#FFD700"/>
-                                <ellipse cx="0" cy="3" rx="3" ry="2" fill="#FFA500"/>
-                                <line x1="0" y1="-2" x2="0" y2="5" stroke="#000" stroke-width="0.5"/>
-                            </g>
-                            
-                            <text x="300" y="25" text-anchor="middle" font-size="14" fill="white" font-weight="bold">🌲 神秘森林</text>
-                        </svg>
-                    </div>
-                    
-                    <div class="scene-content">
-                        <h6>🌲 神秘森林</h6>
-                        <p>茂密的森林充滿生機，陽光透過樹葉灑下斑駁光影，你可以聽到鳥兒的歌聲和溪水潺潺。</p>
-                        
-                        <div class="forest-actions mb-3">
-                            <button class="btn btn-success btn-sm me-2" onclick="collectForestItems()">🌰 採集野果</button>
-                            <button class="btn btn-info btn-sm me-2" onclick="restInForest()">🛀 在溪邊休息</button>
-                            <button class="btn btn-warning btn-sm me-2" onclick="exploreForest()">🔍 深入探索</button>
-                            <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 回村莊</button>
-                        </div>
-                        
-                        <div class="forest-info">
-                            <small class="text-muted">森林中有許多珍貴資源等待發現</small>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else if (farmGameState.currentScene === 'mine') {
-            content = `
-                <div class="mine-scene">
-                    <div class="scene-visual mb-3">
-                        <svg viewBox="0 0 600 300" class="mine-svg">
-                            <defs>
-                                <linearGradient id="mineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#2F2F2F;stop-opacity:1" />
-                                    <stop offset="50%" style="stop-color:#1C1C1C;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
-                                </linearGradient>
-                                <radialGradient id="gemGradient" cx="50%" cy="50%" r="50%">
-                                    <stop offset="0%" style="stop-color:#FF69B4;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#8B008B;stop-opacity:1" />
-                                </radialGradient>
-                                <radialGradient id="goldGradient" cx="50%" cy="50%" r="50%">
-                                    <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
-                                </radialGradient>
-                            </defs>
-                            
-                            <!-- 礦坑背景 -->
-                            <rect width="600" height="300" fill="url(#mineGradient)"/>
-                            
-                            <!-- 礦坑入口 -->
-                            <path d="M 200 50 Q 300 20 400 50 L 450 150 L 150 150 Z" fill="#696969"/>
-                            <path d="M 220 60 Q 300 35 380 60 L 420 140 L 180 140 Z" fill="#000000"/>
-                            
-                            <!-- 礦坑隧道 -->
-                            <rect x="0" y="150" width="600" height="150" fill="#1C1C1C"/>
-                            
-                            <!-- 支撐木柱 -->
-                            <rect x="100" y="150" width="8" height="120" fill="#8B4513"/>
-                            <rect x="95" y="150" width="18" height="8" fill="#654321"/>
-                            
-                            <rect x="250" y="150" width="8" height="130" fill="#8B4513"/>
-                            <rect x="245" y="150" width="18" height="8" fill="#654321"/>
-                            
-                            <rect x="400" y="150" width="8" height="125" fill="#8B4513"/>
-                            <rect x="395" y="150" width="18" height="8" fill="#654321"/>
-                            
-                            <!-- 岩石牆面 -->
-                            <polygon points="0,150 50,160 100,155 150,165 200,150 250,160 300,155 350,165 400,150 450,160 500,155 550,165 600,150 600,200 0,200" fill="#696969"/>
-                            <polygon points="0,200 80,210 160,205 240,215 320,200 400,210 480,205 560,215 600,200 600,250 0,250" fill="#808080"/>
-                            
-                            <!-- 礦車軌道 -->
-                            <g stroke="#8B4513" stroke-width="4">
-                                <line x1="0" y1="270" x2="600" y2="270"/>
-                                <line x1="0" y1="275" x2="600" y2="275"/>
-                            </g>
-                            
-                            <!-- 軌道枕木 -->
-                            <g fill="#654321">
-                                <rect x="50" y="268" width="20" height="9"/>
-                                <rect x="100" y="268" width="20" height="9"/>
-                                <rect x="150" y="268" width="20" height="9"/>
-                                <rect x="200" y="268" width="20" height="9"/>
-                                <rect x="250" y="268" width="20" height="9"/>
-                                <rect x="300" y="268" width="20" height="9"/>
-                                <rect x="350" y="268" width="20" height="9"/>
-                                <rect x="400" y="268" width="20" height="9"/>
-                                <rect x="450" y="268" width="20" height="9"/>
-                                <rect x="500" y="268" width="20" height="9"/>
-                            </g>
-                            
-                            <!-- 礦車 -->
-                            <g transform="translate(350,250)">
-                                <rect x="0" y="0" width="40" height="15" fill="#2F4F4F"/>
-                                <rect x="5" y="5" width="30" height="8" fill="#1C1C1C"/>
-                                <circle cx="8" cy="18" r="4" fill="#696969"/>
-                                <circle cx="32" cy="18" r="4" fill="#696969"/>
-                            </g>
-                            
-                            <!-- 寶石和礦石 -->
-                            <!-- 鑽石 -->
-                            <polygon points="120,180 115,190 125,190" fill="url(#gemGradient)"/>
-                            <polygon points="320,200 315,210 325,210" fill="#00CED1"/>
-                            <polygon points="480,185 475,195 485,195" fill="url(#gemGradient)"/>
-                            
-                            <!-- 金礦 -->
-                            <circle cx="180" cy="220" r="4" fill="url(#goldGradient)"/>
-                            <circle cx="420" cy="235" r="3" fill="url(#goldGradient)"/>
-                            <circle cx="80" cy="240" r="3" fill="url(#goldGradient)"/>
-                            
-                            <!-- 礦工工具 -->
-                            <!-- 鶴嘴鋤 -->
-                            <g transform="translate(200,220)">
-                                <line x1="0" y1="0" x2="25" y2="20" stroke="#8B4513" stroke-width="3"/>
-                                <path d="M 20 15 L 30 20 L 32 18 L 22 13 Z" fill="#C0C0C0"/>
-                            </g>
-                            
-                            <!-- 手電筒光束 -->
-                            <polygon points="150,180 180,160 200,180 180,200" fill="#FFFF00" opacity="0.3"/>
-                            <polygon points="450,200 480,180 500,200 480,220" fill="#FFFF00" opacity="0.2"/>
-                            
-                            <!-- 礦工頭盔 -->
-                            <g transform="translate(70,200)">
-                                <ellipse cx="0" cy="0" rx="8" ry="6" fill="#FFD700"/>
-                                <circle cx="0" cy="-3" r="2" fill="#FFFF00"/>
-                            </g>
-                            
-                            <text x="300" y="25" text-anchor="middle" font-size="14" fill="#C0C0C0" font-weight="bold">⛏️ 古老礦坑</text>
-                        </svg>
-                    </div>
-                    
-                    <div class="scene-content">
-                        <h6>⛏️ 古老礦坑</h6>
-                        <p>昏暗的礦坑深處閃爍著寶石的光芒，礦車軌道延伸向黑暗深處，空氣中瀰漫著泥土和金屬的味道。</p>
-                        
-                        <div class="mine-actions mb-3">
-                            <button class="btn btn-warning btn-sm me-2" onclick="digForOre()">⛏️ 挖掘礦石</button>
-                            <button class="btn btn-danger btn-sm me-2" onclick="searchForGems()">💎 尋找寶石</button>
-                            <button class="btn btn-info btn-sm me-2" onclick="useMinecart()">🚗 乘坐礦車</button>
-                            <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 回村莊</button>
-                        </div>
-                        
-                        <div class="mine-info">
-                            <small class="text-muted">小心！挖掘會消耗大量體力</small>
-                        </div>
-                    </div>
-                </div>
-            `;
+    // 模擬載入進度
+    let progress = 0;
+    const loadInterval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(loadInterval);
         }
-        
-        board.innerHTML = content;
+        document.querySelector('.loading-progress').style.width = progress + '%';
+    }, 100);
+}
+
+function hideLoadingScreen() {
+    document.querySelector('.game-loading').style.opacity = '0';
+    setTimeout(() => {
+        createMainGameInterface();
+    }, 500);
+}
+
+function createMainGameInterface() {
+    const board = document.getElementById('farmStoryBoard');
+    
+    board.innerHTML = `
+        <div class="farm-story-container">
+            <!-- 遊戲狀態欄 -->
+            <div class="game-status-bar">
+                <div class="status-item">
+                    <div class="status-icon">❤️</div>
+                    <div class="status-value">${farmGameState.player.health}/100</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon">⚡</div>
+                    <div class="status-value">${farmGameState.player.energy}/100</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon">💰</div>
+                    <div class="status-value">${farmGameState.player.money}G</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon">⭐</div>
+                    <div class="status-value">Lv.${farmGameState.player.level}</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon">🤖</div>
+                    <div class="status-value">AI: ${farmGameState.aiUsesLeft}/10</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon">🌤️</div>
+                    <div class="status-value">${getWeatherIcon()}</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon">📅</div>
+                    <div class="status-value">${farmGameState.season} 第${farmGameState.day}天</div>
+                </div>
+            </div>
+
+            <!-- 主遊戲世界 -->
+            <div class="game-world" id="gameWorld">
+                ${createGameWorldHTML()}
+            </div>
+
+            <!-- 右側邊欄 -->
+            <div class="game-sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">🎒 背包</div>
+                    <div class="inventory-grid" id="inventoryGrid">
+                        ${createInventoryHTML()}
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">🗺️ 迷你地圖</div>
+                    <div class="mini-map" id="miniMap">
+                        ${createMiniMapHTML()}
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">👥 村民關係</div>
+                    <div id="npcRelations">
+                        ${createNPCRelationsHTML()}
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">📋 任務</div>
+                    <div id="questList">
+                        <div style="text-align: center; color: #666;">暂无任务</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部工具欄 -->
+            <div class="game-toolbar">
+                <div class="tool-slot active" onclick="selectTool('hoe')" title="鋤頭">
+                    <div class="tool-icon">🔨</div>
+                </div>
+                <div class="tool-slot" onclick="selectTool('watering_can')" title="澆水器">
+                    <div class="tool-icon">🪣</div>
+                </div>
+                <div class="tool-slot" onclick="selectTool('axe')" title="斧頭">
+                    <div class="tool-icon">🪓</div>
+                </div>
+                <div class="tool-slot" onclick="selectTool('pickaxe')" title="鎬子">
+                    <div class="tool-icon">⛏️</div>
+                </div>
+                <div class="tool-slot" onclick="selectTool('seeds')" title="種子">
+                    <div class="tool-icon">🌱</div>
+                </div>
+                <div class="tool-slot" onclick="openMenu()" title="選單">
+                    <div class="tool-icon">📋</div>
+                </div>
+                <div class="tool-slot" onclick="useAIAssistant()" title="AI助手">
+                    <div class="tool-icon">🤖</div>
+                </div>
+            </div>
+
+            <!-- 對話框 (預設隱藏) -->
+            <div class="dialogue-box" id="dialogueBox">
+                <div class="dialogue-speaker" id="dialogueSpeaker"></div>
+                <div class="dialogue-text" id="dialogueText"></div>
+                <div class="dialogue-options" id="dialogueOptions"></div>
+            </div>
+        </div>
+    `;
+    
+    // 初始化遊戲邏輯
+    initializeGameLogic();
+    startGameLoop();
+}
+
+// 輔助函數
+function getWeatherIcon() {
+    const weather = farmGameState.currentWeather;
+    const icons = {
+        'sunny': '☀️',
+        'rainy': '🌧️',
+        'cloudy': '☁️',
+        'stormy': '⛈️'
+    };
+    return icons[weather] || '☀️';
+}
+
+function createGameWorldHTML() {
+    return `
+        <div style="position: relative; width: 100%; height: 100%; background: linear-gradient(to bottom, #87CEEB 30%, #90EE90 70%, #8FBC8F 100%);">
+            <!-- 村莊場景 -->
+            <div class="character" style="left: 100px; top: 200px;" onclick="talkToNPC('村長湯姆')">
+                <div style="width: 48px; height: 48px; background: linear-gradient(circle, #FDBCB4, #F4A460); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👨‍💼</div>
+                <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 10px; font-size: 10px; white-space: nowrap;">村長湯姆</div>
+            </div>
+            
+            <div class="character" style="left: 250px; top: 180px;" onclick="talkToNPC('商店瑪麗')">
+                <div style="width: 48px; height: 48px; background: linear-gradient(circle, #FFB6C1, #FF69B4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👩‍💼</div>
+                <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 10px; font-size: 10px; white-space: nowrap;">商店瑪麗</div>
+            </div>
+            
+            <div class="character" style="left: 400px; top: 220px;" onclick="talkToNPC('鐵匠傑克')">
+                <div style="width: 48px; height: 48px; background: linear-gradient(circle, #D2B48C, #8B4513); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">🔨</div>
+                <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 10px; font-size: 10px; white-space: nowrap;">鐵匠傑克</div>
+            </div>
+            
+            <div class="character" style="left: 550px; top: 160px;" onclick="talkToNPC('醫生莉莉')">
+                <div style="width: 48px; height: 48px; background: linear-gradient(circle, #F0F8FF, #E0E0E0); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👩‍⚕️</div>
+                <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 10px; font-size: 10px; white-space: nowrap;">醫生莉莉</div>
+            </div>
+            
+            <!-- 玩家角色 -->
+            <div class="character player" style="left: ${farmGameState.player.x}px; top: ${farmGameState.player.y}px;" id="playerCharacter">
+                <div style="width: 48px; height: 48px; background: linear-gradient(circle, #98FB98, #32CD32); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #228B22;">🧑‍🌾</div>
+            </div>
+            
+            <!-- 建築物 -->
+            <div style="position: absolute; left: 80px; top: 120px; width: 60px; height: 40px; background: #8B4513; border-radius: 5px; display: flex; align-items: center; justify-content: center;">🏠</div>
+            <div style="position: absolute; left: 230px; top: 100px; width: 60px; height: 40px; background: #DEB887; border-radius: 5px; display: flex; align-items: center; justify-content: center;">🏪</div>
+            <div style="position: absolute; left: 380px; top: 140px; width: 60px; height: 40px; background: #696969; border-radius: 5px; display: flex; align-items: center; justify-content: center;">⚒️</div>
+            <div style="position: absolute; left: 530px; top: 80px; width: 60px; height: 40px; background: #F0F8FF; border-radius: 5px; display: flex; align-items: center; justify-content: center;">🏥</div>
+            
+            <!-- 農田區域 -->
+            <div style="position: absolute; left: 50px; top: 300px; width: 150px; height: 100px; background: repeating-linear-gradient(45deg, #8FBC8F, #8FBC8F 10px, #9ACD32 10px, #9ACD32 20px); border: 2px solid #556B2F; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🌾</div>
+        </div>
+    `;
+}
+
+function createInventoryHTML() {
+    let html = '';
+    const inventory = farmGameState.inventory;
+    
+    // 種子
+    Object.entries(inventory.seeds).forEach(([item, count]) => {
+        if (count > 0) {
+            const icons = { carrot: '🥕', corn: '🌽', potato: '🥔' };
+            html += `<div class="inventory-slot has-item" title="${item}種子">
+                <div class="item-icon">${icons[item]}</div>
+                <div class="item-count">${count}</div>
+            </div>`;
+        }
+    });
+    
+    // 作物
+    Object.entries(inventory.crops).forEach(([item, count]) => {
+        if (count > 0) {
+            const icons = { carrot: '🥕', corn: '🌽', potato: '🥔' };
+            html += `<div class="inventory-slot has-item" title="${item}">
+                <div class="item-icon">${icons[item]}</div>
+                <div class="item-count">${count}</div>
+            </div>`;
+        }
+    });
+    
+    // 工具
+    Object.entries(inventory.tools).forEach(([tool, count]) => {
+        if (count > 0) {
+            const icons = { hoe: '🔨', watering_can: '🪣', axe: '🪓', pickaxe: '⛏️' };
+            html += `<div class="inventory-slot has-item" title="${tool}">
+                <div class="item-icon">${icons[tool]}</div>
+                <div class="item-count">${count}</div>
+            </div>`;
+        }
+    });
+    
+    // 道具
+    Object.entries(inventory.items).forEach(([item, count]) => {
+        if (count > 0) {
+            const icons = { energy_potion: '⚡', health_potion: '❤️' };
+            html += `<div class="inventory-slot has-item" title="${item}">
+                <div class="item-icon">${icons[item]}</div>
+                <div class="item-count">${count}</div>
+            </div>`;
+        }
+    });
+    
+    // 填充空格子
+    while (html.split('inventory-slot').length - 1 < 16) {
+        html += '<div class="inventory-slot"></div>';
     }
     
-    // NPC對話系統
-    // NPC對話函數
-    window.talkToNPC = function(npcName) {
-        let dialogue = '';
-        
-        switch(npcName) {
-            case '村長湯姆':
-                dialogue = `
-                    <div class="dialogue-box">
-                        <h6>👨‍💼 村長湯姆</h6>
-                        <p>"歡迎回到農場！你祖父會為你感到驕傲的。需要什麼幫助嗎？"</p>
-                        <div class="dialogue-options">
-                            <button class="btn btn-primary btn-sm me-2" onclick="gainFriendship('mayor_tom', 5); showMessage('村長湯姆對你更友好了！')">💬 聊天 (+5友好度)</button>
-                            <button class="btn btn-info btn-sm me-2" onclick="getQuest('mayor_tom')">📋 接受任務</button>
-                            <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">👋 離開</button>
-                        </div>
-                    </div>
-                `;
-                break;
-            case '商店瑪麗':
-                dialogue = `
-                    <div class="dialogue-box">
-                        <h6>👩‍💼 商店瑪麗</h6>
-                        <p>"歡迎光臨！我這裡有最新鮮的種子和工具！"</p>
-                        <div class="shop-items mb-3">
-                            <div class="row">
-                                <div class="col-6">
-                                    <button class="btn btn-outline-warning btn-sm w-100 mb-1" onclick="buyItem('carrot_seeds', 50)">🥕 蘿蔔種子 (50金)</button>
-                                    <button class="btn btn-outline-success btn-sm w-100" onclick="buyItem('corn_seeds', 80)">🌽 玉米種子 (80金)</button>
-                                </div>
-                                <div class="col-6">
-                                    <button class="btn btn-outline-info btn-sm w-100 mb-1" onclick="buyItem('energy_potion', 100)">⚡ 能量藥水 (100金)</button>
-                                    <button class="btn btn-outline-primary btn-sm w-100" onclick="sellCrops()">💰 賣出作物</button>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 離開商店</button>
-                    </div>
-                `;
-                break;
-            case '鐵匠傑克':
-                dialogue = `
-                    <div class="dialogue-box">
-                        <h6>🔨 鐵匠傑克</h6>
-                        <p>"需要升級你的農具嗎？好工具能讓工作事半功倍！"</p>
-                        <div class="upgrade-options mb-3">
-                            <button class="btn btn-warning btn-sm me-2" onclick="upgradeTools('hoe', 200)">⛏️ 升級鋤頭 (200金)</button>
-                            <button class="btn btn-info btn-sm me-2" onclick="upgradeTools('watering_can', 150)">🪣 升級澆水器 (150金)</button>
-                        </div>
-                        <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 離開</button>
-                    </div>
-                `;
-                break;
-            case '醫生莉莉':
-                dialogue = `
-                    <div class="dialogue-box">
-                        <h6>👩‍⚕️ 醫生莉莉</h6>
-                        <p>"農場生活辛苦，要記得照顧好身體哦！"</p>
-                        <div class="healing-options mb-3">
-                            <button class="btn btn-success btn-sm me-2" onclick="restoreHealth(50, 0)">❤️ 免費治療 (+50健康)</button>
-                            <button class="btn btn-info btn-sm me-2" onclick="restoreHealth(100, 150)">💊 完全治療 (150金)</button>
-                        </div>
-                        <button class="btn btn-secondary btn-sm" onclick="showVillageScene()">🔙 離開</button>
-                    </div>
-                `;
-                break;
-        }
-        
-        board.innerHTML = dialogue;
-    };
-    
-    // 地點移動
-    window.goToFarm = function() {
-        farmGameState.currentScene = 'farm';
-        window.updateDisplay();
-    };
-    
-    window.goToForest = function() {
-        farmGameState.currentScene = 'forest';
-        window.updateDisplay();
-    };
-    
-    window.goToMine = function() {
-        farmGameState.currentScene = 'mine';
-        window.updateDisplay();
-    };
-    
-    // 農場管理
-    window.managePlot = function(plotIndex) {
-        const plot = farmGameState.farm.plots[plotIndex];
-        if (plot) {
-            if (Math.random() > 0.5) {
-                showMessage(`收穫了${plot}！獲得作物和經驗。`);
-                farmGameState.inventory.crops[plot] = (farmGameState.inventory.crops[plot] || 0) + 1;
-                farmGameState.player.experience += 10;
-                farmGameState.farm.plots[plotIndex] = null;
-                farmGameState.farm.water_status[plotIndex] = false;
-            } else {
-                showMessage('作物還沒成熟，再等等吧！');
-            }
-        } else {
-            if (farmGameState.inventory.seeds.carrot > 0) {
-                farmGameState.farm.plots[plotIndex] = 'carrot';
-                farmGameState.inventory.seeds.carrot--;
-                showMessage('種下了蘿蔔種子！');
-            } else {
-                showMessage('沒有種子了！去商店買一些吧。');
-            }
-        }
-        window.updateDisplay();
-    };
-    
-    // 購買系統
-    window.buyItem = function(item, cost) {
-        if (farmGameState.player.money >= cost) {
-            farmGameState.player.money -= cost;
-            switch(item) {
-                case 'carrot_seeds':
-                    farmGameState.inventory.seeds.carrot += 5;
-                    showMessage('購買了5個蘿蔔種子！');
-                    break;
-                case 'corn_seeds':
-                    farmGameState.inventory.seeds.corn += 3;
-                    showMessage('購買了3個玉米種子！');
-                    break;
-                case 'energy_potion':
-                    farmGameState.inventory.items.energy_potion++;
-                    showMessage('購買了能量藥水！');
-                    break;
-            }
-            gainFriendship('shop_mary', 2);
-        } else {
-            showMessage('金錢不足！');
-        }
-    };
-    
-    // AI助手系統
-    window.useAIHelper = function() {
-        if (farmGameState.aiUsesLeft > 0) {
-            farmGameState.aiUsesLeft--;
-            showMessage(`🤖 AI助手：「建議你先種植作物，然後定期澆水。記得照顧好健康！」\n剩餘使用次數：${farmGameState.aiUsesLeft}`);
-        } else {
-            showMessage('AI助手使用次數已用完！');
-        }
-    };
-    
-    // 輔助函數
-    window.gainFriendship = function(npc, amount) {
-        farmGameState.npcs[npc].friendship = Math.min(100, farmGameState.npcs[npc].friendship + amount);
-    };
-    
-    window.showMessage = function(message) {
-        alert(message);
-        window.updateDisplay();
-    };
-    
-    // 缺少的輔助函數
-    window.sellCrops = function() {
-        let totalValue = 0;
-        if (farmGameState.inventory.crops.carrot > 0) {
-            totalValue += farmGameState.inventory.crops.carrot * 30;
-            farmGameState.inventory.crops.carrot = 0;
-        }
-        if (farmGameState.inventory.crops.corn > 0) {
-            totalValue += farmGameState.inventory.crops.corn * 50;
-            farmGameState.inventory.crops.corn = 0;
-        }
-        if (totalValue > 0) {
-            farmGameState.player.money += totalValue;
-            showMessage(`賣出作物獲得${totalValue}金幣！`);
-        } else {
-            showMessage('沒有作物可以賣出！');
-        }
-    };
-    
-    window.upgradeTools = function(tool, cost) {
-        if (farmGameState.player.money >= cost) {
-            farmGameState.player.money -= cost;
-            showMessage(`升級了${tool}！工作效率提升了！`);
-            gainFriendship('blacksmith_jack', 3);
-        } else {
-            showMessage('金錢不足！');
-        }
-    };
-    
-    window.restoreHealth = function(amount, cost) {
-        if (cost === 0 || farmGameState.player.money >= cost) {
-            if (cost > 0) farmGameState.player.money -= cost;
-            farmGameState.player.health = Math.min(100, farmGameState.player.health + amount);
-            showMessage(`恢復了${amount}點健康！`);
-            gainFriendship('doctor_lily', 2);
-        } else {
-            showMessage('金錢不足！');
-        }
-    };
-    
-    // 補充缺少的農場活動函數
-    window.waterCrops = function() {
-        if (farmGameState.player.energy >= 10) {
-            farmGameState.player.energy -= 10;
-            showMessage('澆水完成！作物正在茁壯成長。');
-        } else {
-            showMessage('精力不足！需要休息。');
-        }
-    };
-    
-    window.plantCrops = function() {
-        if (farmGameState.inventory.seeds.carrot > 0) {
-            farmGameState.inventory.seeds.carrot--;
-            farmGameState.player.energy -= 5;
-            showMessage('種下了蘿蔔種子！記得澆水。');
-        } else {
-            showMessage('沒有種子！去商店購買吧。');
-        }
-    };
-    
-    window.harvestCrops = function() {
-        const earned = Math.floor(Math.random() * 50) + 30;
-        farmGameState.player.money += earned;
-        farmGameState.player.experience += 15;
-        showMessage(`收穫成功！獲得${earned}金幣和15經驗。`);
-    };
-    
-    window.collectWood = function() {
-        if (farmGameState.player.energy >= 15) {
-            farmGameState.player.energy -= 15;
-            const wood = Math.floor(Math.random() * 3) + 1;
-            farmGameState.player.money += wood * 10;
-            showMessage(`收集了${wood}塊木材！獲得${wood * 10}金幣。`);
-        } else {
-            showMessage('精力不足！需要休息。');
-        }
-    };
-    
-    window.findBerries = function() {
-        if (farmGameState.player.energy >= 8) {
-            farmGameState.player.energy -= 8;
-            const berries = Math.floor(Math.random() * 5) + 2;
-            farmGameState.player.money += berries * 5;
-            showMessage(`找到了${berries}個漿果！獲得${berries * 5}金幣。`);
-        } else {
-            showMessage('精力不足！需要休息。');
-        }
-    };
-    
-    window.mineOre = function() {
-        if (farmGameState.player.energy >= 20) {
-            farmGameState.player.energy -= 20;
-            const ore = Math.floor(Math.random() * 2) + 1;
-            farmGameState.player.money += ore * 25;
-            showMessage(`挖到了${ore}塊礦石！獲得${ore * 25}金幣。`);
-        } else {
-            showMessage('精力不足！需要休息。');
-        }
-    };
-    
-    window.exploreDeeper = function() {
-        if (farmGameState.player.energy >= 25) {
-            farmGameState.player.energy -= 25;
-            const treasure = Math.floor(Math.random() * 100) + 50;
-            farmGameState.player.money += treasure;
-            showMessage(`探索更深處發現寶藏！獲得${treasure}金幣。`);
-        } else {
-            showMessage('精力不足！需要休息。');
-        }
-    };
-    
-    // 添加缺少的函數
-    window.showInventory = function() {
-        const inventory = farmGameState.inventory;
-        const inventoryText = `
-            背包物品：
-            種子：🥕 蘿蔔${inventory.seeds.carrot} 🌽 玉米${inventory.seeds.corn}
-            作物：🥕 ${inventory.crops.carrot} 🌽 ${inventory.crops.corn}
-            工具：⛏️ 鋤頭${inventory.tools.hoe} 🪣 澆水器${inventory.tools.watering_can}
-            藥水：⚡ 能量藥水${inventory.items.energy_potion}
-        `;
-        showMessage(inventoryText);
-    };
-    
-    window.showGameStats = function() {
-        const stats = `
-            遊戲統計：
-            玩家：${farmGameState.player.name} 等級${farmGameState.player.level}
-            健康：${farmGameState.player.health}/100
-            精力：${farmGameState.player.energy}/100
-            金錢：${farmGameState.player.money}
-            經驗：${farmGameState.player.experience}
-            AI助手剩餘：${farmGameState.aiUsesLeft}/10次
-        `;
-        showMessage(stats);
-    };
-    
-    // 開始遊戲
-    window.showVillageScene();
+    return html;
 }
 
-function playTile(tile) {
-    tile.style.opacity = '0.5';
+function createMiniMapHTML() {
+    return `
+        <div style="position: relative; width: 100%; height: 100%; background: rgba(0,0,0,0.3); border-radius: 8px;">
+            <!-- 村莊區域 -->
+            <div class="mini-map-area" style="left: 20%; top: 30%; width: 60%; height: 40%; background: #90EE90;"></div>
+            <!-- 農田區域 -->
+            <div class="mini-map-area" style="left: 10%; top: 70%; width: 30%; height: 20%; background: #8FBC8F;"></div>
+            <!-- 玩家位置 -->
+            <div class="mini-map-player" style="left: 50%; top: 60%;"></div>
+        </div>
+    `;
+}
+
+function createNPCRelationsHTML() {
+    const npcs = farmGameState.npcs;
+    let html = '';
+    
+    Object.entries(npcs).forEach(([npc, data]) => {
+        const names = {
+            mayor_tom: '村長湯姆',
+            shop_mary: '商店瑪麗', 
+            blacksmith_jack: '鐵匠傑克',
+            doctor_lily: '醫生莉莉'
+        };
+        
+        const hearts = Math.floor(data.friendship / 20);
+        const heartDisplay = '❤️'.repeat(hearts) + '🤍'.repeat(5 - hearts);
+        
+        html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 5px; background: rgba(255,255,255,0.5); border-radius: 5px;">
+                <span style="font-size: 12px; font-weight: bold;">${names[npc]}</span>
+                <span style="font-size: 12px;">${heartDisplay}</span>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+function initializeGameLogic() {
+    // 設置工具選擇
+    window.currentTool = 'hoe';
+    
+    // 設置鍵盤控制
+    document.addEventListener('keydown', handleKeyPress);
+    
+    // 設置點擊移動
+    document.getElementById('gameWorld').addEventListener('click', handleWorldClick);
+}
+
+function startGameLoop() {
+    // 每秒更新一次遊戲狀態
+    setInterval(updateGameState, 1000);
+}
+
+function updateGameState() {
+    // 更新狀態欄顯示
+    updateStatusBar();
+    
+    // 隨機事件
+    if (Math.random() < 0.01) { // 1%概率
+        randomEvent();
+    }
+}
+
+function updateStatusBar() {
+    // 更新顯示的數值 (如果需要動態更新)
+}
+
+// 遊戲互動功能
+function selectTool(tool) {
+    window.currentTool = tool;
+    // 更新工具欄視覺效果
+    document.querySelectorAll('.tool-slot').forEach(slot => slot.classList.remove('active'));
+    event.target.closest('.tool-slot').classList.add('active');
+    showNotification('工具選擇', `選擇了${getToolName(tool)}`);
+}
+
+function getToolName(tool) {
+    const names = {
+        'hoe': '鋤頭',
+        'watering_can': '澆水器', 
+        'axe': '斧頭',
+        'pickaxe': '鎬子',
+        'seeds': '種子'
+    };
+    return names[tool] || tool;
+}
+
+function handleKeyPress(event) {
+    const player = farmGameState.player;
+    const speed = 10;
+    
+    switch(event.key) {
+        case 'ArrowUp':
+        case 'w':
+            movePlayer(player.x, Math.max(80, player.y - speed));
+            break;
+        case 'ArrowDown':
+        case 's':
+            movePlayer(player.x, Math.min(350, player.y + speed));
+            break;
+        case 'ArrowLeft':
+        case 'a':
+            movePlayer(Math.max(0, player.x - speed), player.y);
+            break;
+        case 'ArrowRight':
+        case 'd':
+            movePlayer(Math.min(600, player.x + speed), player.y);
+            break;
+        case 'Space':
+        case ' ':
+            event.preventDefault();
+            useCurrentTool();
+            break;
+    }
+}
+
+function handleWorldClick(event) {
+    const rect = event.target.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    movePlayer(x - 24, y - 24); // 調整到角色中心
+}
+
+function movePlayer(x, y) {
+    farmGameState.player.x = x;
+    farmGameState.player.y = y;
+    
+    const playerElement = document.getElementById('playerCharacter');
+    if (playerElement) {
+        playerElement.style.left = x + 'px';
+        playerElement.style.top = y + 'px';
+    }
+}
+
+function useCurrentTool() {
+    const tool = window.currentTool;
+    const energy = farmGameState.player.energy;
+    
+    if (energy <= 0) {
+        showNotification('精力不足', '需要休息或使用能量藥水！');
+        return;
+    }
+    
+    switch(tool) {
+        case 'hoe':
+            farmTile();
+            break;
+        case 'watering_can':
+            waterCrops();
+            break;
+        case 'seeds':
+            plantSeeds();
+            break;
+        case 'axe':
+            chopWood();
+            break;
+        case 'pickaxe':
+            mineStone();
+            break;
+    }
+}
+
+function farmTile() {
+    farmGameState.player.energy -= 5;
+    showNotification('農作', '翻土完成！準備種植種子。');
+}
+
+function waterCrops() {
+    if (farmGameState.player.energy >= 10) {
+        farmGameState.player.energy -= 10;
+        showNotification('澆水', '作物正在茁壯成長！');
+    } else {
+        showNotification('精力不足', '需要休息！');
+    }
+}
+
+function plantSeeds() {
+    if (farmGameState.inventory.seeds.carrot > 0) {
+        farmGameState.inventory.seeds.carrot--;
+        farmGameState.player.energy -= 5;
+        showNotification('種植', '種下了蘿蔔種子！記得澆水。');
+        updateInventoryDisplay();
+    } else {
+        showNotification('沒有種子', '去商店購買種子吧！');
+    }
+}
+
+function chopWood() {
+    farmGameState.player.energy -= 15;
+    const wood = Math.floor(Math.random() * 3) + 1;
+    farmGameState.player.money += wood * 10;
+    showNotification('砍柴', `收集了${wood}塊木材！獲得${wood * 10}金幣。`);
+}
+
+function mineStone() {
+    farmGameState.player.energy -= 20;
+    const ore = Math.floor(Math.random() * 2) + 1;
+    farmGameState.player.money += ore * 25;
+    showNotification('挖礦', `挖到了${ore}塊礦石！獲得${ore * 25}金幣。`);
+}
+
+function talkToNPC(npcName) {
+    const dialogue = getNPCDialogue(npcName);
+    showDialogue(npcName, dialogue.text, dialogue.options);
+    
+    // 增加友好度
+    const npcKey = getNPCKey(npcName);
+    if (farmGameState.npcs[npcKey]) {
+        farmGameState.npcs[npcKey].friendship += 5;
+        farmGameState.npcs[npcKey].dialogue_count++;
+    }
+}
+
+function getNPCKey(npcName) {
+    const mapping = {
+        '村長湯姆': 'mayor_tom',
+        '商店瑪麗': 'shop_mary',
+        '鐵匠傑克': 'blacksmith_jack',
+        '醫生莉莉': 'doctor_lily'
+    };
+    return mapping[npcName];
+}
+
+function getNPCDialogue(npcName) {
+    const dialogues = {
+        '村長湯姆': {
+            text: '歡迎來到我們美麗的村莊！這裡有很多友善的村民和豐富的資源。你可以種植作物、與村民交朋友，建造屬於自己的農場。',
+            options: [
+                { text: '謝謝您的歡迎！', action: () => closeDialogue() },
+                { text: '有什麼任務嗎？', action: () => showQuest() },
+                { text: '請介紹一下村莊', action: () => showVillageInfo() }
+            ]
+        },
+        '商店瑪麗': {
+            text: '歡迎光臨我的商店！這裡有新鮮的種子、工具和各種有用的物品。需要什麼嗎？',
+            options: [
+                { text: '我想買種子', action: () => openShop('seeds') },
+                { text: '我想賣作物', action: () => openShop('sell') },
+                { text: '只是看看', action: () => closeDialogue() }
+            ]
+        },
+        '鐵匠傑克': {
+            text: '嘿！我是村裡的鐵匠。我可以幫你升級工具，讓你的農場工作更有效率！',
+            options: [
+                { text: '升級我的工具', action: () => upgradeTools() },
+                { text: '修理工具', action: () => repairTools() },
+                { text: '改天再來', action: () => closeDialogue() }
+            ]
+        },
+        '醫生莉莉': {
+            text: '你好！我是村裡的醫生。如果你感到疲憊或需要恢復健康，我可以幫助你。',
+            options: [
+                { text: '治療健康', action: () => restoreHealth() },
+                { text: '購買藥水', action: () => buyPotions() },
+                { text: '我很健康', action: () => closeDialogue() }
+            ]
+        }
+    };
+    
+    return dialogues[npcName] || {
+        text: '你好！',
+        options: [{ text: '你好', action: () => closeDialogue() }]
+    };
+}
+
+function showDialogue(speaker, text, options) {
+    const dialogueBox = document.getElementById('dialogueBox');
+    const speakerElement = document.getElementById('dialogueSpeaker');
+    const textElement = document.getElementById('dialogueText');
+    const optionsElement = document.getElementById('dialogueOptions');
+    
+    speakerElement.textContent = speaker;
+    textElement.textContent = text;
+    
+    optionsElement.innerHTML = '';
+    options.forEach(option => {
+        const button = document.createElement('button');
+        button.className = 'dialogue-option';
+        button.textContent = option.text;
+        button.onclick = option.action;
+        optionsElement.appendChild(button);
+    });
+    
+    dialogueBox.style.display = 'block';
+}
+
+function closeDialogue() {
+    document.getElementById('dialogueBox').style.display = 'none';
+}
+
+function showNotification(title, text) {
+    // 移除現有通知
+    const existing = document.querySelector('.game-notification');
+    if (existing) existing.remove();
+    
+    const notification = document.createElement('div');
+    notification.className = 'game-notification';
+    notification.innerHTML = `
+        <div class="notification-title">${title}</div>
+        <div class="notification-text">${text}</div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // 3秒後自動移除
     setTimeout(() => {
-        alert('已出牌：' + tile.textContent);
-        tile.style.opacity = '1';
-    }, 300);
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
 }
 
+function updateInventoryDisplay() {
+    const inventoryGrid = document.getElementById('inventoryGrid');
+    if (inventoryGrid) {
+        inventoryGrid.innerHTML = createInventoryHTML();
+    }
+}
+
+function openMenu() {
+    showNotification('選單', '遊戲選單功能開發中...');
+}
+
+function useAIAssistant() {
+    if (farmGameState.aiUsesLeft > 0) {
+        farmGameState.aiUsesLeft--;
+        showNotification('AI助手', `AI助手已啟用！剩餘 ${farmGameState.aiUsesLeft}/10 次使用。`);
+        // 這裡可以整合實際的AI對話功能
+    } else {
+        showNotification('AI使用完畢', '今天的AI助手使用次數已用完！');
+    }
+}
+
+function randomEvent() {
+    const events = [
+        { title: '天氣變化', text: '天氣轉為多雲' },
+        { title: '野生動物', text: '一隻小鳥飛過農場' },
+        { title: '意外收穫', text: '在農田裡發現了額外的作物！' }
+    ];
+    
+    const event = events[Math.floor(Math.random() * events.length)];
+    showNotification(event.title, event.text);
+}
+
+// 商店和其他功能的占位符
+function openShop(type) {
+    showNotification('商店', `${type} 商店功能開發中...`);
+    closeDialogue();
+}
+
+function showQuest() {
+    showNotification('任務', '任務系統開發中...');
+    closeDialogue();
+}
+
+function showVillageInfo() {
+    showNotification('村莊資訊', '這是一個美麗的農業村莊，有四位主要居民樂意幫助您。');
+    closeDialogue();
+}
+
+function upgradeTools() {
+    showNotification('工具升級', '工具升級功能開發中...');
+    closeDialogue();
+}
+
+function repairTools() {
+    showNotification('工具修理', '你的工具看起來很好，不需要修理！');
+    closeDialogue();
+}
+
+function restoreHealth() {
+    farmGameState.player.health = 100;
+    farmGameState.player.energy = 100;
+    showNotification('治療完成', '健康和精力已完全恢復！');
+    closeDialogue();
+}
+
+function buyPotions() {
+    showNotification('藥水商店', '藥水購買功能開發中...');
+    closeDialogue();
+}

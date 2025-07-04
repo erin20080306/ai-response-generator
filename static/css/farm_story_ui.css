@@ -1,0 +1,463 @@
+/* 農場物語專業遊戲UI樣式 */
+
+/* 載入畫面 */
+.game-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #87CEEB 0%, #98FB98 50%, #F0E68C 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.5s ease;
+}
+
+.loading-logo {
+    font-size: 48px;
+    font-weight: bold;
+    color: #228B22;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    animation: bounce 2s infinite;
+}
+
+.loading-bar {
+    width: 300px;
+    height: 20px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.loading-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #32CD32, #98FB98);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(50,205,50,0.5);
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+/* 主遊戲容器 */
+.farm-story-container {
+    width: 100%;
+    height: 600px;
+    position: relative;
+    background: #2C5234;
+    border: 3px solid #8B4513;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    font-family: 'Arial', sans-serif;
+}
+
+/* 遊戲狀態欄 */
+.game-status-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(90deg, #654321 0%, #8B4513 50%, #654321 100%);
+    border-bottom: 2px solid #D2B48C;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    z-index: 100;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.1);
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(5px);
+}
+
+.status-icon {
+    font-size: 16px;
+    margin-right: 6px;
+    filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));
+}
+
+.status-value {
+    font-size: 12px;
+    font-weight: bold;
+    color: #F5DEB3;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+}
+
+/* 主遊戲世界 */
+.game-world {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 200px;
+    bottom: 80px;
+    background: linear-gradient(to bottom, #87CEEB 30%, #90EE90 70%, #8FBC8F 100%);
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+.character {
+    position: absolute;
+    transition: all 0.3s ease;
+    z-index: 50;
+}
+
+.character:hover {
+    transform: scale(1.1);
+    filter: brightness(1.2);
+}
+
+.player {
+    z-index: 60;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* 右側邊欄 */
+.game-sidebar {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 200px;
+    bottom: 80px;
+    background: linear-gradient(180deg, #D2B48C 0%, #DEB887 100%);
+    border-left: 2px solid #8B4513;
+    overflow-y: auto;
+    padding: 10px;
+    box-shadow: inset 2px 0 8px rgba(0,0,0,0.2);
+}
+
+.sidebar-section {
+    margin-bottom: 20px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid rgba(139,69,19,0.3);
+}
+
+.sidebar-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #8B4513;
+    margin-bottom: 8px;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+}
+
+/* 背包網格 */
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+
+.inventory-slot {
+    width: 35px;
+    height: 35px;
+    background: rgba(0,0,0,0.2);
+    border: 2px solid #8B4513;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.inventory-slot:hover {
+    background: rgba(255,255,255,0.1);
+    transform: scale(1.05);
+}
+
+.inventory-slot.has-item {
+    background: linear-gradient(135deg, #F5DEB3, #DEB887);
+    border-color: #DAA520;
+    box-shadow: inset 0 1px 3px rgba(255,255,255,0.3);
+}
+
+.item-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.item-count {
+    position: absolute;
+    bottom: 1px;
+    right: 2px;
+    font-size: 8px;
+    font-weight: bold;
+    color: #8B4513;
+    background: rgba(255,255,255,0.8);
+    border-radius: 3px;
+    padding: 1px 2px;
+    min-width: 10px;
+    text-align: center;
+}
+
+/* 迷你地圖 */
+.mini-map {
+    height: 80px;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #8B4513;
+}
+
+.mini-map-area {
+    position: absolute;
+    border-radius: 2px;
+    opacity: 0.8;
+}
+
+.mini-map-player {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #FF0000;
+    border-radius: 50%;
+    z-index: 10;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.3); }
+}
+
+/* 底部工具欄 */
+.game-toolbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(90deg, #654321 0%, #8B4513 50%, #654321 100%);
+    border-top: 2px solid #D2B48C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 0 20px;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+}
+
+.tool-slot {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #DEB887, #D2B48C);
+    border: 3px solid #8B4513;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.tool-slot:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #F5DEB3, #DEB887);
+}
+
+.tool-slot.active {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border-color: #FF8C00;
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(255,215,0,0.6);
+}
+
+.tool-icon {
+    font-size: 24px;
+    filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));
+}
+
+/* 對話框 */
+.dialogue-box {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    background: linear-gradient(135deg, #F5F5DC, #FFFACD);
+    border: 3px solid #8B4513;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    z-index: 200;
+    display: none;
+}
+
+.dialogue-speaker {
+    font-size: 16px;
+    font-weight: bold;
+    color: #8B4513;
+    margin-bottom: 10px;
+    text-align: center;
+    background: rgba(139,69,19,0.1);
+    padding: 5px 10px;
+    border-radius: 8px;
+}
+
+.dialogue-text {
+    font-size: 14px;
+    color: #2F4F4F;
+    line-height: 1.5;
+    margin-bottom: 15px;
+    text-align: justify;
+}
+
+.dialogue-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dialogue-option {
+    background: linear-gradient(135deg, #98FB98, #90EE90);
+    border: 2px solid #228B22;
+    border-radius: 8px;
+    padding: 8px 15px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #006400;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.dialogue-option:hover {
+    background: linear-gradient(135deg, #90EE90, #98FB98);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(34,139,34,0.3);
+}
+
+/* 遊戲通知 */
+.game-notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: linear-gradient(135deg, #32CD32, #228B22);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    border: 2px solid #006400;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    z-index: 1000;
+    max-width: 300px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.notification-text {
+    font-size: 12px;
+    opacity: 0.9;
+    line-height: 1.3;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .farm-story-container {
+        height: 500px;
+    }
+    
+    .game-sidebar {
+        width: 150px;
+    }
+    
+    .game-world {
+        right: 150px;
+    }
+    
+    .status-item {
+        padding: 6px 8px;
+    }
+    
+    .status-value {
+        font-size: 10px;
+    }
+    
+    .tool-slot {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .tool-icon {
+        font-size: 20px;
+    }
+    
+    .dialogue-box {
+        width: 90%;
+        max-width: 350px;
+    }
+}
+
+/* 動畫效果 */
+@keyframes farmingAction {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.1) rotate(-5deg); }
+    50% { transform: scale(1.2) rotate(0deg); }
+    75% { transform: scale(1.1) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+.farming-animation {
+    animation: farmingAction 0.5s ease-in-out;
+}
+
+/* 天氣效果 */
+.weather-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 30;
+}
+
+.rain-effect {
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="rain" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><line x1="10" y1="0" x2="10" y2="20" stroke="%234169E1" stroke-width="1" opacity="0.6"/></pattern></defs><rect width="100" height="100" fill="url(%23rain)"/></svg>') repeat;
+    animation: rainfall 0.5s linear infinite;
+}
+
+@keyframes rainfall {
+    from { transform: translateY(-20px); }
+    to { transform: translateY(0px); }
+}
