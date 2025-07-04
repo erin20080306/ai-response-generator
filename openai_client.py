@@ -33,10 +33,11 @@ class OpenAIClient:
                     - Example: "=SUM(A1:A10)" then explain "這會加總A1到A10的數值"
 
                     FOR APPS SCRIPT QUESTIONS:
-                    - Always provide both GS (Google Script) and HTML code separately
-                    - Label clearly: "GS程式碼:" and "HTML程式碼:"
-                    - Include complete working examples
-                    - Show how they connect together
+                    - Start with clear section headers immediately
+                    - Format: "GS程式碼:" followed by code block
+                    - Then: "HTML程式碼:" followed by separate code block
+                    - Each code type in its own distinct section
+                    - Brief connection explanation at the end only
 
                     FOR TECHNICAL QUESTIONS:
                     - Direct answer first
