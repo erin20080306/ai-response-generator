@@ -790,45 +790,108 @@ function hideLoadingScreen() {
 }
 
 function createMainGameInterface() {
-    const board = document.getElementById('farmStoryBoard');
-    
-    board.innerHTML = `
-        <div class="farm-story-container">
-            <!-- 遊戲狀態欄 -->
-            <div class="game-status-bar">
-                <div class="status-item">
-                    <div class="status-icon">❤️</div>
-                    <div class="status-value">${window.farmGameState.player.health}/100</div>
+    try {
+        const board = document.getElementById('farmStoryBoard');
+        if (!board) {
+            console.error('找不到farmStoryBoard元素');
+            return;
+        }
+        
+        // 確保遊戲狀態存在
+        if (!window.farmGameState) {
+            console.error('遊戲狀態未初始化');
+            initializeFarmGameState();
+        }
+        
+        const gameState = window.farmGameState;
+        
+        board.innerHTML = `
+            <div class="farm-story-container" style="padding: 10px;">
+                <!-- 遊戲狀態欄 -->
+                <div class="game-status-bar" style="display: flex; gap: 15px; margin-bottom: 10px; padding: 10px; background: rgba(0,0,0,0.1); border-radius: 8px;">
+                    <div class="status-item" style="display: flex; align-items: center; gap: 5px;">
+                        <span>❤️</span>
+                        <span>${gameState.player.health}/100</span>
+                    </div>
+                    <div class="status-item" style="display: flex; align-items: center; gap: 5px;">
+                        <span>⚡</span>
+                        <span>${gameState.player.energy}/100</span>
+                    </div>
+                    <div class="status-item" style="display: flex; align-items: center; gap: 5px;">
+                        <span>💰</span>
+                        <span>${gameState.player.money}G</span>
+                    </div>
+                    <div class="status-item" style="display: flex; align-items: center; gap: 5px;">
+                        <span>⭐</span>
+                        <span>Lv.${gameState.player.level}</span>
+                    </div>
+                    <div class="status-item" style="display: flex; align-items: center; gap: 5px;">
+                        <span>🤖</span>
+                        <span>AI: ${gameState.aiUsesLeft}/10</span>
+                    </div>
                 </div>
-                <div class="status-item">
-                    <div class="status-icon">⚡</div>
-                    <div class="status-value">${window.farmGameState.player.energy}/100</div>
+
+                <!-- 簡化的遊戲世界 -->
+                <div class="game-world" style="position: relative; width: 100%; height: 400px; background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 50%, #90EE90 100%); border-radius: 10px; overflow: hidden; margin-bottom: 10px;">
+                    
+                    <!-- 玩家角色 -->
+                    <div id="playerCharacter" style="position: absolute; left: 300px; top: 250px; font-size: 30px; z-index: 10;">🧑‍🌾</div>
+                    
+                    <!-- 村莊建築 -->
+                    <div style="position: absolute; left: 80px; top: 120px; cursor: pointer; text-align: center;" onclick="enterBuilding('townhall')">
+                        <div style="font-size: 40px;">🏛️</div>
+                        <div style="font-size: 12px; background: rgba(0,0,0,0.7); color: white; padding: 2px; border-radius: 4px;">村公所</div>
+                    </div>
+                    
+                    <div style="position: absolute; left: 220px; top: 100px; cursor: pointer; text-align: center;" onclick="enterBuilding('shop')">
+                        <div style="font-size: 40px;">🏪</div>
+                        <div style="font-size: 12px; background: rgba(0,0,0,0.7); color: white; padding: 2px; border-radius: 4px;">商店</div>
+                    </div>
+                    
+                    <div style="position: absolute; left: 360px; top: 140px; cursor: pointer; text-align: center;" onclick="enterBuilding('blacksmith')">
+                        <div style="font-size: 40px;">🔨</div>
+                        <div style="font-size: 12px; background: rgba(0,0,0,0.7); color: white; padding: 2px; border-radius: 4px;">鐵匠鋪</div>
+                    </div>
+                    
+                    <div style="position: absolute; left: 500px; top: 110px; cursor: pointer; text-align: center;" onclick="enterBuilding('clinic')">
+                        <div style="font-size: 40px;">🏥</div>
+                        <div style="font-size: 12px; background: rgba(0,0,0,0.7); color: white; padding: 2px; border-radius: 4px;">診療所</div>
+                    </div>
+                    
+                    <!-- 農場區域 -->
+                    <div style="position: absolute; left: 50px; top: 300px; cursor: pointer; text-align: center;" onclick="goToFarm()">
+                        <div style="font-size: 40px;">🌾</div>
+                        <div style="font-size: 12px; background: rgba(0,0,0,0.7); color: white; padding: 2px; border-radius: 4px;">農場</div>
+                    </div>
                 </div>
-                <div class="status-item">
-                    <div class="status-icon">💰</div>
-                    <div class="status-value">${window.farmGameState.player.money}G</div>
+
+                <!-- 工具欄 -->
+                <div class="tool-bar" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button class="btn btn-success btn-sm" onclick="selectTool('hoe')">🪓 鋤頭</button>
+                    <button class="btn btn-info btn-sm" onclick="selectTool('water')">🪣 澆水</button>
+                    <button class="btn btn-warning btn-sm" onclick="selectTool('axe')">🪓 斧頭</button>
+                    <button class="btn btn-danger btn-sm" onclick="useAIAssistant()">🤖 AI助手</button>
                 </div>
-                <div class="status-item">
-                    <div class="status-icon">⭐</div>
-                    <div class="status-value">Lv.${window.farmGameState.player.level}</div>
-                </div>
-                <div class="status-item">
-                    <div class="status-icon">🤖</div>
-                    <div class="status-value">AI: ${window.farmGameState.aiUsesLeft}/10</div>
-                </div>
-                <div class="status-item">
-                    <div class="status-icon">🌤️</div>
-                    <div class="status-value">${getWeatherIcon()}</div>
-                </div>
-                <div class="status-item">
-                    <div class="status-icon">📅</div>
-                    <div class="status-value">${window.farmGameState.season} 第${window.farmGameState.day}天</div>
+
+                <!-- 動作按鈕 -->
+                <div class="action-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-primary btn-sm" onclick="farmTile()">翻土</button>
+                    <button class="btn btn-success btn-sm" onclick="plantSeeds()">種植</button>
+                    <button class="btn btn-info btn-sm" onclick="waterCrops()">澆水</button>
+                    <button class="btn btn-warning btn-sm" onclick="chopWood()">砍柴</button>
+                    <button class="btn btn-danger btn-sm" onclick="mineStone()">挖礦</button>
                 </div>
             </div>
-
-            <!-- 主遊戲世界 -->
-            <div class="game-world" id="gameWorld">
-                ${createGameWorldHTML()}
+        `;
+        
+        // 初始化遊戲邏輯
+        initializeGameLogic();
+        console.log('農場物語主介面創建完成');
+        
+    } catch (error) {
+        console.error('創建主遊戲介面錯誤:', error);
+    }
+}
             </div>
 
             <!-- 右側邊欄 -->
@@ -914,27 +977,21 @@ function getWeatherIcon() {
 }
 
 function createGameWorldHTML() {
-    return `
-        <div class="professional-game-world">
-            <!-- 3D風格村莊場景 -->
-            <div class="village-background">
-                <!-- 遠景山脈 -->
-                <div class="mountain-bg"></div>
-                <!-- 雲朵動畫 -->
-                <div class="cloud cloud-1"></div>
-                <div class="cloud cloud-2"></div>
-                <div class="cloud cloud-3"></div>
-                
-                <!-- 村莊建築群 -->
-                <div class="building town-hall" style="left: 80px; top: 120px;" onclick="enterBuilding('townhall')">
-                    <div class="building-sprite">🏛️</div>
-                    <div class="building-name">村公所</div>
-                    <div class="building-glow"></div>
-                </div>
-                
-                <div class="building shop" style="left: 220px; top: 100px;" onclick="enterBuilding('shop')">
-                    <div class="building-sprite">🏪</div>
-                    <div class="building-name">商店</div>
+    try {
+        return `
+            <div class="professional-game-world">
+                <!-- 簡化的村莊場景 -->
+                <div class="village-background" style="position: relative; width: 100%; height: 400px; background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 50%, #90EE90 100%); border-radius: 10px; overflow: hidden;">
+                    
+                    <!-- 村莊建築群 -->
+                    <div class="building town-hall" style="position: absolute; left: 80px; top: 120px; cursor: pointer;" onclick="enterBuilding('townhall')">
+                        <div style="font-size: 40px;">🏛️</div>
+                        <div style="font-size: 12px; text-align: center; background: rgba(0,0,0,0.7); color: white; padding: 2px; border-radius: 4px;">村公所</div>
+                    </div>
+                    
+                    <div class="building shop" style="position: absolute; left: 220px; top: 100px; cursor: pointer;" onclick="enterBuilding('shop')">
+                        <div style="font-size: 40px;">🏪</div>
+                        <div style="font-size: 12px; text-align: center; background: rgba(0,0,0,0.7); color: white; padding: 2px; border-radius: 4px;">商店</div>
                     <div class="building-glow"></div>
                 </div>
                 
@@ -1810,6 +1867,153 @@ function updateInventoryDisplay() {
     if (inventoryContainer && window.farmGameState) {
         inventoryContainer.innerHTML = createInventoryHTML();
     }
+}
+
+// 建築物互動功能
+function enterBuilding(buildingType) {
+    if (!window.farmGameState) return;
+    
+    switch (buildingType) {
+        case 'townhall':
+            talkToNPC('Mayor Tom');
+            break;
+        case 'shop':
+            talkToNPC('Shopkeeper Mary');
+            break;
+        case 'blacksmith':
+            talkToNPC('Blacksmith Jack');
+            break;
+        case 'clinic':
+            talkToNPC('Doctor Lily');
+            break;
+        default:
+            showNotification('建築', '這個建築還在建設中...');
+    }
+}
+
+// 工具選擇功能
+function selectTool(tool) {
+    if (!window.farmGameState) return;
+    
+    window.farmGameState.player.currentTool = tool;
+    let toolName = '';
+    switch (tool) {
+        case 'hoe': toolName = '鋤頭'; break;
+        case 'water': toolName = '澆水壺'; break;
+        case 'axe': toolName = '斧頭'; break;
+        default: toolName = tool;
+    }
+    showNotification('工具選擇', `已選擇 ${toolName}`);
+}
+
+// 前往農場
+function goToFarm() {
+    showNotification('場景切換', '來到了你的農場');
+    // 這裡可以添加場景切換邏輯
+}
+
+// NPC對話功能（簡化版）
+function talkToNPC(npcName) {
+    if (!window.farmGameState) return;
+    
+    if (window.farmGameState.aiUsesLeft > 0) {
+        window.farmGameState.aiUsesLeft--;
+        showDialogue(npcName, `你好！我是${npcName}。今天過得怎麼樣？`, [
+            { text: '很好！', action: () => closeDialogue() },
+            { text: '需要幫助', action: () => useAIAssistant() }
+        ]);
+    } else {
+        // 固定對話回應
+        const dialogues = {
+            'Mayor Tom': '歡迎來到我們的村莊！記得要照顧好你的農場。',
+            'Shopkeeper Mary': '歡迎光臨！需要購買種子或工具嗎？',
+            'Blacksmith Jack': '你的工具需要修理嗎？我可以幫你升級！',
+            'Doctor Lily': '記得要保持健康！需要治療的話來找我。'
+        };
+        showDialogue(npcName, dialogues[npcName] || '你好！', [
+            { text: '好的', action: () => closeDialogue() }
+        ]);
+    }
+    updateStatusDisplay();
+}
+
+// 對話框顯示
+function showDialogue(speaker, text, options = []) {
+    const dialogueDiv = document.createElement('div');
+    dialogueDiv.className = 'dialogue-overlay';
+    dialogueDiv.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    dialogueDiv.innerHTML = `
+        <div style="background: white; padding: 20px; border-radius: 10px; max-width: 400px; text-align: center;">
+            <h5>${speaker}</h5>
+            <p>${text}</p>
+            <div style="margin-top: 15px;">
+                ${options.map((option, index) => 
+                    `<button class="btn btn-primary btn-sm me-2" onclick="dialogueOption(${index})">${option.text}</button>`
+                ).join('')}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(dialogueDiv);
+    
+    // 儲存選項動作
+    window.currentDialogueOptions = options;
+}
+
+// 對話選項處理
+function dialogueOption(index) {
+    if (window.currentDialogueOptions && window.currentDialogueOptions[index]) {
+        window.currentDialogueOptions[index].action();
+    }
+}
+
+// 關閉對話框
+function closeDialogue() {
+    const dialogue = document.querySelector('.dialogue-overlay');
+    if (dialogue) {
+        dialogue.remove();
+    }
+    window.currentDialogueOptions = null;
+}
+
+// 通知顯示
+function showNotification(title, text) {
+    const notification = document.createElement('div');
+    notification.className = 'game-notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 999;
+        max-width: 250px;
+    `;
+    
+    notification.innerHTML = `
+        <strong>${title}</strong><br>
+        ${text}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }
 
 function useAIAssistant() {
