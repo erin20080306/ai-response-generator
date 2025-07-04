@@ -537,10 +537,9 @@ class EnhancedAIAssistant {
             console.log('解析後端數據:', data);
 
             if (data.success) {
-                // 顯示 AI 回應
+                // 顯示 AI 回應 - 暫時禁用打字機效果以避免截斷問題
                 console.log('顯示AI回應:', data.response);
-                const useTypewriter = this.settings.typewriterEffect;
-                this.addMessage(data.response, 'ai', useTypewriter);
+                this.addMessage(data.response, 'ai', false);
                 
                 this.showNotification('AI回應成功', 'success');
 
