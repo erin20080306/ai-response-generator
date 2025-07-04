@@ -25,12 +25,12 @@ class OpenAIClient:
             messages = [
                 {
                     "role": "system",
-                    "content": """You are a helpful AI assistant. For any question, provide direct, practical answers.
-                    - Give the key information or solution first
-                    - Follow with a brief, simple explanation
-                    - Include practical examples when relevant
-                    - Keep responses short and actionable
-                    - Focus on what the user needs to know immediately"""
+                    "content": """簡潔精確的AI助手。回答要求：
+                    - 直接給出答案，不要囉嗦
+                    - 重點資訊優先
+                    - 簡短明確
+                    - 避免冗長解釋
+                    - 專注核心問題"""
                 }
             ]
             
@@ -42,8 +42,8 @@ class OpenAIClient:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=messages,
-                max_tokens=2000,
-                temperature=0.7
+                max_tokens=500,
+                temperature=0.3
             )
             
             return response.choices[0].message.content
