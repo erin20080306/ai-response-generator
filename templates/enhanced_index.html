@@ -860,10 +860,8 @@
             gameInfo.innerHTML = '<h6>俄羅斯方塊</h6><p>使用方向鍵移動方塊，空白鍵旋轉</p>';
             gameControls.innerHTML = '<button class="btn btn-primary" onclick="startTetrisInPanel()">開始遊戲</button>';
             
-            // 載入俄羅斯方塊遊戲
-            if (window.aiAssistant && window.aiAssistant.gameCenter) {
-                window.aiAssistant.gameCenter.loadTetrisGame(gameContainer);
-            }
+            // 直接載入俄羅斯方塊遊戲
+            startTetrisInPanel();
         }
         
         function loadMahjongGame() {
@@ -871,14 +869,11 @@
             const gameInfo = document.getElementById('gameInfo');
             const gameControls = document.getElementById('gameControls');
             
-            gameContainer.innerHTML = '<div id="mahjongGame"></div>';
             gameInfo.innerHTML = '<h6>麻將</h6><p>4人麻將遊戲，點擊牌張進行遊戲</p>';
             gameControls.innerHTML = '<button class="btn btn-primary" onclick="startMahjongInPanel()">開始遊戲</button>';
             
-            // 載入麻將遊戲
-            if (window.aiAssistant && window.aiAssistant.gameCenter) {
-                window.aiAssistant.gameCenter.loadMahjongGame(gameContainer);
-            }
+            // 直接載入麻將遊戲
+            startMahjongInPanel();
         }
         
         function loadFarmStoryGame() {
@@ -886,14 +881,12 @@
             const gameInfo = document.getElementById('gameInfo');
             const gameControls = document.getElementById('gameControls');
             
-            gameContainer.innerHTML = '<div id="farmStoryGame"></div>';
             gameInfo.innerHTML = '<h6>農場物語</h6><p>農場RPG遊戲，與NPC對話並管理農場</p>';
             gameControls.innerHTML = '<button class="btn btn-primary" onclick="startFarmStoryInPanel()">開始遊戲</button>';
             
-            // 載入農場故事遊戲
-            if (window.aiAssistant && window.aiAssistant.gameCenter) {
-                window.aiAssistant.gameCenter.loadFarmStoryGame(gameContainer);
-            }
+            // 直接載入農場故事遊戲
+            startFarmStoryInPanel();
+        }
         }
         
         // 全域遊戲啟動函數
@@ -980,7 +973,106 @@
         }
         
         function talkToNPC(npcName) {
-            alert('與 ' + npcName + ' 對話中...');
+            const board = document.getElementById('farmStoryBoard');
+            let dialogue = '';
+            
+            switch(npcName) {
+                case '村長湯姆':
+                    dialogue = `
+                        <div class="dialogue-box">
+                            <h6>村長湯姆</h6>
+                            <p>"歡迎回到農場！你祖父的農場需要你的照料。要不要先去田裡種些作物？"</p>
+                            <button class="btn btn-sm btn-primary" onclick="goToFarm()">去農場</button>
+                            <button class="btn btn-sm btn-secondary" onclick="initFarmStoryGame()">回到主畫面</button>
+                        </div>
+                    `;
+                    break;
+                case '商店老闆瑪麗':
+                    dialogue = `
+                        <div class="dialogue-box">
+                            <h6>商店老闆瑪麗</h6>
+                            <p>"需要種子嗎？我這裡有新鮮的蘿蔔和玉米種子！"</p>
+                            <button class="btn btn-sm btn-success" onclick="buySeeds()">購買種子</button>
+                            <button class="btn btn-sm btn-secondary" onclick="initFarmStoryGame()">回到主畫面</button>
+                        </div>
+                    `;
+                    break;
+                case '鐵匠傑克':
+                    dialogue = `
+                        <div class="dialogue-box">
+                            <h6>鐵匠傑克</h6>
+                            <p>"你的農具需要升級了！讓我幫你打造更好的工具吧！"</p>
+                            <button class="btn btn-sm btn-warning" onclick="upgradeTools()">升級工具</button>
+                            <button class="btn btn-sm btn-secondary" onclick="initFarmStoryGame()">回到主畫面</button>
+                        </div>
+                    `;
+                    break;
+                case '醫生莉莉':
+                    dialogue = `
+                        <div class="dialogue-box">
+                            <h6>醫生莉莉</h6>
+                            <p>"農場生活辛苦，記得照顧好自己的健康！這裡有一些恢復藥水。"</p>
+                            <button class="btn btn-sm btn-info" onclick="getHealing()">獲得治療</button>
+                            <button class="btn btn-sm btn-secondary" onclick="initFarmStoryGame()">回到主畫面</button>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            board.innerHTML = dialogue;
+        }
+        
+        function goToFarm() {
+            const board = document.getElementById('farmStoryBoard');
+            board.innerHTML = `
+                <div class="farm-scene">
+                    <h6>農場</h6>
+                    <p>這是你的農場，土地肥沃等待耕作。</p>
+                    <div class="farm-actions">
+                        <button class="btn btn-sm btn-success me-2" onclick="plantCrops()">種植作物</button>
+                        <button class="btn btn-sm btn-primary me-2" onclick="waterCrops()">澆水</button>
+                        <button class="btn btn-sm btn-warning me-2" onclick="harvestCrops()">收穫</button>
+                        <button class="btn btn-sm btn-secondary" onclick="initFarmStoryGame()">回村莊</button>
+                    </div>
+                    <div id="farmStatus" class="mt-3">
+                        <p>農場狀態：準備耕作</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function buySeeds() {
+            showMessage('你購買了蘿蔔種子和玉米種子！');
+        }
+        
+        function upgradeTools() {
+            showMessage('你的農具已升級！效率提升了！');
+        }
+        
+        function getHealing() {
+            showMessage('你感到精神百倍！健康值恢復！');
+        }
+        
+        function plantCrops() {
+            document.getElementById('farmStatus').innerHTML = '<p class="text-success">你種下了種子！記得澆水哦。</p>';
+        }
+        
+        function waterCrops() {
+            document.getElementById('farmStatus').innerHTML = '<p class="text-info">你給作物澆了水，它們正在茁壯成長！</p>';
+        }
+        
+        function harvestCrops() {
+            document.getElementById('farmStatus').innerHTML = '<p class="text-warning">你收穫了成熟的作物！獲得了金幣！</p>';
+        }
+        
+        function showMessage(message) {
+            const board = document.getElementById('farmStoryBoard');
+            board.innerHTML = `
+                <div class="message-box text-center">
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="initFarmStoryGame()">繼續</button>
+                </div>
+            `;
         }
     </script>
 </body>
