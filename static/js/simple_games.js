@@ -208,13 +208,14 @@ function loadMahjongGame() {
                         </div>
                     </div>
                 </div>
-                
-                <div class="mahjong-controls">
-                    <button onclick="drawMahjongTile()" class="mahjong-btn draw-btn">摸牌</button>
-                    <button onclick="discardMahjongTile()" class="mahjong-btn discard-btn">打牌</button>
-                    <button onclick="declareMahjongWin()" class="mahjong-btn win-btn">胡牌</button>
-                    <button onclick="restartMahjong()" class="mahjong-btn restart-btn">重新開始</button>
-                </div>
+            </div>
+            
+            <div class="mahjong-controls">
+                <button onclick="drawMahjongTile()" class="mahjong-btn draw-btn">摸牌</button>
+                <button onclick="discardMahjongTile()" class="mahjong-btn discard-btn">打牌</button>
+                <button onclick="declareMahjongWin()" class="mahjong-btn win-btn">胡牌</button>
+                <button onclick="restartMahjong()" class="mahjong-btn restart-btn">重新開始</button>
+            </div>
             </div>
         </div>
     `;
@@ -587,7 +588,7 @@ function updateMahjongDisplay() {
 
 // 選擇牌
 function selectTile(tile, index) {
-    if (gameData.mahjong.currentPlayer === 0) { // 只有玩家回合才能選牌
+    if (gameData.mahjong && gameData.mahjong.currentPlayer === 0) { // 只有玩家回合才能選牌
         gameData.mahjong.selectedTile = tile;
         renderMahjongBoard();
     }
