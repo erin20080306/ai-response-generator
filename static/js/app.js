@@ -118,25 +118,125 @@ class AIAssistant {
     }
 
     typewriterEffect(element, text, icon) {
-        // Disable typewriter effect temporarily - show message directly
-        element.innerHTML = icon + this.formatMessage(text);
-        this.highlightCode(element);
-        this.scrollToBottom();
+        // Check if text contains code blocks
+        if (text.includes('```')) {
+            this.typewriterWithCodeBlocks(element, text, icon);
+        } else {
+            this.simpleTypewriter(element, text, icon);
+        }
     }
 
     simpleTypewriter(element, text, icon) {
-        // This function is currently disabled to prevent text duplication
-        // We'll show the message directly instead
-        element.innerHTML = icon + this.formatMessage(text);
-        this.highlightCode(element);
-        this.scrollToBottom();
+        element.innerHTML = icon; // Start with just the icon
+        let index = 0;
+        const cursor = '<span class="typewriter-cursor">|</span>';
+        
+        const typeInterval = setInterval(() => {
+            if (index <= text.length) {
+                const currentText = text.substring(0, index);
+                const escapedText = this.escapeHtml(currentText).replace(/\n/g, '<br>');
+                element.innerHTML = icon + escapedText + (index < text.length ? cursor : '');
+                index++;
+                this.scrollToBottom();
+            } else {
+                // Apply final formatting after typewriter is complete
+                element.innerHTML = icon + this.formatMessage(text);
+                this.highlightCode(element);
+                clearInterval(typeInterval);
+            }
+        }, 50);
     }
 
     typewriterWithCodeBlocks(element, text, icon) {
-        // Disable typewriter effect temporarily - show message directly
-        element.innerHTML = icon + this.formatMessage(text);
-        this.highlightCode(element);
-        this.scrollToBottom();
+        element.innerHTML = icon; // Start with just the icon
+        const parts = this.splitTextWithCodeBlocks(text);
+        let partIndex = 0;
+        
+        const processNextPart = () => {
+            if (partIndex >= parts.length) {
+                this.highlightCode(element);
+                return;
+            }
+            
+            const part = parts[partIndex];
+            
+            if (part.isCode) {
+                // Show code blocks instantly
+                const currentContent = element.innerHTML;
+                element.innerHTML = currentContent + this.formatCodeBlock(part.content);
+                partIndex++;
+                this.scrollToBottom();
+                setTimeout(processNextPart, 100);
+            } else {
+                // Type regular text character by character
+                let charIndex = 0;
+                const cursor = '<span class="typewriter-cursor">|</span>';
+                
+                const typeInterval = setInterval(() => {
+                    if (charIndex <= part.content.length) {
+                        const currentText = part.content.substring(0, charIndex);
+                        const escapedText = this.escapeHtml(currentText).replace(/\n/g, '<br>');
+                        const baseContent = element.innerHTML.replace(cursor, '');
+                        element.innerHTML = baseContent + escapedText + (charIndex < part.content.length ? cursor : '');
+                        charIndex++;
+                        this.scrollToBottom();
+                    } else {
+                        element.innerHTML = element.innerHTML.replace(cursor, '');
+                        partIndex++;
+                        clearInterval(typeInterval);
+                        setTimeout(processNextPart, 100);
+                    }
+                }, 50);
+            }
+        };
+        
+        processNextPart();
+    }
+
+    splitTextWithCodeBlocks(text) {
+        const parts = [];
+        const codeBlockRegex = /```[\s\S]*?```/g;
+        let lastIndex = 0;
+        let match;
+        
+        while ((match = codeBlockRegex.exec(text)) !== null) {
+            // Add text before code block
+            if (match.index > lastIndex) {
+                const textPart = text.substring(lastIndex, match.index);
+                if (textPart.trim()) {
+                    parts.push({ content: textPart, isCode: false });
+                }
+            }
+            
+            // Add code block
+            parts.push({ content: match[0], isCode: true });
+            lastIndex = match.index + match[0].length;
+        }
+        
+        // Add remaining text after last code block
+        if (lastIndex < text.length) {
+            const textPart = text.substring(lastIndex);
+            if (textPart.trim()) {
+                parts.push({ content: textPart, isCode: false });
+            }
+        }
+        
+        // If no code blocks found, return entire text as single part
+        if (parts.length === 0) {
+            parts.push({ content: text, isCode: false });
+        }
+        
+        return parts;
+    }
+
+    formatCodeBlock(codeText) {
+        const match = codeText.match(/```(\w+)?\n?([\s\S]*?)```/);
+        if (match) {
+            const language = match[1] || 'plaintext';
+            const code = match[2].trim();
+            return `<pre><code class="language-${language}">${this.escapeHtml(code)}</code></pre>`;
+        }
+        return this.escapeHtml(codeText);
     }
 
     formatMessage(text) {
