@@ -818,8 +818,13 @@
     
     <!-- Custom JavaScript -->
     <!-- Core JavaScript Files -->
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/enhanced_app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/file_handler.js') }}"></script>
     <script src="{{ url_for('static', filename='js/tools.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/voice.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/collaboration.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/canvas-effects.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/multiplayer-client.js') }}"></script>
     <script src="{{ url_for('static', filename='js/simple_games.js') }}"></script>
     <script src="{{ url_for('static', filename='js/document_generator.js') }}"></script>
     
@@ -830,38 +835,57 @@
     <script>
         // Initialize the app when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM Content Loaded');
+            console.log('Enhanced AI Assistant Loading...');
             
-            // Initialize AI Assistant
-            if (typeof AIAssistant !== 'undefined') {
-                window.aiAssistant = new AIAssistant();
-                console.log('AI Assistant initialized');
-            } else {
-                console.error('AIAssistant class not found');
-            }
-            
-            // Initialize Tools
-            if (typeof Tools !== 'undefined') {
-                window.tools = new Tools();
-                console.log('Tools initialized');
-            } else {
-                console.error('Tools class not found');
-            }
-            
-            // Initialize Games
-            if (typeof SimpleGames !== 'undefined') {
-                window.simpleGames = new SimpleGames();
-                console.log('Simple Games initialized');
-            } else {
-                console.error('SimpleGames class not found');
-            }
-            
-            // Initialize Document Generator
-            if (typeof DocumentGenerator !== 'undefined') {
-                window.documentGenerator = new DocumentGenerator(window.aiAssistant);
-                console.log('Document Generator initialized');
-            } else {
-                console.error('DocumentGenerator class not found');
+            try {
+                // Initialize Enhanced App first
+                if (typeof EnhancedAIApp !== 'undefined') {
+                    window.enhancedApp = new EnhancedAIApp();
+                    console.log('✓ Enhanced AI App initialized');
+                }
+                
+                // Initialize Tools
+                if (typeof Tools !== 'undefined') {
+                    window.tools = new Tools();
+                    console.log('✓ Tools initialized');
+                }
+                
+                // Initialize File Handler
+                if (typeof FileHandler !== 'undefined') {
+                    window.fileHandler = new FileHandler();
+                    window.fileHandler.init();
+                    console.log('✓ File Handler initialized');
+                }
+                
+                // Initialize Voice module
+                if (typeof VoiceModule !== 'undefined') {
+                    window.voiceModule = new VoiceModule();
+                    console.log('✓ Voice Module initialized');
+                }
+                
+                // Initialize Collaboration
+                if (typeof Collaboration !== 'undefined') {
+                    window.collaboration = new Collaboration();
+                    window.collaboration.init();
+                    console.log('✓ Collaboration initialized');
+                }
+                
+                // Initialize Games
+                if (typeof SimpleGames !== 'undefined') {
+                    window.simpleGames = new SimpleGames();
+                    console.log('✓ Games initialized');
+                }
+                
+                // Initialize Document Generator
+                if (typeof DocumentGenerator !== 'undefined') {
+                    window.documentGenerator = new DocumentGenerator(window.enhancedApp || window.aiAssistant);
+                    console.log('✓ Document Generator initialized');
+                }
+                
+                console.log('🎉 All modules loaded successfully!');
+                
+            } catch (error) {
+                console.error('Error during initialization:', error);
             }
         });
     </script>
