@@ -1862,8 +1862,12 @@ class GameCenter {
         // 更新玩家手牌顯示
         function updatePlayerHand() {
             const playerTilesElement = document.getElementById('playerTiles');
-            if (!playerTilesElement) return;
+            if (!playerTilesElement) {
+                console.error('找不到玩家手牌元素 #playerTiles');
+                return;
+            }
             
+            console.log('更新玩家手牌:', gameState.players[0].hand);
             playerTilesElement.innerHTML = '';
             gameState.players[0].hand.forEach((tile, index) => {
                 const tileElement = document.createElement('div');
@@ -2042,6 +2046,9 @@ class GameCenter {
             gameState.gameOver = false;
             initTiles();
             dealTiles();
+            
+            console.log('遊戲開始，玩家手牌:', gameState.players[0].hand);
+            
             updateDisplay();
             updateCurrentPlayer();
             hideActionButtons();
