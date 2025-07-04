@@ -1,19 +1,4 @@
 /* 簡化版遊戲樣式 */
-#games-panel {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
-#games-panel.show {
-    display: block !important;
-}
-
-.game-container {
-    min-height: 500px;
-    display: block !important;
-}
-
 .game-selection {
     text-align: center;
     padding: 40px 20px;
