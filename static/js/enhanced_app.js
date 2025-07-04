@@ -2090,63 +2090,222 @@ class EnhancedAIAssistant {
     }
 
     openDateTimeConverter() {
-        const dateInput = prompt('請輸入日期時間 (例如: 2024-01-01 或 now):');
-        if (dateInput) {
+        const modalContent = `
+            <div class="modal fade" id="dateTimeModal" tabindex="-1" aria-labelledby="dateTimeModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="dateTimeModalLabel">
+                                <i class="fas fa-clock me-2"></i>時間轉換器
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <label for="dateTimeInput" class="form-label">日期時間輸入</label>
+                                    <input type="text" class="form-control" id="dateTimeInput" placeholder="例如: 2024-01-01, now, 1704067200">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="inputType" class="form-label">輸入類型</label>
+                                    <select class="form-select" id="inputType">
+                                        <option value="auto">自動偵測</option>
+                                        <option value="date">日期字串</option>
+                                        <option value="unix">Unix 時間戳</option>
+                                        <option value="millis">毫秒時間戳</option>
+                                        <option value="now">當前時間</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" id="convertDateTimeBtn">
+                                    <i class="fas fa-exchange-alt me-2"></i>轉換時間
+                                </button>
+                                <button type="button" class="btn btn-secondary ms-2" id="useCurrentTimeBtn">
+                                    <i class="fas fa-clock me-2"></i>使用當前時間
+                                </button>
+                            </div>
+                            <div id="dateTimeResult" class="mt-3" style="display:none;">
+                                <h6>轉換結果：</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th width="30%">格式</th>
+                                                <th width="60%">值</th>
+                                                <th width="10%">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><strong>完整日期時間</strong></td>
+                                                <td id="fullDateTime" class="text-break"></td>
+                                                <td><button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('fullDateTime').textContent)"><i class="fas fa-copy"></i></button></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>ISO 8601</strong></td>
+                                                <td id="isoDateTime" class="text-break"></td>
+                                                <td><button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('isoDateTime').textContent)"><i class="fas fa-copy"></i></button></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Unix 時間戳</strong></td>
+                                                <td id="unixTimestamp" class="text-break"></td>
+                                                <td><button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('unixTimestamp').textContent)"><i class="fas fa-copy"></i></button></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>毫秒時間戳</strong></td>
+                                                <td id="millisTimestamp" class="text-break"></td>
+                                                <td><button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('millisTimestamp').textContent)"><i class="fas fa-copy"></i></button></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>本地時間</strong></td>
+                                                <td id="localDateTime" class="text-break"></td>
+                                                <td><button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('localDateTime').textContent)"><i class="fas fa-copy"></i></button></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>UTC 時間</strong></td>
+                                                <td id="utcDateTime" class="text-break"></td>
+                                                <td><button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('utcDateTime').textContent)"><i class="fas fa-copy"></i></button></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>相對時間</strong></td>
+                                                <td id="relativeTime" class="text-break"></td>
+                                                <td><button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('relativeTime').textContent)"><i class="fas fa-copy"></i></button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    支援格式：日期字串 (2024-01-01)、Unix時間戳 (1704067200)、毫秒時間戳、或輸入 "now" 使用當前時間
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalContent);
+        
+        // 時間轉換功能
+        const convertDateTime = (input, type = 'auto') => {
             try {
                 let date;
-                if (dateInput.toLowerCase() === 'now') {
+                
+                if (type === 'now' || input.toLowerCase() === 'now') {
                     date = new Date();
+                } else if (type === 'unix' || (!isNaN(input) && input.toString().length === 10)) {
+                    date = new Date(parseInt(input) * 1000);
+                } else if (type === 'millis' || (!isNaN(input) && input.toString().length === 13)) {
+                    date = new Date(parseInt(input));
                 } else {
-                    date = new Date(dateInput);
+                    date = new Date(input);
                 }
                 
                 if (isNaN(date.getTime())) {
-                    throw new Error('無效的日期格式');
+                    throw new Error('無效的日期時間格式');
                 }
                 
-                const timestamp = date.getTime();
-                const unixTimestamp = Math.floor(timestamp / 1000);
+                // 計算相對時間
+                const now = new Date();
+                const diffMs = now.getTime() - date.getTime();
+                const diffSecs = Math.floor(diffMs / 1000);
+                const diffMins = Math.floor(diffSecs / 60);
+                const diffHours = Math.floor(diffMins / 60);
+                const diffDays = Math.floor(diffHours / 24);
                 
-                const newWindow = window.open('', '_blank');
-                newWindow.document.write(`
-                    <html>
-                        <head><title>時間轉換器</title></head>
-                        <body style="font-family: Arial; padding: 20px;">
-                            <h2>時間轉換器</h2>
-                            <table style="width: 100%; border-collapse: collapse;">
-                                <tr style="background: #f0f0f0;">
-                                    <th style="padding: 10px; border: 1px solid #ccc;">格式</th>
-                                    <th style="padding: 10px; border: 1px solid #ccc;">值</th>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; border: 1px solid #ccc;">完整日期時間</td>
-                                    <td style="padding: 10px; border: 1px solid #ccc;">${date.toString()}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; border: 1px solid #ccc;">ISO 8601</td>
-                                    <td style="padding: 10px; border: 1px solid #ccc;">${date.toISOString()}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; border: 1px solid #ccc;">Unix 時間戳</td>
-                                    <td style="padding: 10px; border: 1px solid #ccc;">${unixTimestamp}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; border: 1px solid #ccc;">毫秒時間戳</td>
-                                    <td style="padding: 10px; border: 1px solid #ccc;">${timestamp}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; border: 1px solid #ccc;">本地時間</td>
-                                    <td style="padding: 10px; border: 1px solid #ccc;">${date.toLocaleString()}</td>
-                                </tr>
-                            </table>
-                        </body>
-                    </html>
-                `);
+                let relativeTimeText;
+                if (Math.abs(diffDays) > 0) {
+                    relativeTimeText = diffDays > 0 ? `${diffDays} 天前` : `${Math.abs(diffDays)} 天後`;
+                } else if (Math.abs(diffHours) > 0) {
+                    relativeTimeText = diffHours > 0 ? `${diffHours} 小時前` : `${Math.abs(diffHours)} 小時後`;
+                } else if (Math.abs(diffMins) > 0) {
+                    relativeTimeText = diffMins > 0 ? `${diffMins} 分鐘前` : `${Math.abs(diffMins)} 分鐘後`;
+                } else {
+                    relativeTimeText = '剛剛';
+                }
                 
+                // 更新結果
+                document.getElementById('fullDateTime').textContent = date.toString();
+                document.getElementById('isoDateTime').textContent = date.toISOString();
+                document.getElementById('unixTimestamp').textContent = Math.floor(date.getTime() / 1000);
+                document.getElementById('millisTimestamp').textContent = date.getTime();
+                document.getElementById('localDateTime').textContent = date.toLocaleString();
+                document.getElementById('utcDateTime').textContent = date.toUTCString();
+                document.getElementById('relativeTime').textContent = relativeTimeText;
+                
+                document.getElementById('dateTimeResult').style.display = 'block';
+                
+                return true;
             } catch (error) {
-                alert('時間轉換錯誤：' + error.message);
+                return false;
             }
-        }
+        };
+        
+        // 轉換按鈕事件
+        document.getElementById('convertDateTimeBtn').addEventListener('click', () => {
+            const input = document.getElementById('dateTimeInput').value.trim();
+            const type = document.getElementById('inputType').value;
+            
+            if (!input && type !== 'now') {
+                this.showNotification('請輸入日期時間', 'error');
+                return;
+            }
+            
+            if (convertDateTime(input, type)) {
+                this.showNotification('時間轉換成功！', 'success');
+            } else {
+                this.showNotification('時間轉換失敗：請檢查輸入格式', 'error');
+            }
+        });
+        
+        // 使用當前時間按鈕
+        document.getElementById('useCurrentTimeBtn').addEventListener('click', () => {
+            document.getElementById('dateTimeInput').value = 'now';
+            document.getElementById('inputType').value = 'now';
+            convertDateTime('now', 'now');
+        });
+        
+        // 輸入類型改變事件
+        document.getElementById('inputType').addEventListener('change', (e) => {
+            const type = e.target.value;
+            const input = document.getElementById('dateTimeInput');
+            
+            switch (type) {
+                case 'now':
+                    input.placeholder = '將使用當前時間';
+                    input.value = 'now';
+                    break;
+                case 'unix':
+                    input.placeholder = '例如: 1704067200';
+                    break;
+                case 'millis':
+                    input.placeholder = '例如: 1704067200000';
+                    break;
+                case 'date':
+                    input.placeholder = '例如: 2024-01-01 12:00:00';
+                    break;
+                default:
+                    input.placeholder = '例如: 2024-01-01, now, 1704067200';
+            }
+        });
+        
+        // Enter鍵轉換
+        document.getElementById('dateTimeInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('convertDateTimeBtn').click();
+            }
+        });
+        
+        // 清理函數
+        document.getElementById('dateTimeModal').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('dateTimeModal').remove();
+        });
+        
+        ModalManager.showModal(document.getElementById('dateTimeModal'));
     }
 
     openColorPicker() {
