@@ -2,6 +2,73 @@
  * 獨立遊戲系統 - 不依賴AI的固定劇情遊戲
  */
 
+// 主要遊戲載入函數
+function loadGame(gameType) {
+    console.log('載入遊戲:', gameType);
+    
+    const gameContainer = document.getElementById('gameContainer');
+    if (!gameContainer) {
+        console.error('找不到gameContainer元素');
+        return;
+    }
+
+    // 清除現有內容
+    gameContainer.innerHTML = '';
+    
+    switch (gameType) {
+        case 'tetris':
+            loadTetrisGame();
+            break;
+        case 'mahjong':
+            loadMahjongGame();
+            break;
+        case 'farm-story':
+            loadFarmStoryGame();
+            break;
+        default:
+            gameContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <h5>遊戲類型不支援</h5>
+                    <p>請選擇支援的遊戲類型。</p>
+                </div>
+            `;
+    }
+}
+
+// 遊戲載入輔助函數
+function loadTetrisGame() {
+    const gameContainer = document.getElementById('gameContainer');
+    gameContainer.innerHTML = `
+        <div class="tetris-container">
+            <h5 class="text-center mb-3">俄羅斯方塊</h5>
+            <div id="tetrisBoard" class="tetris-board"></div>
+        </div>
+    `;
+    startTetrisInPanel();
+}
+
+function loadMahjongGame() {
+    const gameContainer = document.getElementById('gameContainer');
+    gameContainer.innerHTML = `
+        <div class="mahjong-container">
+            <h5 class="text-center mb-3">麻將</h5>
+            <div id="mahjongBoard" class="mahjong-board"></div>
+        </div>
+    `;
+    startMahjongInPanel();
+}
+
+function loadFarmStoryGame() {
+    const gameContainer = document.getElementById('gameContainer');
+    gameContainer.innerHTML = `
+        <div class="farm-story-container">
+            <h5 class="text-center mb-3">農場物語</h5>
+            <div id="farmStoryBoard" class="farm-story-board"></div>
+        </div>
+    `;
+    startFarmStoryInPanel();
+}
+
 // 全域遊戲變數
 let gameData = {
     farmStory: {
