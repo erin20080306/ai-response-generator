@@ -265,7 +265,19 @@ class EnhancedAIAssistant {
 
             // 檔案選擇事件 (檔案面板)
             if (fileInputPanel) {
-                fileInputPanel.addEventListener('change', (e) => this.handleFileSelect(e));
+                fileInputPanel.addEventListener('change', (e) => {
+                    console.log('檔案面板change事件觸發');
+                    this.handleFileSelect(e);
+                });
+                
+                // 添加其他事件監聽器來調試
+                fileInputPanel.addEventListener('input', (e) => {
+                    console.log('檔案面板input事件觸發');
+                });
+                
+                fileInputPanel.addEventListener('click', (e) => {
+                    console.log('檔案輸入框被點擊');
+                });
             }
 
             // 拖拽上傳
@@ -2617,6 +2629,9 @@ class EnhancedAIAssistant {
         } else {
             console.log('沒有選擇檔案');
         }
+        
+        // 重置輸入框值，確保重複選擇同一檔案時也能觸發事件
+        event.target.value = '';
     }
 
     async processFile(file) {
