@@ -1595,6 +1595,8 @@ class GameCenter {
 
     // 新的4人麻將遊戲初始化
     init4PlayerMahjong() {
+        console.log('初始化4人麻將遊戲...');
+        
         // Clear any existing timers
         if (window.mahjongTimer) {
             clearInterval(window.mahjongTimer);
@@ -1623,7 +1625,9 @@ class GameCenter {
             playerCanHu: false
         };
         
-        // 使用局部變量引用全局gameState
+        console.log('遊戲狀態初始化完成:', window.gameState);
+        
+        // 為所有內部函數創建gameState的快捷引用
         const gameState = window.gameState;
         
         // 麻將牌組
@@ -1642,6 +1646,7 @@ class GameCenter {
         
         // 初始化牌堆
         function initTiles() {
+            console.log('初始化牌堆...');
             gameState.wallTiles = [];
             
             // 每種數字牌4張
@@ -2150,16 +2155,16 @@ class GameCenter {
         // 更新玩家手牌顯示
         function updatePlayerHand() {
             const playerTilesElement = document.getElementById('playerTiles');
-            if (!playerTilesElement || !window.gameState || !window.gameState.players || !window.gameState.players[0]) {
+            if (!playerTilesElement || !window.gameState || !gameState.players || !gameState.players[0]) {
                 return;
             }
             playerTilesElement.innerHTML = '';
-            window.gameState.players[0].hand.forEach((tile, index) => {
+            gameState.players[0].hand.forEach((tile, index) => {
                 const tileElement = document.createElement('div');
                 tileElement.className = 'mahjong-tile';
                 tileElement.textContent = tile;
                 tileElement.onclick = () => {
-                    if (window.gameState.currentPlayer === 0) {
+                    if (gameState.currentPlayer === 0) {
                         // 玩家打牌
                         discardTile(0, index);
                         updateDisplay();
@@ -2327,6 +2332,12 @@ class GameCenter {
         
         // 開始新遊戲
         function startNewGame() {
+            console.log('開始新遊戲...');
+            if (!window.gameState) {
+                console.error('gameState未初始化');
+                return;
+            }
+            
             gameState.currentPlayer = 0;
             gameState.gameOver = false;
             initTiles();
@@ -2339,6 +2350,9 @@ class GameCenter {
             const drawBtn = document.getElementById('drawTileBtn');
             if (drawBtn) {
                 drawBtn.style.display = 'inline-block';
+                console.log('摸牌按鈕已顯示');
+            } else {
+                console.error('找不到摸牌按鈕');
             }
         }
         
