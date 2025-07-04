@@ -1739,66 +1739,6 @@ class GameCenter {
             console.log('checkPlayerActions函數已棄用，請使用checkSpecialActions');
             return;
         }
-            
-            // 檢查吃 (只能吃上家的牌，形成順子)
-            if (gameState.currentPlayer === 3) { // 上家是左家 (player 3)
-                gameState.playerCanChi = canFormSequence(playerHand, lastTile);
-            }
-            
-            // 檢查胡 (簡化版胡牌檢查)
-            gameState.playerCanHu = canWin([...playerHand, lastTile]);
-            
-            // 顯示動作按鈕
-            showActionButtons();
-        }
-        
-        // 檢查是否可以形成順子
-        function canFormSequence(hand, tile) {
-            // 簡化版順子檢查 - 只檢查數字牌
-            if (!tile.includes('萬') && !tile.includes('筒') && !tile.includes('條')) {
-                return false;
-            }
-            
-            const tileNum = parseInt(tile.charAt(0)) || getTileNumber(tile.charAt(0));
-            if (!tileNum || tileNum < 1 || tileNum > 9) return false;
-            
-            const suitTiles = hand.filter(t => t.includes(tile.slice(-1)));
-            const numbers = suitTiles.map(t => parseInt(t.charAt(0)) || getTileNumber(t.charAt(0)));
-            
-            // 檢查能否形成順子
-            return (numbers.includes(tileNum - 1) && numbers.includes(tileNum + 1)) ||
-                   (numbers.includes(tileNum - 2) && numbers.includes(tileNum - 1)) ||
-                   (numbers.includes(tileNum + 1) && numbers.includes(tileNum + 2));
-        }
-        
-        // 轉換中文數字
-        function getTileNumber(char) {
-            const nums = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9};
-            return nums[char];
-        }
-        
-        // 簡化版胡牌檢查
-        function canWin(hand) {
-            if (hand.length !== 14) return false;
-            
-            const tileCounts = {};
-            hand.forEach(tile => {
-                tileCounts[tile] = (tileCounts[tile] || 0) + 1;
-            });
-            
-            // 檢查是否有將牌 (一對)
-            let pairs = 0;
-            let triplets = 0;
-            
-            Object.values(tileCounts).forEach(count => {
-                if (count === 2) pairs++;
-                if (count === 3) triplets++;
-                if (count === 4) triplets++; // 槓算作刻子
-            });
-            
-            // 簡化版：4個刻子+1個對子 = 胡牌
-            return pairs === 1 && triplets === 4;
-        }
         
         // 顯示動作按鈕
         function showActionButtons() {
