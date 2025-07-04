@@ -2768,99 +2768,855 @@ class GameCenter {
         document.head.appendChild(style);
     }
 
-    // 牧場物語遊戲（可與AI互動10次）
+    // 牧場物語遊戲（完整RPG版本）
     startFarmGame() {
         this.addFarmGameStyles();
         
         const gameContent = `
-            <div class="farm-game">
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="farm-area">
-                            <div id="farmGrid" class="farm-grid"></div>
+            <div class="farm-game-enhanced">
+                <!-- 頂部狀態欄 -->
+                <div class="farm-status-bar">
+                    <div class="player-info">
+                        <div class="player-avatar">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNGRkM0N0QiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIxNSIgcj0iOCIgZmlsbD0iI0ZGQUE3RCIvPgo8Y2lyY2xlIGN4PSIxNSIgY3k9IjEyIiByPSIyIiBmaWxsPSIjNjY0RTI3Ii8+CjxjaXJjbGUgY3g9IjI1IiBjeT0iMTIiIHI9IjIiIGZpbGw9IiM2NjRFMjciLz4KPHBhdGggZD0iTTE2IDIwQzE2IDIyIDIwIDI0IDIwIDI0UzI0IDIyIDI0IDIwIiBzdHJva2U9IiM2NjRFMjciIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPgo8L3N2Zz4K" alt="玩家頭像" class="rounded-circle">
+                        </div>
+                        <div class="player-stats">
+                            <div><strong id="playerName">小農夫</strong> Lv.<span id="farmLevel">1</span></div>
+                            <div class="stat-bar">
+                                <span>體力:</span>
+                                <div class="progress">
+                                    <div id="energyBar" class="progress-bar bg-success" style="width: 100%"></div>
+                                </div>
+                                <span id="energyText">100/100</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="farm-panel">
-                            <h5>農場狀態</h5>
-                            <div class="mb-3">
-                                <strong>金錢：</strong><span id="farmMoney">100</span> 金
-                            </div>
-                            <div class="mb-3">
-                                <strong>等級：</strong><span id="farmLevel">1</span>
-                            </div>
-                            <div class="mb-3">
-                                <strong>經驗：</strong><span id="farmExp">0</span>/100
-                            </div>
-                            
-                            <h6>工具</h6>
-                            <div class="btn-group-vertical w-100 mb-3">
-                                <button class="btn btn-outline-primary tool-btn active" data-tool="hoe">
-                                    🍯 鋤頭
-                                </button>
-                                <button class="btn btn-outline-primary tool-btn" data-tool="seed">
-                                    🌱 種子 (10金)
-                                </button>
-                                <button class="btn btn-outline-primary tool-btn" data-tool="water">
-                                    💧 澆水
-                                </button>
-                                <button class="btn btn-outline-primary tool-btn" data-tool="harvest">
-                                    🌾 收穫
-                                </button>
-                            </div>
-                            
-                            <h6>AI 農場助手 <span class="badge bg-warning" id="aiCount">10</span></h6>
-                            <div class="ai-chat mb-3">
-                                <div id="aiMessages" class="ai-messages"></div>
-                                <div class="input-group">
-                                    <input type="text" id="aiInput" class="form-control" placeholder="詢問農場助手..." maxlength="100">
-                                    <button class="btn btn-primary" id="aiSend">送出</button>
+                    <div class="game-info">
+                        <div><strong>第 <span id="currentDay">1</span> 天</strong></div>
+                        <div id="currentSeason">春天</div>
+                        <div><span id="farmMoney">500</span> 金</div>
+                    </div>
+                </div>
+
+                <!-- 主要遊戲區域 -->
+                <div class="farm-main-area">
+                    <!-- 左側：場景和農場 -->
+                    <div class="farm-scene-area">
+                        <div class="scene-tabs">
+                            <button class="scene-tab active" data-scene="farm">🚜 農場</button>
+                            <button class="scene-tab" data-scene="town">🏘️ 村莊</button>
+                            <button class="scene-tab" data-scene="forest">🌲 森林</button>
+                            <button class="scene-tab" data-scene="mine">⛏️ 礦場</button>
+                        </div>
+                        
+                        <!-- 農場場景 -->
+                        <div id="farmScene" class="game-scene active">
+                            <div class="scene-background farm-bg">
+                                <div id="farmGrid" class="farm-grid"></div>
+                                <div class="farm-buildings">
+                                    <div class="building house" data-building="house">🏠</div>
+                                    <div class="building barn" data-building="barn">🏚️</div>
+                                    <div class="building coop" data-building="coop">🐔</div>
                                 </div>
                             </div>
-                            
-                            <div class="mt-3">
-                                <h6>農場日誌</h6>
-                                <div id="farmLog" class="farm-log"></div>
+                        </div>
+                        
+                        <!-- 村莊場景 -->
+                        <div id="townScene" class="game-scene">
+                            <div class="scene-background town-bg">
+                                <div class="town-buildings">
+                                    <div class="npc-building" data-npc="shopkeeper">
+                                        <div class="building-icon">🏪</div>
+                                        <div class="building-label">雜貨店</div>
+                                    </div>
+                                    <div class="npc-building" data-npc="mayor">
+                                        <div class="building-icon">🏛️</div>
+                                        <div class="building-label">鎮長辦公室</div>
+                                    </div>
+                                    <div class="npc-building" data-npc="blacksmith">
+                                        <div class="building-icon">🔨</div>
+                                        <div class="building-label">鐵匠鋪</div>
+                                    </div>
+                                    <div class="npc-building" data-npc="doctor">
+                                        <div class="building-icon">🏥</div>
+                                        <div class="building-label">診所</div>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                        
+                        <!-- 森林場景 -->
+                        <div id="forestScene" class="game-scene">
+                            <div class="scene-background forest-bg">
+                                <div class="forest-items">
+                                    <div class="collectible" data-item="wood">🪵</div>
+                                    <div class="collectible" data-item="berry">🍓</div>
+                                    <div class="collectible" data-item="mushroom">🍄</div>
+                                    <div class="collectible" data-item="flower">🌸</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 礦場場景 -->
+                        <div id="mineScene" class="game-scene">
+                            <div class="scene-background mine-bg">
+                                <div class="mine-levels">
+                                    <div class="mine-entrance" data-level="1">第1層</div>
+                                    <div class="mine-entrance" data-level="2">第2層</div>
+                                    <div class="mine-entrance" data-level="3">第3層</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右側：功能面板 -->
+                    <div class="farm-control-panel">
+                        <!-- 工具欄 -->
+                        <div class="tool-section">
+                            <h6>🔧 工具</h6>
+                            <div class="tool-grid">
+                                <button class="tool-btn active" data-tool="hoe" title="鋤頭">🚜</button>
+                                <button class="tool-btn" data-tool="seed" title="種子">🌱</button>
+                                <button class="tool-btn" data-tool="water" title="澆水壺">💧</button>
+                                <button class="tool-btn" data-tool="harvest" title="收穫">🌾</button>
+                                <button class="tool-btn" data-tool="axe" title="斧頭">🪓</button>
+                                <button class="tool-btn" data-tool="pickaxe" title="十字鎬">⛏️</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 背包 -->
+                        <div class="inventory-section">
+                            <h6>🎒 背包</h6>
+                            <div id="inventoryGrid" class="inventory-grid"></div>
+                        </div>
+                        
+                        <!-- 任務系統 -->
+                        <div class="quest-section">
+                            <h6>📋 任務</h6>
+                            <div id="questList" class="quest-list"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 對話系統 -->
+                <div id="dialogSystem" class="dialog-system">
+                    <div class="dialog-box">
+                        <div class="dialog-header">
+                            <img id="dialogAvatar" class="dialog-avatar" src="" alt="">
+                            <span id="dialogName" class="dialog-name"></span>
+                        </div>
+                        <div id="dialogText" class="dialog-text"></div>
+                        <div class="dialog-choices" id="dialogChoices"></div>
+                        <div class="dialog-continue">
+                            <button id="dialogNext" class="btn btn-primary">繼續</button>
                         </div>
                     </div>
                 </div>
             </div>
         `;
 
-        const modal = this.createGameModal('牧場物語', gameContent);
-        // modal.show() 已經在 createGameModal 中處理
-
+        const modal = this.createGameModal('牧場物語 - 夢想農場', gameContent);
+        
         setTimeout(() => {
             this.initFarmGame();
         }, 100);
     }
 
     initFarmGame() {
-        const grid = document.getElementById('farmGrid');
-        if (!grid) return;
-        
-        let gameState = {
-            money: 100,
-            level: 1,
-            exp: 0,
+        // 初始化遊戲狀態
+        const gameState = {
+            player: {
+                name: '小農夫',
+                level: 1,
+                exp: 0,
+                energy: 100,
+                maxEnergy: 100,
+                money: 500
+            },
+            world: {
+                day: 1,
+                season: 'spring',
+                currentScene: 'farm'
+            },
             currentTool: 'hoe',
-            aiInteractions: 10,
-            farmPlots: Array(36).fill().map(() => ({ state: 'empty', growthStage: 0, watered: false }))
+            farmPlots: Array(20).fill().map(() => ({ 
+                state: 'empty', 
+                crop: null, 
+                growthStage: 0, 
+                watered: false,
+                harvestReady: false 
+            })),
+            inventory: {
+                'turnip_seed': 5,
+                'potato_seed': 3,
+                'wood': 10,
+                'stone': 5
+            },
+            quests: [
+                {
+                    id: 1,
+                    title: '種植第一片作物',
+                    description: '在農場種植5個蘿蔔種子',
+                    progress: 0,
+                    target: 5,
+                    completed: false,
+                    reward: { money: 100, exp: 50 }
+                },
+                {
+                    id: 2,
+                    title: '拜訪鎮長',
+                    description: '去村莊拜訪鎮長了解更多關於這個小鎮的故事',
+                    progress: 0,
+                    target: 1,
+                    completed: false,
+                    reward: { money: 50, exp: 25 }
+                }
+            ],
+            relationships: {
+                mayor: { level: 0, points: 0 },
+                shopkeeper: { level: 0, points: 0 },
+                blacksmith: { level: 0, points: 0 },
+                doctor: { level: 0, points: 0 }
+            }
         };
+
+        // NPC 數據和劇情
+        const npcData = {
+            mayor: {
+                name: '村長湯姆',
+                avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMzAiIGZpbGw9IiNGRkM4OEEiLz4KPGNpcmNsZSBjeD0iMzAiIGN5PSIyNSIgcj0iMTIiIGZpbGw9IiNGRkI2N0EiLz4KPGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iMiIgZmlsbD0iIzMzMzMzMyIvPgo8Y2lyY2xlIGN4PSIzNiIgY3k9IjIyIiByPSIyIiBmaWxsPSIjMzMzMzMzIi8+CjxyZWN0IHg9IjI2IiB5PSIxNSIgd2lkdGg9IjgiIGhlaWdodD0iMyIgZmlsbD0iIzk5OTk5OSIvPgo8cGF0aCBkPSJNMjQgMzJDMjQgMzQgMzAgMzYgMzAgMzZTMzYgMzQgMzYgMzIiIHN0cm9rZT0iIzMzMzMzMyIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+PC9zdmc+',
+                dialogs: {
+                    first_meeting: [
+                        {
+                            text: "歡迎來到綠谷小鎮！我是湯姆鎮長，很高興見到你這位新來的農夫。",
+                            choices: null
+                        },
+                        {
+                            text: "這個小鎮雖然不大，但是非常溫馨。我們有雜貨店、鐵匠鋪和診所，應該能滿足你的基本需求。",
+                            choices: null
+                        },
+                        {
+                            text: "你的祖父留給你的農場有些荒廢，但我相信憑你的努力一定能讓它重現生機！",
+                            choices: [
+                                { text: "我會努力的！", action: "encourage" },
+                                { text: "請告訴我更多關於這裡的事情", action: "learn_more" }
+                            ]
+                        }
+                    ],
+                    encourage: [
+                        {
+                            text: "很好！我欣賞你的決心。記住，農業需要耐心和毅力，一步一步來就好。",
+                            choices: null
+                        }
+                    ],
+                    learn_more: [
+                        {
+                            text: "我們小鎮每年都會舉辦收穫節，到時候大家會展示自己種植的作物，還有各種有趣的活動。",
+                            choices: null
+                        },
+                        {
+                            text: "另外，森林裡有很多有用的資源，礦山也有珍貴的礦物，但要小心安全。",
+                            choices: null
+                        }
+                    ],
+                    regular: [
+                        {
+                            text: "最近農場經營得怎麼樣？記住，成功的農業需要平衡工作和休息。",
+                            choices: [
+                                { text: "一切都很順利", action: "doing_well" },
+                                { text: "有些困難", action: "need_help" }
+                            ]
+                        }
+                    ]
+                }
+            },
+            shopkeeper: {
+                name: '商店老闆瑪麗',
+                avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMzAiIGZpbGw9IiNGRkM0N0QiLz4KPGNpcmNsZSBjeD0iMzAiIGN5PSIyNSIgcj0iMTIiIGZpbGw9IiNGRkI2N0EiLz4KPGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iMiIgZmlsbD0iIzY2NEUyNyIvPgo8Y2lyY2xlIGN4PSIzNiIgY3k9IjIyIiByPSIyIiBmaWxsPSIjNjY0RTI3Ii8+CjxyZWN0IHg9IjI0IiB5PSIxNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjYiIGZpbGw9IiNEMkI0OEMiLz4KPHBhdGggZD0iTTI0IDMyQzI0IDM0IDMwIDM2IDMwIDM2UzM2IDM0IDM2IDMyIiBzdHJva2U9IiM2NjRFMjciIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==',
+                dialogs: {
+                    first_meeting: [
+                        {
+                            text: "你好！歡迎來到我的雜貨店！我是瑪麗，這裡有各種種子和農具。",
+                            choices: null
+                        },
+                        {
+                            text: "作為新來的農夫，我送你一些基本的種子作為歡迎禮物！",
+                            choices: null,
+                            action: "give_seeds"
+                        }
+                    ],
+                    shop: [
+                        {
+                            text: "想要買點什麼嗎？我這裡有最新鮮的種子！",
+                            choices: [
+                                { text: "查看商品", action: "open_shop" },
+                                { text: "不，謝謝", action: "close" }
+                            ]
+                        }
+                    ]
+                }
+            },
+            blacksmith: {
+                name: '鐵匠傑克',
+                avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMzAiIGZpbGw9IiNEMkIwODgiLz4KPGNpcmNsZSBjeD0iMzAiIGN5PSIyNSIgcj0iMTIiIGZpbGw9IiNGRkI2N0EiLz4KPGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iMiIgZmlsbD0iIzMzMzMzMyIvPgo8Y2lyY2xlIGN4PSIzNiIgY3k9IjIyIiByPSIyIiBmaWxsPSIjMzMzMzMzIi8+CjxyZWN0IHg9IjI2IiB5PSIxNSIgd2lkdGg9IjgiIGhlaWdodD0iNCIgZmlsbD0iIzMzMzMzMyIvPgo8cGF0aCBkPSJNMjQgMzJDMjQgMzQgMzAgMzYgMzAgMzZTMzYgMzQgMzYgMzIiIHN0cm9rZT0iIzMzMzMzMyIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+PC9zdmc+',
+                dialogs: {
+                    first_meeting: [
+                        {
+                            text: "歡迎來到我的鐵匠鋪！我是傑克，這裡可以升級你的工具。",
+                            choices: null
+                        },
+                        {
+                            text: "好的工具能讓農作更有效率，有需要隨時來找我！",
+                            choices: null
+                        }
+                    ]
+                }
+            },
+            doctor: {
+                name: '醫生莉莉',
+                avatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMzAiIGZpbGw9IiNGRkM0N0QiLz4KPGNpcmNsZSBjeD0iMzAiIGN5PSIyNSIgcj0iMTIiIGZpbGw9IiNGRkI2N0EiLz4KPGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iMiIgZmlsbD0iIzY2NEUyNyIvPgo8Y2lyY2xlIGN4PSIzNiIgY3k9IjIyIiByPSIyIiBmaWxsPSIjNjY0RTI3Ii8+CjxyZWN0IHg9IjI2IiB5PSIxNSIgd2lkdGg9IjgiIGhlaWdodD0iOCIgZmlsbD0iI0ZGRkZGRiIvPgo8cmVjdCB4PSIyOCIgeT0iMTciIHdpZHRoPSI0IiBoZWlnaHQ9IjIiIGZpbGw9IiNGRjAwMDAiLz4KPHJlY3QgeD0iMjkiIHk9IjE2IiB3aWR0aD0iMiIgaGVpZ2h0PSI0IiBmaWxsPSIjRkYwMDAwIi8+CjxwYXRoIGQ9Ik0yNCAzMkMyNCAzNCAzMCAzNiAzMCAzNlMzNiAzNCAzNiAzMiIgc3Ryb2tlPSIjNjY0RTI3IiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiLz48L3N2Zz4=',
+                dialogs: {
+                    first_meeting: [
+                        {
+                            text: "你好！我是莉莉醫生。農活很辛苦，記得要照顧好自己的身體。",
+                            choices: null
+                        },
+                        {
+                            text: "如果體力不足，記得來找我，我有特殊的草藥可以幫助恢復。",
+                            choices: null
+                        }
+                    ]
+                }
+            }
+        };
+
+        this.gameState = gameState;
+        this.npcData = npcData;
         
-        let gameTimer;
+        // 初始化UI
+        this.initFarmUI();
+        this.setupFarmEvents();
+        this.updateFarmDisplay();
         
-        function initGrid() {
+        // 顯示開場劇情
+        setTimeout(() => {
+            this.showDialog('mayor', 'first_meeting');
+        }, 1000);
+    }
+
+    initFarmUI() {
+        // 初始化農場網格
+        const grid = document.getElementById('farmGrid');
+        if (grid) {
             grid.innerHTML = '';
-            for (let i = 0; i < 36; i++) {
+            for (let i = 0; i < 20; i++) {
                 const plot = document.createElement('div');
                 plot.className = 'farm-plot';
                 plot.dataset.index = i;
-                plot.addEventListener('click', () => useTool(i));
-                updatePlotDisplay(plot, i);
+                plot.innerHTML = '🟫';
                 grid.appendChild(plot);
             }
+        }
+
+        // 初始化背包
+        this.updateInventory();
+        
+        // 初始化任務列表
+        this.updateQuests();
+    }
+
+    setupFarmEvents() {
+        // 場景切換
+        document.querySelectorAll('.scene-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const scene = e.target.dataset.scene;
+                this.switchScene(scene);
+            });
+        });
+
+        // 工具選擇
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.gameState.currentTool = e.target.dataset.tool;
+            });
+        });
+
+        // 農場格子點擊
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('farm-plot')) {
+                const index = parseInt(e.target.dataset.index);
+                this.useTool(index);
+            }
+        });
+
+        // NPC 對話
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.npc-building')) {
+                const npc = e.target.closest('.npc-building').dataset.npc;
+                this.talkToNPC(npc);
+            }
+        });
+
+        // 建築物互動
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('building')) {
+                const building = e.target.dataset.building;
+                this.interactWithBuilding(building);
+            }
+        });
+
+        // 收集物品
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('collectible')) {
+                const item = e.target.dataset.item;
+                this.collectItem(item, e.target);
+            }
+        });
+        
+        // 對話系統點擊事件
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'dialogNext') {
+                this.nextDialog();
+            }
+            if (e.target.classList.contains('dialog-choice')) {
+                const action = e.target.dataset.action;
+                this.handleDialogChoice(action);
+            }
+        });
+    }
+
+    // 顯示對話
+    showDialog(npcId, dialogKey) {
+        const npc = this.npcData[npcId];
+        if (!npc || !npc.dialogs[dialogKey]) return;
+
+        this.currentDialog = {
+            npcId: npcId,
+            dialogKey: dialogKey,
+            dialogs: npc.dialogs[dialogKey],
+            currentIndex: 0
+        };
+
+        const dialogSystem = document.getElementById('dialogSystem');
+        const dialogAvatar = document.getElementById('dialogAvatar');
+        const dialogName = document.getElementById('dialogName');
+
+        dialogAvatar.src = npc.avatar;
+        dialogName.textContent = npc.name;
+        dialogSystem.style.display = 'flex';
+
+        this.showCurrentDialog();
+    }
+
+    showCurrentDialog() {
+        const { dialogs, currentIndex } = this.currentDialog;
+        const dialog = dialogs[currentIndex];
+
+        const dialogText = document.getElementById('dialogText');
+        const dialogChoices = document.getElementById('dialogChoices');
+        const dialogNext = document.getElementById('dialogNext');
+
+        dialogText.textContent = dialog.text;
+
+        // 處理選擇
+        if (dialog.choices) {
+            dialogChoices.innerHTML = '';
+            dialog.choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-outline-primary me-2 mb-2 dialog-choice';
+                btn.textContent = choice.text;
+                btn.dataset.action = choice.action;
+                dialogChoices.appendChild(btn);
+            });
+            dialogChoices.style.display = 'block';
+            dialogNext.style.display = 'none';
+        } else {
+            dialogChoices.style.display = 'none';
+            dialogNext.style.display = 'inline-block';
+        }
+
+        // 處理動作
+        if (dialog.action) {
+            this.executeDialogAction(dialog.action);
+        }
+    }
+
+    nextDialog() {
+        this.currentDialog.currentIndex++;
+        if (this.currentDialog.currentIndex >= this.currentDialog.dialogs.length) {
+            this.closeDialog();
+            return;
+        }
+        this.showCurrentDialog();
+    }
+
+    handleDialogChoice(action) {
+        // 處理特殊動作
+        this.executeDialogAction(action);
+        
+        // 切換到對應的對話分支
+        const npc = this.npcData[this.currentDialog.npcId];
+        if (npc.dialogs[action]) {
+            this.currentDialog.dialogKey = action;
+            this.currentDialog.dialogs = npc.dialogs[action];
+            this.currentDialog.currentIndex = 0;
+            this.showCurrentDialog();
+        } else {
+            this.closeDialog();
+        }
+    }
+
+    executeDialogAction(action) {
+        switch(action) {
+            case 'give_seeds':
+                this.gameState.inventory.turnip_seed += 10;
+                this.gameState.inventory.potato_seed += 5;
+                this.updateInventory();
+                this.showMessage('獲得了種子！蘿蔔種子 +10，馬鈴薯種子 +5');
+                break;
+            case 'encourage':
+                this.gameState.relationships.mayor.points += 10;
+                break;
+            case 'learn_more':
+                // 解鎖森林和礦場
+                document.querySelector('[data-scene="forest"]').style.display = 'inline-block';
+                document.querySelector('[data-scene="mine"]').style.display = 'inline-block';
+                break;
+        }
+    }
+
+    closeDialog() {
+        document.getElementById('dialogSystem').style.display = 'none';
+        this.currentDialog = null;
+    }
+
+    // 場景切換
+    switchScene(sceneName) {
+        document.querySelectorAll('.scene-tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.game-scene').forEach(scene => scene.classList.remove('active'));
+        
+        document.querySelector(`[data-scene="${sceneName}"]`).classList.add('active');
+        document.getElementById(`${sceneName}Scene`).classList.add('active');
+        
+        this.gameState.world.currentScene = sceneName;
+    }
+
+    // NPC 對話
+    talkToNPC(npcId) {
+        const hasMetBefore = this.gameState.relationships[npcId].points > 0;
+        const dialogKey = hasMetBefore ? 'regular' : 'first_meeting';
+        
+        if (npcId === 'mayor' && !hasMetBefore) {
+            // 完成拜訪鎮長任務
+            this.completeQuest(2);
+        }
+        
+        // 增加好感度
+        this.gameState.relationships[npcId].points += 5;
+        
+        this.showDialog(npcId, this.npcData[npcId].dialogs[dialogKey] ? dialogKey : 'first_meeting');
+    }
+
+    // 使用工具
+    useTool(plotIndex) {
+        if (this.gameState.world.currentScene !== 'farm') return;
+        
+        const plot = this.gameState.farmPlots[plotIndex];
+        const tool = this.gameState.currentTool;
+        
+        if (this.gameState.player.energy <= 0) {
+            this.showMessage('體力不足！請休息恢復體力。');
+            return;
+        }
+
+        switch(tool) {
+            case 'hoe':
+                if (plot.state === 'empty') {
+                    plot.state = 'tilled';
+                    this.gameState.player.energy -= 2;
+                    this.updatePlotDisplay(plotIndex);
+                    this.addExp(1);
+                }
+                break;
+            
+            case 'seed':
+                if (plot.state === 'tilled' && this.gameState.inventory.turnip_seed > 0) {
+                    plot.state = 'planted';
+                    plot.crop = 'turnip';
+                    plot.growthStage = 0;
+                    this.gameState.inventory.turnip_seed--;
+                    this.gameState.player.energy -= 3;
+                    this.updatePlotDisplay(plotIndex);
+                    this.updateInventory();
+                    this.addExp(2);
+                    this.updateQuestProgress(1, 1); // 種植任務
+                }
+                break;
+            
+            case 'water':
+                if (plot.state === 'planted' && !plot.watered) {
+                    plot.watered = true;
+                    this.gameState.player.energy -= 2;
+                    this.updatePlotDisplay(plotIndex);
+                    this.addExp(1);
+                }
+                break;
+            
+            case 'harvest':
+                if (plot.harvestReady) {
+                    const harvested = this.harvestCrop(plot);
+                    plot.state = 'empty';
+                    plot.crop = null;
+                    plot.growthStage = 0;
+                    plot.watered = false;
+                    plot.harvestReady = false;
+                    this.gameState.player.energy -= 3;
+                    this.gameState.player.money += harvested.value;
+                    this.updatePlotDisplay(plotIndex);
+                    this.addExp(5);
+                    this.showMessage(`收穫了 ${harvested.name}！獲得 ${harvested.value} 金`);
+                }
+                break;
+        }
+        
+        this.updateFarmDisplay();
+    }
+
+    updatePlotDisplay(plotIndex) {
+        const plotElement = document.querySelector(`[data-index="${plotIndex}"]`);
+        if (!plotElement) return;
+        
+        const plot = this.gameState.farmPlots[plotIndex];
+        
+        switch(plot.state) {
+            case 'empty':
+                plotElement.innerHTML = '🟫';
+                break;
+            case 'tilled':
+                plotElement.innerHTML = '🟤';
+                break;
+            case 'planted':
+                if (plot.harvestReady) {
+                    plotElement.innerHTML = plot.crop === 'turnip' ? '🥕' : '🥔';
+                } else {
+                    plotElement.innerHTML = plot.watered ? '🌱' : '🌰';
+                }
+                break;
+        }
+    }
+
+    // 更新顯示
+    updateFarmDisplay() {
+        const { player, world } = this.gameState;
+        
+        document.getElementById('farmLevel').textContent = player.level;
+        document.getElementById('farmMoney').textContent = player.money;
+        document.getElementById('currentDay').textContent = world.day;
+        document.getElementById('currentSeason').textContent = world.season;
+        document.getElementById('playerName').textContent = player.name;
+        
+        // 更新體力條
+        const energyPercent = (player.energy / player.maxEnergy) * 100;
+        document.getElementById('energyBar').style.width = energyPercent + '%';
+        document.getElementById('energyText').textContent = `${player.energy}/${player.maxEnergy}`;
+    }
+
+    updateInventory() {
+        const inventoryGrid = document.getElementById('inventoryGrid');
+        if (!inventoryGrid) return;
+        
+        inventoryGrid.innerHTML = '';
+        
+        Object.entries(this.gameState.inventory).forEach(([item, count]) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'inventory-item';
+            
+            const itemName = this.getItemName(item);
+            const itemIcon = this.getItemIcon(item);
+            
+            itemDiv.innerHTML = `
+                <div class="item-icon">${itemIcon}</div>
+                <div class="item-name">${itemName}</div>
+                <div class="item-count">${count}</div>
+            `;
+            
+            inventoryGrid.appendChild(itemDiv);
+        });
+    }
+
+    updateQuests() {
+        const questList = document.getElementById('questList');
+        if (!questList) return;
+        
+        questList.innerHTML = '';
+        
+        this.gameState.quests.forEach(quest => {
+            const questDiv = document.createElement('div');
+            questDiv.className = `quest-item ${quest.completed ? 'completed' : ''}`;
+            
+            questDiv.innerHTML = `
+                <div class="quest-title">${quest.title}</div>
+                <div class="quest-description">${quest.description}</div>
+                <div class="quest-progress">${quest.progress}/${quest.target}</div>
+            `;
+            
+            questList.appendChild(questDiv);
+        });
+    }
+
+    // 輔助函數
+    getItemName(item) {
+        const names = {
+            'turnip_seed': '蘿蔔種子',
+            'potato_seed': '馬鈴薯種子',
+            'wood': '木材',
+            'stone': '石頭',
+            'turnip': '蘿蔔',
+            'potato': '馬鈴薯'
+        };
+        return names[item] || item;
+    }
+
+    getItemIcon(item) {
+        const icons = {
+            'turnip_seed': '🌰',
+            'potato_seed': '🟤',
+            'wood': '🪵',
+            'stone': '🪨',
+            'turnip': '🥕',
+            'potato': '🥔'
+        };
+        return icons[item] || '❓';
+    }
+
+    addExp(amount) {
+        this.gameState.player.exp += amount;
+        const expNeeded = this.gameState.player.level * 100;
+        
+        if (this.gameState.player.exp >= expNeeded) {
+            this.gameState.player.level++;
+            this.gameState.player.exp = 0;
+            this.gameState.player.maxEnergy += 10;
+            this.gameState.player.energy = this.gameState.player.maxEnergy;
+            this.showMessage(`升級了！現在是 ${this.gameState.player.level} 級！`);
+        }
+    }
+
+    updateQuestProgress(questId, amount) {
+        const quest = this.gameState.quests.find(q => q.id === questId);
+        if (quest && !quest.completed) {
+            quest.progress += amount;
+            if (quest.progress >= quest.target) {
+                this.completeQuest(questId);
+            }
+            this.updateQuests();
+        }
+    }
+
+    completeQuest(questId) {
+        const quest = this.gameState.quests.find(q => q.id === questId);
+        if (quest && !quest.completed) {
+            quest.completed = true;
+            this.gameState.player.money += quest.reward.money;
+            this.gameState.player.exp += quest.reward.exp;
+            this.showMessage(`任務完成！獲得 ${quest.reward.money} 金和 ${quest.reward.exp} 經驗值`);
+            this.updateQuests();
+        }
+    }
+
+    harvestCrop(plot) {
+        const crops = {
+            'turnip': { name: '蘿蔔', value: 80 },
+            'potato': { name: '馬鈴薯', value: 120 }
+        };
+        return crops[plot.crop] || { name: '作物', value: 50 };
+    }
+
+    showMessage(text) {
+        // 創建臨時消息顯示
+        const message = document.createElement('div');
+        message.className = 'farm-message';
+        message.textContent = text;
+        message.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+        `;
+        
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            message.remove();
+        }, 3000);
+    }
+
+    collectItem(itemType, element) {
+        if (this.gameState.world.currentScene !== 'forest') return;
+        
+        const items = {
+            'wood': { name: '木材', amount: Math.floor(Math.random() * 3) + 1 },
+            'berry': { name: '漿果', amount: Math.floor(Math.random() * 2) + 1 },
+            'mushroom': { name: '蘑菇', amount: 1 },
+            'flower': { name: '花朵', amount: 1 }
+        };
+        
+        const item = items[itemType];
+        if (item) {
+            this.gameState.inventory[itemType] = (this.gameState.inventory[itemType] || 0) + item.amount;
+            this.updateInventory();
+            this.showMessage(`收集了 ${item.name} x${item.amount}`);
+            this.addExp(2);
+            
+            // 移除已收集的物品
+            element.style.opacity = '0.5';
+            element.style.pointerEvents = 'none';
+            
+            // 一段時間後重新生成
+            setTimeout(() => {
+                element.style.opacity = '1';
+                element.style.pointerEvents = 'auto';
+            }, 30000);
+        }
+    }
+
+    // 自動作物成長系統
+    startGrowthTimer() {
+        setInterval(() => {
+            this.gameState.farmPlots.forEach((plot, index) => {
+                if (plot.state === 'planted' && plot.watered) {
+                    plot.growthStage++;
+                    if (plot.growthStage >= 3) { // 3天成熟
+                        plot.harvestReady = true;
+                    }
+                    plot.watered = false; // 需要重新澆水
+                    this.updatePlotDisplay(index);
+                }
+            });
+            
+            // 推進遊戲時間
+            this.gameState.world.day++;
+            if (this.gameState.world.day > 28) {
+                this.gameState.world.day = 1;
+                this.advanceSeason();
+            }
+            
+            // 恢復一些體力
+            this.gameState.player.energy = Math.min(
+                this.gameState.player.maxEnergy, 
+                this.gameState.player.energy + 20
+            );
+            
+            this.updateFarmDisplay();
+        }, 10000); // 每10秒為一天
+    }
         }
         
         function updatePlotDisplay(plot, index) {
@@ -3146,84 +3902,486 @@ class GameCenter {
     }
 
     addFarmGameStyles() {
-        if (document.getElementById('farm-styles')) return;
+        if (document.getElementById('farmGameStyles')) return;
         
         const style = document.createElement('style');
-        style.id = 'farm-styles';
+        style.id = 'farmGameStyles';
         style.textContent = `
-            .farm-game {
-                padding: 20px;
+            .farm-game-enhanced {
+                font-family: 'Arial', sans-serif;
+                background: linear-gradient(135deg, #87CEEB, #98FB98);
+                min-height: 600px;
+                border-radius: 15px;
+                overflow: hidden;
+                position: relative;
             }
+            
+            /* 狀態欄 */
+            .farm-status-bar {
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 10px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .player-info {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .player-avatar img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .stat-bar {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                font-size: 12px;
+            }
+            
+            .stat-bar .progress {
+                width: 100px;
+                height: 8px;
+            }
+            
+            .game-info {
+                text-align: right;
+                line-height: 1.4;
+            }
+            
+            /* 主要遊戲區域 */
+            .farm-main-area {
+                display: flex;
+                height: 500px;
+            }
+            
+            .farm-scene-area {
+                flex: 2;
+                background: #E8F5E8;
+                position: relative;
+            }
+            
+            .scene-tabs {
+                background: rgba(0,0,0,0.1);
+                padding: 8px;
+                display: flex;
+                gap: 5px;
+            }
+            
+            .scene-tab {
+                background: rgba(255,255,255,0.7);
+                border: none;
+                padding: 8px 15px;
+                border-radius: 15px;
+                cursor: pointer;
+                transition: all 0.3s;
+                font-size: 12px;
+            }
+            
+            .scene-tab.active {
+                background: #4CAF50;
+                color: white;
+                transform: scale(1.05);
+            }
+            
+            .game-scene {
+                display: none;
+                height: calc(100% - 50px);
+                position: relative;
+            }
+            
+            .game-scene.active {
+                display: block;
+            }
+            
+            /* 農場場景 */
+            .farm-bg {
+                background: linear-gradient(180deg, #87CEEB 0%, #90EE90 50%, #8B7355 100%);
+                height: 100%;
+                position: relative;
+            }
+            
             .farm-grid {
                 display: grid;
-                grid-template-columns: repeat(6, 1fr);
-                gap: 5px;
-                max-width: 480px;
-                background: #8BC34A;
-                padding: 15px;
-                border-radius: 10px;
-                border: 3px solid #689F38;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 8px;
+                padding: 20px;
+                max-width: 300px;
+                margin: 20px auto;
             }
+            
             .farm-plot {
-                width: 60px;
-                height: 60px;
-                background: #A1887F;
-                border: 2px solid #6D4C41;
+                width: 50px;
+                height: 50px;
+                border: 2px solid #654321;
                 border-radius: 8px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-size: 24px;
                 cursor: pointer;
-                transition: all 0.3s ease;
-                user-select: none;
+                background: #D2B48C;
+                transition: all 0.3s;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             }
+            
             .farm-plot:hover {
+                border-color: #FFD700;
                 transform: scale(1.1);
-                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                box-shadow: 0 4px 8px rgba(255,215,0,0.4);
             }
-            .farm-plot.watered {
-                background: #4FC3F7;
+            
+            .farm-buildings {
+                position: absolute;
+                bottom: 20px;
+                right: 20px;
+                display: flex;
+                gap: 10px;
             }
-            .farm-plot.ready {
-                animation: ready-glow 2s ease-in-out infinite;
-            }
-            .farm-panel {
-                background: var(--bs-dark);
-                padding: 15px;
-                border-radius: 10px;
-                color: white;
-                max-height: 600px;
-                overflow-y: auto;
-            }
-            .ai-messages {
-                max-height: 120px;
-                overflow-y: auto;
-                background: #2c2c2c;
+            
+            .building {
+                font-size: 30px;
+                cursor: pointer;
                 padding: 10px;
-                border-radius: 5px;
+                background: rgba(255,255,255,0.3);
+                border-radius: 10px;
+                transition: transform 0.3s;
+            }
+            
+            .building:hover {
+                transform: scale(1.2);
+            }
+            
+            /* 村莊場景 */
+            .town-bg {
+                background: linear-gradient(180deg, #87CEEB 0%, #F0E68C 100%);
+                height: 100%;
+                position: relative;
+            }
+            
+            .town-buildings {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                padding: 30px;
+                height: 100%;
+            }
+            
+            .npc-building {
+                background: rgba(255,255,255,0.9);
+                border-radius: 15px;
+                padding: 20px;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s;
+                border: 3px solid transparent;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+            
+            .npc-building:hover {
+                transform: translateY(-5px);
+                border-color: #4CAF50;
+                box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            }
+            
+            .building-icon {
+                font-size: 48px;
                 margin-bottom: 10px;
             }
-            .ai-message {
-                margin-bottom: 8px;
-                font-size: 0.9em;
-                line-height: 1.3;
+            
+            .building-label {
+                font-weight: bold;
+                color: #2C3E50;
             }
-            .farm-log {
-                max-height: 100px;
+            
+            /* 森林場景 */
+            .forest-bg {
+                background: linear-gradient(180deg, #228B22 0%, #32CD32 100%);
+                height: 100%;
+                position: relative;
+            }
+            
+            .forest-items {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 15px;
+                padding: 40px;
+                height: 100%;
+            }
+            
+            .collectible {
+                font-size: 40px;
+                cursor: pointer;
+                text-align: center;
+                transition: all 0.3s;
+                padding: 20px;
+                border-radius: 15px;
+                background: rgba(255,255,255,0.2);
+            }
+            
+            .collectible:hover {
+                transform: scale(1.3) rotate(15deg);
+                background: rgba(255,255,255,0.5);
+            }
+            
+            /* 礦場場景 */
+            .mine-bg {
+                background: linear-gradient(180deg, #2F4F4F 0%, #696969 100%);
+                height: 100%;
+                position: relative;
+            }
+            
+            .mine-levels {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                padding: 40px;
+                height: 100%;
+            }
+            
+            .mine-entrance {
+                background: rgba(0,0,0,0.7);
+                color: white;
+                padding: 20px;
+                border-radius: 10px;
+                text-align: center;
+                cursor: pointer;
+                border: 3px solid #8B4513;
+                transition: all 0.3s;
+            }
+            
+            .mine-entrance:hover {
+                border-color: #FFD700;
+                background: rgba(255,215,0,0.2);
+            }
+            
+            /* 控制面板 */
+            .farm-control-panel {
+                flex: 1;
+                background: rgba(255,255,255,0.95);
+                padding: 15px;
                 overflow-y: auto;
-                background: #2c2c2c;
+                border-left: 3px solid #4CAF50;
+            }
+            
+            .tool-section h6,
+            .inventory-section h6,
+            .quest-section h6 {
+                color: #2C3E50;
+                border-bottom: 2px solid #4CAF50;
+                padding-bottom: 5px;
+                margin-bottom: 15px;
+            }
+            
+            .tool-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+            
+            .tool-btn {
+                background: #f8f9fa;
+                border: 2px solid #dee2e6;
+                padding: 12px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.3s;
+                font-size: 20px;
+                text-align: center;
+            }
+            
+            .tool-btn:hover {
+                border-color: #4CAF50;
+                background: #E8F5E8;
+                transform: scale(1.05);
+            }
+            
+            .tool-btn.active {
+                background: #4CAF50;
+                color: white;
+                border-color: #45a049;
+            }
+            
+            .inventory-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                margin-bottom: 20px;
+                max-height: 150px;
+                overflow-y: auto;
+            }
+            
+            .inventory-item {
+                background: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 8px;
+                text-align: center;
+                font-size: 12px;
+            }
+            
+            .item-icon {
+                font-size: 20px;
+                margin-bottom: 4px;
+            }
+            
+            .item-name {
+                font-weight: bold;
+                margin-bottom: 2px;
+            }
+            
+            .item-count {
+                color: #6c757d;
+                font-size: 11px;
+            }
+            
+            .quest-list {
+                max-height: 150px;
+                overflow-y: auto;
+            }
+            
+            .quest-item {
+                background: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
                 padding: 10px;
-                border-radius: 5px;
-                font-size: 0.85em;
+                margin-bottom: 8px;
             }
-            .log-entry {
-                margin-bottom: 5px;
-                color: #ccc;
+            
+            .quest-item.completed {
+                background: #d4edda;
+                border-color: #c3e6cb;
             }
-            @keyframes ready-glow {
-                0%, 100% { box-shadow: 0 0 5px #FFD700; }
-                50% { box-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700; }
+            
+            .quest-title {
+                font-weight: bold;
+                color: #2C3E50;
+                font-size: 13px;
+            }
+            
+            .quest-description {
+                font-size: 11px;
+                color: #6c757d;
+                margin: 4px 0;
+            }
+            
+            .quest-progress {
+                font-size: 12px;
+                color: #28a745;
+                font-weight: bold;
+            }
+            
+            /* 對話系統 */
+            .dialog-system {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.8);
+                z-index: 10000;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            .dialog-box {
+                background: white;
+                border-radius: 15px;
+                padding: 20px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            }
+            
+            .dialog-header {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                margin-bottom: 15px;
+                border-bottom: 2px solid #4CAF50;
+                padding-bottom: 10px;
+            }
+            
+            .dialog-avatar {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                border: 3px solid #4CAF50;
+            }
+            
+            .dialog-name {
+                font-size: 18px;
+                font-weight: bold;
+                color: #2C3E50;
+            }
+            
+            .dialog-text {
+                font-size: 16px;
+                line-height: 1.6;
+                color: #2C3E50;
+                margin-bottom: 20px;
+                min-height: 60px;
+            }
+            
+            .dialog-choices {
+                display: none;
+                margin-bottom: 15px;
+            }
+            
+            .dialog-choice {
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .dialog-continue {
+                text-align: right;
+            }
+            
+            /* 消息動畫 */
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            .farm-message {
+                animation: slideIn 0.3s ease-out;
+            }
+            
+            /* 響應式設計 */
+            @media (max-width: 768px) {
+                .farm-main-area {
+                    flex-direction: column;
+                    height: auto;
+                }
+                
+                .farm-scene-area {
+                    height: 400px;
+                }
+                
+                .town-buildings {
+                    grid-template-columns: 1fr;
+                }
+                
+                .forest-items {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                
+                .tool-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
             }
         `;
         document.head.appendChild(style);

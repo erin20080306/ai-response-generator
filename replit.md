@@ -104,6 +104,7 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 05, 2025. Enhanced AI player turn logic with improved error handling and special action detection for seamless 4-player gameplay
 - July 05, 2025. Resolved function scope issues by making executeSpecialAction and passAction globally accessible
 - July 05, 2025. Implemented local intelligent AI system for Mahjong players that doesn't require OpenAI API, with smart tile selection based on strategic priorities
+- July 05, 2025. Completely rebuilt Farm Story game as narrative RPG with 4 NPCs (Mayor Tom, Shopkeeper Mary, Blacksmith Jack, Doctor Lily), branching dialogue system, multi-scene gameplay (farm/town/forest/mine), quest system, relationship tracking, and comprehensive inventory management
 
 ## Enhanced Features Added
 
