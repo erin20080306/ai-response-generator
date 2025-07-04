@@ -172,47 +172,122 @@ def generate_image():
 def analyze_image():
     """Analyze uploaded image using AI"""
     try:
-        data = request.get_json()
-        image_base64 = data.get('image', '').strip()
-        
-        if not image_base64:
-            return jsonify({'success': False, 'error': '請提供圖片'})
-        
-        if not openai_client.is_configured():
-            return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
-        
-        # 使用 OpenAI GPT-4o 分析圖片
-        response = openai_client.client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
+        # 檢查是否是檔案上傳
+        if 'file' in request.files:
+            file = request.files['file']
+            if file.filename == '':
+                return jsonify({'success': False, 'error': '請選擇檔案'})
+            
+            # 讀取檔案內容
+            file_content = file.read()
+            
+            # 檢查檔案類型
+            if file.content_type and file.content_type.startswith('image/'):
+                # 圖片檔案 - 轉換為base64
+                import base64
+                image_base64 = base64.b64encode(file_content).decode('utf-8')
+                
+                if not openai_client.is_configured():
+                    return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
+                
+                # 使用 OpenAI Vision 分析圖片
+                response = openai_client.client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
                         {
-                            "type": "text",
-                            "text": "請詳細分析這張圖片，描述其內容、風格、顏色、構圖等元素。"
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{image_base64}"
-                            }
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": "請詳細分析這張圖片，描述其內容、風格、顏色、構圖等元素。"
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:{file.content_type};base64,{image_base64}"
+                                    }
+                                }
+                            ]
                         }
-                    ]
+                    ],
+                    max_tokens=500
+                )
+                
+                analysis = response.choices[0].message.content
+                
+            else:
+                # 非圖片檔案 - 基本檔案資訊分析
+                file_info = {
+                    'name': file.filename,
+                    'size': len(file_content),
+                    'type': file.content_type or '未知',
                 }
-            ],
-            max_tokens=500
-        )
-        
-        analysis = response.choices[0].message.content
-        
-        return jsonify({
-            'success': True,
-            'analysis': analysis
-        })
+                
+                analysis = f"檔案名稱: {file_info['name']}\n"
+                analysis += f"檔案大小: {file_info['size']:,} bytes\n"
+                analysis += f"檔案類型: {file_info['type']}\n"
+                
+                # 如果是文字檔案，嘗試讀取內容
+                if file.content_type and (file.content_type.startswith('text/') or 
+                                        file.content_type == 'application/json'):
+                    try:
+                        text_content = file_content.decode('utf-8')
+                        analysis += f"檔案內容預覽:\n{text_content[:200]}..."
+                        if len(text_content) > 200:
+                            analysis += f"\n(顯示前200字符，總共{len(text_content)}字符)"
+                    except:
+                        analysis += "無法讀取檔案內容"
+                else:
+                    analysis += "這是一個二進制檔案，無法預覽內容"
+            
+            return jsonify({
+                'success': True,
+                'analysis': analysis
+            })
+            
+        else:
+            # JSON 格式的圖片分析（舊版相容性）
+            data = request.get_json()
+            image_base64 = data.get('image', '').strip()
+            
+            if not image_base64:
+                return jsonify({'success': False, 'error': '請提供圖片'})
+            
+            if not openai_client.is_configured():
+                return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
+            
+            # 使用 OpenAI GPT-4o 分析圖片
+            response = openai_client.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "請詳細分析這張圖片，描述其內容、風格、顏色、構圖等元素。"
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{image_base64}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=500
+            )
+            
+            analysis = response.choices[0].message.content
+            
+            return jsonify({
+                'success': True,
+                'analysis': analysis
+            })
         
     except Exception as e:
-        logging.error(f"圖片分析錯誤: {e}")
+        logging.error(f"檔案分析錯誤: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/voice_to_text', methods=['POST'])
