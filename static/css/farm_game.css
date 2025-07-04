@@ -1,0 +1,656 @@
+/* 農場物語遊戲專用樣式 - 牧場物語風格 */
+.farm-story-game {
+    width: 100%;
+    height: 600px;
+    position: relative;
+    background: #f4e6d7;
+    border: 3px solid #8B4513;
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: 'Arial', sans-serif;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    box-shadow: 
+        0 4px 8px rgba(0,0,0,0.3),
+        inset 0 0 0 2px #D2B48C;
+}
+
+.farm-game-header {
+    background: linear-gradient(180deg, #e8d5b7 0%, #d4b896 100%);
+    color: #5a3a1a;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    border-bottom: 2px solid #8B4513;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.player-stats {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.3);
+    padding: 4px 8px;
+    border-radius: 15px;
+    border: 1px solid #8B4513;
+}
+
+.heart-container {
+    display: flex;
+    gap: 2px;
+}
+
+.heart {
+    width: 16px;
+    height: 16px;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.heart.full {
+    color: #e74c3c;
+}
+
+.heart.empty {
+    color: #bdc3c7;
+}
+
+.money-display {
+    background: #f4d03f;
+    color: #8B4513;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 2px solid #f39c12;
+    font-weight: bold;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.game-main-area {
+    display: flex;
+    height: calc(100% - 120px);
+}
+
+.game-field {
+    flex: 1;
+    position: relative;
+    background: #8fbc8f;
+    background-image: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.1) 8px, rgba(255,255,255,0.1) 16px),
+        repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(0,0,0,0.05) 8px, rgba(0,0,0,0.05) 16px);
+    background-size: 24px 24px;
+    border: 3px solid #654321;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.farm-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: 1px;
+    height: calc(100% - 60px);
+    padding: 8px;
+    margin: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+
+.farm-tile {
+    background: #deb887;
+    border: 1px solid #cd853f;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    min-height: 40px;
+    transition: all 0.1s ease;
+    border-radius: 2px;
+}
+
+.farm-tile:hover {
+    background: #f4a460;
+    border-color: #d2691e;
+    transform: scale(1.05);
+}
+
+.farm-tile.grass {
+    background: #9acd32;
+    border-color: #8fbc8f;
+}
+
+.farm-tile.tilled {
+    background: #8b4513;
+    border-color: #654321;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
+}
+
+.farm-tile.planted {
+    background: #6b4423;
+    border-color: #5d4037;
+}
+
+.farm-tile.watered {
+    background: #4682b4;
+    border-color: #4169e1;
+    box-shadow: 
+        inset 0 0 6px rgba(65, 105, 225, 0.6),
+        0 0 3px rgba(65, 105, 225, 0.4);
+}
+
+.farm-tile.grown {
+    background: #228b22;
+    border-color: #32cd32;
+}
+
+/* 場景容器樣式 */
+.scene-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #e8f5e8 0%, #d0e8d0 100%);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.scene-header {
+    background: linear-gradient(180deg, #e8d5b7 0%, #d4b896 100%);
+    color: #5a3a1a;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #8B4513;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.scene-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.weather-info, .time-info, .danger-level, .depth-info {
+    background: rgba(255,255,255,0.3);
+    padding: 4px 8px;
+    border-radius: 12px;
+    border: 1px solid #8B4513;
+    font-size: 12px;
+}
+
+/* 城鎮場景樣式 */
+.town-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    padding: 20px;
+    flex: 1;
+    background: radial-gradient(circle at center, #90EE90, #7CFC00);
+}
+
+.building {
+    background: linear-gradient(145deg, #f4e4bc, #e8d5a3);
+    border: 3px solid #8B4513;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 
+        0 4px 8px rgba(0,0,0,0.2),
+        inset 0 1px 3px rgba(255,255,255,0.4);
+}
+
+.building:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 12px rgba(0,0,0,0.3),
+        inset 0 1px 3px rgba(255,255,255,0.4);
+    background: linear-gradient(145deg, #f8e8c6, #ecd9a7);
+}
+
+.building-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+
+.building-name {
+    font-weight: bold;
+    color: #5a3a1a;
+    font-size: 14px;
+}
+
+/* 商店場景樣式 */
+.shop-content {
+    flex: 1;
+    padding: 20px;
+    background: linear-gradient(180deg, #fff8e1 0%, #f4e4bc 100%);
+}
+
+.shop-greeting {
+    background: rgba(255,255,255,0.7);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 2px solid #ddd;
+    text-align: center;
+}
+
+.shop-greeting p {
+    margin: 0;
+    font-style: italic;
+    color: #5a3a1a;
+}
+
+.shop-categories {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.shop-category {
+    background: rgba(255,255,255,0.5);
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #d4b896;
+}
+
+.shop-category h4 {
+    margin: 0 0 10px 0;
+    color: #5a3a1a;
+    border-bottom: 1px solid #d4b896;
+    padding-bottom: 5px;
+}
+
+.shop-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.shop-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.8);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.shop-item:hover {
+    background: rgba(255,255,255,0.9);
+    border-color: #8B4513;
+    transform: translateX(2px);
+}
+
+.shop-item .price {
+    font-weight: bold;
+    color: #d2691e;
+}
+
+/* 森林場景樣式 */
+.forest-content {
+    flex: 1;
+    padding: 20px;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(34,139,34,0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 60%, rgba(34,139,34,0.2) 0%, transparent 50%),
+        linear-gradient(180deg, #90EE90 0%, #228B22 100%);
+}
+
+.forest-description {
+    background: rgba(255,255,255,0.8);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 2px solid #8B4513;
+    text-align: center;
+}
+
+.forest-grid, .mine-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.forest-area, .mine-area {
+    background: linear-gradient(145deg, #f0f8f0, #e0f0e0);
+    border: 2px solid #8B4513;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.forest-area:hover, .mine-area:hover {
+    transform: scale(1.05);
+    background: linear-gradient(145deg, #f5fdf5, #e5f5e5);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.area-icon {
+    font-size: 28px;
+    margin-bottom: 6px;
+}
+
+.area-name {
+    font-weight: bold;
+    color: #5a3a1a;
+    font-size: 12px;
+}
+
+/* 礦山場景樣式 */
+.mine-content {
+    flex: 1;
+    padding: 20px;
+    background: 
+        radial-gradient(circle at 30% 40%, rgba(139,69,19,0.4) 0%, transparent 60%),
+        linear-gradient(180deg, #A0A0A0 0%, #696969 100%);
+}
+
+.mine-description {
+    background: rgba(255,255,255,0.9);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 2px solid #654321;
+    text-align: center;
+}
+
+/* 場景切換按鈕 */
+.scene-actions {
+    background: linear-gradient(180deg, #d4b896 0%, #c9ad8b 100%);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    border-top: 2px solid #8B4513;
+}
+
+.location-btn, .npc-btn, .action-btn {
+    background: linear-gradient(145deg, #e8d5b7, #d4b896);
+    color: #5a3a1a;
+    border: 2px solid #8B4513;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.location-btn:hover, .npc-btn:hover, .action-btn:hover {
+    background: linear-gradient(145deg, #ecd9a7, #d8bd91);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.npc-btn {
+    background: linear-gradient(145deg, #f4d03f, #f39c12);
+    color: #8B4513;
+}
+
+.npc-btn:hover {
+    background: linear-gradient(145deg, #f7dc6f, #f5b041);
+}
+
+.action-btn {
+    background: linear-gradient(145deg, #85C1E9, #5DADE2);
+    color: #2C3E50;
+}
+
+.action-btn:hover {
+    background: linear-gradient(145deg, #aed6f1, #7fb3d3);
+}
+
+.player-character {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background: #FF5722;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.game-sidebar {
+    width: 200px;
+    background: rgba(139, 69, 19, 0.9);
+    border-left: 3px solid #8B4513;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.sidebar-section {
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.sidebar-title {
+    font-weight: bold;
+    color: #FFF;
+    margin-bottom: 5px;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+}
+
+.inventory-item {
+    background: #654321;
+    border: 1px solid #8B4513;
+    border-radius: 3px;
+    padding: 5px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.inventory-item:hover {
+    background: #8B4513;
+}
+
+.inventory-item.selected {
+    background: #DAA520;
+    border-color: #FFD700;
+}
+
+.game-toolbar {
+    background: rgba(0, 0, 0, 0.9);
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    border-top: 2px solid #2c5f2d;
+}
+
+.tool-button {
+    background: #4CAF50;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tool-button:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+}
+
+.tool-button.active {
+    background: #FFC107;
+    color: #333;
+}
+
+.tool-button.disabled {
+    background: #666;
+    cursor: not-allowed;
+}
+
+.crop-sprite {
+    font-size: 20px;
+    animation: grow 0.5s ease-in-out;
+}
+
+@keyframes grow {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.water-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(33, 150, 243, 0.3);
+    border-radius: 2px;
+    animation: waterSplash 0.5s ease-out;
+}
+
+@keyframes waterSplash {
+    0% { 
+        opacity: 0; 
+        transform: scale(0.5); 
+    }
+    50% { 
+        opacity: 1; 
+        transform: scale(1.1); 
+    }
+    100% { 
+        opacity: 0.3; 
+        transform: scale(1); 
+    }
+}
+
+.notification {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    z-index: 100;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { 
+        transform: translateX(100%); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateX(0); 
+        opacity: 1; 
+    }
+}
+
+.ai-assistant-panel {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid #4CAF50;
+    border-radius: 10px;
+    padding: 15px;
+    max-width: 300px;
+    z-index: 50;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.ai-message {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.ai-counter {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+}
+
+.scene-transition {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #000;
+    z-index: 200;
+    animation: fadeTransition 1s ease-in-out;
+}
+
+@keyframes fadeTransition {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.location-buttons {
+    position: absolute;
+    top: 50px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.location-btn {
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s ease;
+}
+
+.location-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.location-btn.active {
+    background: #4CAF50;
+}
