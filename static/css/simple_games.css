@@ -225,6 +225,18 @@
     margin-bottom: 20px;
 }
 
+.game-status {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 6px;
+    margin: 10px 0;
+    text-align: center;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .score-display {
     display: flex;
     gap: 30px;

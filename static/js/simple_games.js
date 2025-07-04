@@ -172,6 +172,9 @@ function loadMahjongGame() {
                             <div class="current-player">輪到: <span id="currentPlayer">玩家</span></div>
                             <div class="tiles-remaining">剩餘: <span id="remainingTiles">144</span>張</div>
                         </div>
+                        <div class="game-status" id="mahjongGameInfo">
+                            <p>遊戲開始！等待AI玩家行動...</p>
+                        </div>
                         <div class="discard-area">
                             <div class="discard-label">牌河</div>
                             <div class="discard-tiles" id="discardPile"></div>
@@ -587,6 +590,11 @@ function initMahjongGame() {
     
     renderMahjongBoard();
     updateMahjongDisplay();
+    
+    // 自動開始下一個玩家的回合 (AI玩家)
+    setTimeout(() => {
+        nextPlayer();
+    }, 2000);
 }
 
 // 洗牌函數
