@@ -14,7 +14,7 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
-from flask import Flask, render_template, request, jsonify, session, send_file, make_response
+from flask import Flask, render_template, request, jsonify, session, send_file, make_response, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -1113,6 +1113,11 @@ def download_file(filename):
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy', 'openai_configured': openai_client.is_configured()})
+
+@app.route('/farm-game')
+def farm_game():
+    """Standalone 2D Farm Story Game"""
+    return send_from_directory('static', 'farm_game.html')
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -18,6 +18,13 @@ function loadGameSelection(gameType) {
         case 'mahjong':
             loadMahjongGame();
             break;
+        case 'farm2d':
+            if (typeof load2DFarmGame === 'function') {
+                load2DFarmGame();
+            } else {
+                console.error('2D 牧場遊戲尚未載入');
+            }
+            break;
         default:
             showGameSelection();
     }
@@ -39,6 +46,11 @@ function showGameSelection() {
                     <div class="game-icon">🀄</div>
                     <div class="game-name">麻將遊戲</div>
                     <div class="game-desc">傳統麻將對戰</div>
+                </button>
+                <button onclick="loadGameSelection('farm2d')" class="game-btn farm-btn">
+                    <div class="game-icon">🏡</div>
+                    <div class="game-name">2D 牧場物語</div>
+                    <div class="game-desc">像素風格農場遊戲</div>
                 </button>
             </div>
         </div>

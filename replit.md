@@ -108,6 +108,7 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 05, 2025. Fixed critical JavaScript initialization issues preventing game loading, added comprehensive Canvas effects integration to Farm Story gameplay with particle systems, tool animations, and harvest effects
 - July 05, 2025. Implemented complete dual architecture system: Flask backend for stable single-player mode and Node.js Express with Socket.IO for high-performance multiplayer gaming
 - July 05, 2025. Simplified gaming system to focus on two core games: Tetris and Mahjong, removing Farm Story for better stability. Created new simple_games.js with original syntax and enhanced GBA-style animations
+- July 05, 2025. Created standalone 2D pixel-style Farm Story game with Canvas rendering, keyboard controls, tile-based map system, crop farming mechanics, animal interactions, and authentic GBA-style pixel art graphics accessible at /farm-game route
 
 ## Enhanced Features Added
 
