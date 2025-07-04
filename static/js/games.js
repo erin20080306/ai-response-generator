@@ -1734,39 +1734,11 @@ class GameCenter {
             return discardedTile;
         }
         
-        // 檢查玩家可以進行的動作
+        // 檢查玩家可以進行的動作（這個函數已棄用，改用checkSpecialActions）
         function checkPlayerActions() {
-            console.log('檢查玩家特殊動作', gameState.currentPlayer, gameState.lastDiscarded);
-            
-            if (gameState.currentPlayer === 0 || !gameState.lastDiscarded) {
-                console.log('當前玩家回合或無最後打出牌，跳過檢查');
-                return;
-            }
-            
-            if (!gameState.players || !gameState.players[0] || !gameState.players[0].hand) {
-                console.error('玩家手牌不存在');
-                return;
-            }
-            
-            const playerHand = gameState.players[0].hand;
-            const lastTile = gameState.lastDiscarded;
-            
-            // 重置動作狀態
-            gameState.playerCanChi = false;
-            gameState.playerCanPeng = false;
-            gameState.playerCanGang = false;
-            gameState.playerCanHu = false;
-            
-            // 檢查碰 (需要2張相同牌)
-            const sameCount = playerHand.filter(tile => tile === lastTile).length;
-            if (sameCount >= 2) {
-                gameState.playerCanPeng = true;
-            }
-            
-            // 檢查槓 (需要3張相同牌)
-            if (sameCount >= 3) {
-                gameState.playerCanGang = true;
-            }
+            console.log('checkPlayerActions函數已棄用，請使用checkSpecialActions');
+            return;
+        }
             
             // 檢查吃 (只能吃上家的牌，形成順子)
             if (gameState.currentPlayer === 3) { // 上家是左家 (player 3)
@@ -2080,6 +2052,11 @@ class GameCenter {
         
         // 檢查是否可以胡牌
         function canWin(playerIndex, newTile = null) {
+            if (!gameState.players || !gameState.players[playerIndex] || !gameState.players[playerIndex].hand) {
+                console.error('canWin: 玩家手牌不存在', playerIndex);
+                return false;
+            }
+            
             const player = gameState.players[playerIndex];
             let hand = [...player.hand];
             if (newTile) hand.push(newTile);
@@ -2104,6 +2081,11 @@ class GameCenter {
         
         // 檢查是否可以碰牌
         function canPong(playerIndex, tile) {
+            if (!gameState.players || !gameState.players[playerIndex] || !gameState.players[playerIndex].hand) {
+                console.error('canPong: 玩家手牌不存在', playerIndex);
+                return false;
+            }
+            
             const player = gameState.players[playerIndex];
             let count = 0;
             player.hand.forEach(handTile => {
@@ -2114,6 +2096,11 @@ class GameCenter {
         
         // 檢查是否可以吃牌
         function canChow(playerIndex, tile) {
+            if (!gameState.players || !gameState.players[playerIndex] || !gameState.players[playerIndex].hand) {
+                console.error('canChow: 玩家手牌不存在', playerIndex);
+                return false;
+            }
+            
             const player = gameState.players[playerIndex];
             
             // 簡化版：檢查是否有相鄰的牌
