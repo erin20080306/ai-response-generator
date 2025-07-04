@@ -1208,6 +1208,14 @@ function changeGameLocation(location) {
         locationInfo.textContent = locationNames[location] || location;
     }
     
+    const locationNames = {
+        farm: '農場',
+        town: '城鎮',
+        shop: '商店',
+        forest: '森林',
+        mine: '礦山',
+        house: '家'
+    };
     showNotification('場景切換', `已移動到${locationNames[location] || location}`);
 }
 

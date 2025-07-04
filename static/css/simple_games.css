@@ -1,0 +1,365 @@
+/* 簡化版遊戲樣式 */
+.game-selection {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border-radius: 12px;
+    min-height: 400px;
+}
+
+.game-selection h3 {
+    color: #ecf0f1;
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+
+.game-buttons {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.game-btn {
+    background: linear-gradient(145deg, #3498db, #2980b9);
+    border: none;
+    border-radius: 15px;
+    padding: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    width: 200px;
+    color: white;
+}
+
+.game-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+}
+
+.game-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.game-name {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.game-desc {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* 俄羅斯方塊樣式 */
+.tetris-game-container {
+    background: linear-gradient(180deg, #4a6741 0%, #2d4025 100%);
+    color: #fff3d6;
+    padding: 20px;
+    border-radius: 12px;
+    min-height: 600px;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #fff3d6;
+}
+
+.back-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.back-btn:hover {
+    background: #c0392b;
+}
+
+.tetris-main {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+}
+
+.tetris-board {
+    width: 300px;
+    height: 600px;
+    background: #1a1a2e;
+    border: 3px solid #16213e;
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(20, 1fr);
+    gap: 1px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+.tetris-cell {
+    background: #0f3460;
+    border: 1px solid #16537e;
+    transition: all 0.1s ease;
+}
+
+.tetris-cell.filled {
+    border: 1px solid #a93226;
+    box-shadow: inset 1px 1px 2px rgba(255,255,255,0.3);
+}
+
+.tetris-cell.current {
+    border: 1px solid #d68910;
+    animation: tetrisPulse 0.5s infinite alternate;
+}
+
+@keyframes tetrisPulse {
+    0% { box-shadow: 0 0 5px #f39c12; }
+    100% { box-shadow: 0 0 15px #f39c12; }
+}
+
+.tetris-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.tetris-info {
+    background: #2c3e50;
+    padding: 20px;
+    border-radius: 8px;
+    min-width: 200px;
+}
+
+.score-box, .level-box, .lines-box {
+    margin-bottom: 15px;
+}
+
+.label {
+    font-size: 14px;
+    opacity: 0.8;
+    margin-bottom: 5px;
+}
+
+.value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #f39c12;
+}
+
+.tetris-controls {
+    background: #34495e;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.control-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    justify-content: center;
+}
+
+.control-btn {
+    background: linear-gradient(145deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    min-width: 50px;
+}
+
+.control-btn:hover {
+    background: linear-gradient(145deg, #5dade2, #3498db);
+    transform: translateY(-1px);
+}
+
+.drop-btn {
+    background: linear-gradient(145deg, #e67e22, #d35400);
+    width: 100%;
+}
+
+.restart-btn {
+    background: linear-gradient(145deg, #27ae60, #229954);
+    width: 100%;
+}
+
+.next-piece-box {
+    background: #2c3e50;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.next-piece {
+    background: #1a1a2e;
+    border: 2px solid #16213e;
+    border-radius: 6px;
+    height: 80px;
+    margin-top: 10px;
+}
+
+/* 麻將樣式 */
+.mahjong-game-container {
+    background: linear-gradient(180deg, #27ae60 0%, #1e8449 100%);
+    color: #fff3d6;
+    padding: 20px;
+    border-radius: 12px;
+    min-height: 600px;
+}
+
+.mahjong-info {
+    background: #2c3e50;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.score-display {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.mahjong-board {
+    background: #0d4f3c;
+    border: 3px solid #186a3b;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    min-height: 300px;
+}
+
+.mahjong-hand h6,
+.mahjong-discard h6 {
+    color: #fff3d6;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.mahjong-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.mahjong-tile {
+    width: 50px;
+    height: 70px;
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    border: 2px solid #6c757d;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #333;
+}
+
+.mahjong-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.mahjong-tile.selected {
+    background: linear-gradient(145deg, #fff3cd, #ffeaa7);
+    border-color: #e67e22;
+    transform: translateY(-5px);
+}
+
+.discard-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.discarded-tile {
+    font-size: 20px;
+    opacity: 0.7;
+    margin: 2px;
+}
+
+.mahjong-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.mahjong-btn {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mahjong-btn:hover {
+    background: linear-gradient(145deg, #ec7063, #e74c3c);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+.draw-btn {
+    background: linear-gradient(145deg, #3498db, #2980b9);
+}
+
+.discard-btn {
+    background: linear-gradient(145deg, #f39c12, #e67e22);
+}
+
+.win-btn {
+    background: linear-gradient(145deg, #27ae60, #229954);
+}
+
+.restart-btn {
+    background: linear-gradient(145deg, #8e44ad, #7d3c98);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .game-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .tetris-main {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .tetris-board {
+        width: 250px;
+        height: 500px;
+    }
+    
+    .mahjong-tile {
+        width: 40px;
+        height: 60px;
+        font-size: 20px;
+    }
+    
+    .mahjong-controls {
+        flex-direction: column;
+        align-items: center;
+    }
+}

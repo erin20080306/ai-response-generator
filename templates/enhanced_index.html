@@ -19,7 +19,7 @@
     
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/enhanced_style.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/gba_games.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/simple_games.css') }}" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid h-100">
@@ -623,8 +623,8 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
-                                                <div class="col-md-4 mb-3">
-                                                    <div class="card text-center game-card" onclick="loadGame('tetris')">
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="card text-center game-card" onclick="loadGameSelection('tetris')">
                                                         <div class="card-body">
                                                             <i class="fas fa-th-large fa-2x mb-2 text-primary"></i>
                                                             <h5 class="card-title">俄羅斯方塊</h5>
@@ -632,21 +632,12 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-4 mb-3">
-                                                    <div class="card text-center game-card" onclick="loadGame('mahjong')">
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="card text-center game-card" onclick="loadGameSelection('mahjong')">
                                                         <div class="card-body">
                                                             <i class="fas fa-square fa-2x mb-2 text-success"></i>
                                                             <h5 class="card-title">麻將</h5>
                                                             <p class="card-text">4人麻將遊戲</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4 mb-3">
-                                                    <div class="card text-center game-card" onclick="loadGame('farm')">
-                                                        <div class="card-body">
-                                                            <i class="fas fa-seedling fa-2x mb-2 text-warning"></i>
-                                                            <h5 class="card-title">農場物語</h5>
-                                                            <p class="card-text">農場模擬RPG遊戲</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -845,7 +836,7 @@
     <script src="{{ url_for('static', filename='js/collaboration.js') }}"></script>
     <script src="{{ url_for('static', filename='js/canvas-effects.js') }}"></script>
     <script src="{{ url_for('static', filename='js/multiplayer-client.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/games_standalone.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/simple_games.js') }}"></script>
     <script src="{{ url_for('static', filename='js/document_generator.js') }}"></script>
     
     <!-- Socket.IO for Node.js support -->
