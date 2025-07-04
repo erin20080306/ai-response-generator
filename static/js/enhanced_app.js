@@ -800,6 +800,9 @@ class EnhancedAIAssistant {
     }
 
     formatMessage(text) {
+        // 首先處理雙換行為段落分隔標記
+        text = text.replace(/\n\n/g, '||PARAGRAPH_BREAK||');
+        
         // 處理程式碼區塊，添加語言標籤和間距
         text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
             const language = lang || 'text';
@@ -822,14 +825,17 @@ class EnhancedAIAssistant {
         // 將連續的 <li> 包裝在 <ul> 中
         text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
 
-        // 處理雙換行為段落分隔
-        text = text.replace(/\n\n/g, '</p><p>');
-        
         // 處理單換行為行內換行
         text = text.replace(/\n/g, '<br>');
         
-        // 包裝在段落標籤中
-        text = '<p>' + text + '</p>';
+        // 將段落分隔標記轉換為段落標籤
+        const paragraphs = text.split('||PARAGRAPH_BREAK||');
+        text = paragraphs.map(p => p.trim() ? `<p>${p.trim()}</p>` : '').filter(p => p).join('');
+        
+        // 如果沒有段落標籤，包裝整個內容
+        if (!text.includes('<p>')) {
+            text = `<p>${text}</p>`;
+        }
 
         // 處理連結
         text = text.replace(
