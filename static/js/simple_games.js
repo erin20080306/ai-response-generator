@@ -116,40 +116,87 @@ function loadTetrisGame() {
 
 // 麻將遊戲
 function loadMahjongGame() {
-    console.log('啟動麻將遊戲');
+    console.log('啟動四人麻將遊戲');
     
     const gameContainer = document.getElementById('gameContainer');
     gameContainer.innerHTML = `
         <div class="mahjong-game-container">
             <div class="game-header">
-                <h4>🀄 麻將遊戲</h4>
+                <h4>🀄 四人麻將遊戲</h4>
                 <button onclick="showGameSelection()" class="back-btn">← 返回</button>
             </div>
             
             <div class="mahjong-main">
+                <!-- 遊戲狀態 -->
                 <div class="mahjong-info">
                     <div class="score-display">
                         <span>分數: <strong id="mahjongScore">0</strong></span>
                         <span>回合: <strong id="mahjongRound">1</strong></span>
+                        <span>當前: <strong id="currentPlayer">玩家1</strong></span>
                     </div>
                 </div>
                 
-                <div id="mahjongBoard" class="mahjong-board">
-                    <div class="mahjong-hand">
-                        <h6>玩家手牌：</h6>
-                        <div class="mahjong-tiles" id="playerTiles"></div>
+                <!-- 麻將桌 -->
+                <div class="mahjong-table">
+                    <!-- 北方玩家 (AI) -->
+                    <div class="player-area north-player">
+                        <div class="player-info">
+                            <span class="player-name">玩家3 (AI)</span>
+                            <span class="tile-count">手牌: <span id="player3Count">13</span></span>
+                        </div>
+                        <div class="ai-tiles horizontal" id="player3Display"></div>
                     </div>
                     
-                    <div class="mahjong-discard">
-                        <h6>牌河：</h6>
-                        <div class="discard-tiles" id="discardPile"></div>
+                    <!-- 中央區域 -->
+                    <div class="table-center">
+                        <!-- 西方玩家 -->
+                        <div class="player-area west-player">
+                            <div class="player-info vertical">
+                                <span class="player-name">玩家4 (AI)</span>
+                                <span class="tile-count">手牌: <span id="player4Count">13</span></span>
+                            </div>
+                            <div class="ai-tiles vertical" id="player4Display"></div>
+                        </div>
+                        
+                        <!-- 牌桌中央 -->
+                        <div class="center-area">
+                            <div class="discard-area">
+                                <h6>牌河</h6>
+                                <div class="discard-pile" id="discardPile"></div>
+                            </div>
+                            <div class="game-status" id="gameStatus">請選擇動作</div>
+                        </div>
+                        
+                        <!-- 東方玩家 -->
+                        <div class="player-area east-player">
+                            <div class="player-info vertical">
+                                <span class="player-name">玩家2 (AI)</span>
+                                <span class="tile-count">手牌: <span id="player2Count">13</span></span>
+                            </div>
+                            <div class="ai-tiles vertical" id="player2Display"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 南方玩家 (人類) -->
+                    <div class="player-area south-player">
+                        <div class="player-info">
+                            <span class="player-name">你 (玩家1)</span>
+                        </div>
+                        <div class="player-hand">
+                            <div class="mahjong-tiles" id="playerTiles"></div>
+                        </div>
                     </div>
                 </div>
                 
+                <!-- 控制按鈕 -->
                 <div class="mahjong-controls">
                     <button onclick="drawMahjongTile()" class="mahjong-btn draw-btn">摸牌</button>
                     <button onclick="discardMahjongTile()" class="mahjong-btn discard-btn">打牌</button>
+                    <button onclick="declarePeng()" class="mahjong-btn special-btn">碰</button>
+                    <button onclick="declareChi()" class="mahjong-btn special-btn">吃</button>
+                    <button onclick="declareGang()" class="mahjong-btn special-btn">槓</button>
                     <button onclick="declareMahjongWin()" class="mahjong-btn win-btn">胡牌</button>
+                    <button onclick="passAction()" class="mahjong-btn pass-btn">過</button>
                     <button onclick="restartMahjong()" class="mahjong-btn restart-btn">重新開始</button>
                 </div>
             </div>
@@ -427,32 +474,137 @@ function restartTetris() {
 
 // 麻將遊戲初始化
 function initMahjongGame() {
-    gameData.mahjong.playerHand = [];
-    gameData.mahjong.discardPile = [];
-    gameData.mahjong.selectedTile = null;
-    gameData.mahjong.score = 0;
-    gameData.mahjong.round = 1;
-    gameData.mahjong.gameStarted = true;
+    gameData.mahjong = {
+        playerHand: [],
+        discardPile: [],
+        selectedTile: null,
+        score: 0,
+        round: 1,
+        gameStarted: true,
+        currentPlayer: 1,
+        players: [
+            { id: 1, name: '你', hand: [], isHuman: true },
+            { id: 2, name: '玩家2', hand: [], isHuman: false },
+            { id: 3, name: '玩家3', hand: [], isHuman: false },
+            { id: 4, name: '玩家4', hand: [], isHuman: false }
+        ],
+        tileSet: ['🀇', '🀈', '🀉', '🀊', '🀋', '🀌', '🀍', '🀎', '🀏', '🀐', '🀑', '🀒', '🀓', '🀔', '🀕', '🀖', '🀗', '🀘', '🀙', '🀚', '🀛', '🀜', '🀝', '🀞', '🀟', '🀠', '🀡'],
+        deck: []
+    };
     
-    // 初始手牌
-    for (let i = 0; i < 13; i++) {
-        drawTile();
-    }
+    // 建立牌組 (每種牌4張)
+    gameData.mahjong.deck = [];
+    gameData.mahjong.tileSet.forEach(tile => {
+        for (let i = 0; i < 4; i++) {
+            gameData.mahjong.deck.push(tile);
+        }
+    });
+    
+    // 洗牌
+    shuffleDeck();
+    
+    // 為每個玩家發13張牌
+    gameData.mahjong.players.forEach(player => {
+        player.hand = [];
+        for (let i = 0; i < 13; i++) {
+            if (gameData.mahjong.deck.length > 0) {
+                player.hand.push(gameData.mahjong.deck.pop());
+            }
+        }
+        player.hand.sort();
+    });
+    
+    // 設定人類玩家手牌
+    gameData.mahjong.playerHand = gameData.mahjong.players[0].hand;
     
     renderMahjongBoard();
     updateMahjongDisplay();
+    updateGameStatus('輪到你，請選擇動作');
+}
+
+function shuffleDeck() {
+    const deck = gameData.mahjong.deck;
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
 }
 
 function drawTile() {
-    const tileSet = gameData.mahjong.tileSet;
-    const randomTile = tileSet[Math.floor(Math.random() * tileSet.length)];
-    gameData.mahjong.playerHand.push(randomTile);
+    if (gameData.mahjong.deck.length > 0) {
+        const newTile = gameData.mahjong.deck.pop();
+        gameData.mahjong.playerHand.push(newTile);
+        gameData.mahjong.players[0].hand.push(newTile);
+        gameData.mahjong.players[0].hand.sort();
+        return newTile;
+    }
+    return null;
+}
+
+// 新增函數
+function updateGameStatus(message) {
+    const statusElement = document.getElementById('gameStatus');
+    if (statusElement) {
+        statusElement.textContent = message;
+    }
+}
+
+function declarePeng() {
+    updateGameStatus('碰功能開發中...');
+}
+
+function declareChi() {
+    updateGameStatus('吃功能開發中...');
+}
+
+function declareGang() {
+    updateGameStatus('槓功能開發中...');
+}
+
+function passAction() {
+    nextPlayer();
+    updateGameStatus('已過，輪到下一位玩家');
+}
+
+function nextPlayer() {
+    gameData.mahjong.currentPlayer = (gameData.mahjong.currentPlayer % 4) + 1;
+    document.getElementById('currentPlayer').textContent = gameData.mahjong.players[gameData.mahjong.currentPlayer - 1].name;
+    
+    // 如果是AI玩家，自動執行動作
+    if (!gameData.mahjong.players[gameData.mahjong.currentPlayer - 1].isHuman) {
+        setTimeout(() => aiPlayerAction(), 1000);
+    }
+}
+
+function aiPlayerAction() {
+    const currentPlayer = gameData.mahjong.players[gameData.mahjong.currentPlayer - 1];
+    
+    // AI簡單邏輯：摸牌並打出一張牌
+    if (gameData.mahjong.deck.length > 0) {
+        const newTile = gameData.mahjong.deck.pop();
+        currentPlayer.hand.push(newTile);
+        currentPlayer.hand.sort();
+        
+        // 打出最不需要的牌（隨機選擇）
+        const discardIndex = Math.floor(Math.random() * currentPlayer.hand.length);
+        const discardedTile = currentPlayer.hand.splice(discardIndex, 1)[0];
+        gameData.mahjong.discardPile.push(discardedTile);
+        
+        updateGameStatus(`${currentPlayer.name} 摸牌並打出 ${discardedTile}`);
+        renderMahjongBoard();
+        
+        // 回到玩家回合
+        setTimeout(() => {
+            gameData.mahjong.currentPlayer = 1;
+            document.getElementById('currentPlayer').textContent = '你';
+            updateGameStatus('輪到你，請選擇動作');
+        }, 1500);
+    }
 }
 
 function renderMahjongBoard() {
+    // 渲染玩家手牌
     const playerTiles = document.getElementById('playerTiles');
-    const discardPile = document.getElementById('discardPile');
-    
     if (playerTiles) {
         playerTiles.innerHTML = gameData.mahjong.playerHand.map((tile, index) => 
             `<div class="mahjong-tile ${gameData.mahjong.selectedTile === tile ? 'selected' : ''}" 
@@ -460,10 +612,29 @@ function renderMahjongBoard() {
         ).join('');
     }
     
+    // 渲染棄牌區
+    const discardPile = document.getElementById('discardPile');
     if (discardPile) {
         discardPile.innerHTML = gameData.mahjong.discardPile.map(tile => 
             `<span class="discarded-tile">${tile}</span>`
         ).join('');
+    }
+    
+    // 渲染AI玩家牌背
+    for (let i = 2; i <= 4; i++) {
+        const playerDisplay = document.getElementById(`player${i}Display`);
+        const playerCount = document.getElementById(`player${i}Count`);
+        
+        if (playerDisplay && gameData.mahjong.players[i-1]) {
+            const handSize = gameData.mahjong.players[i-1].hand.length;
+            playerDisplay.innerHTML = Array(handSize).fill('🀫').map(() => 
+                '<div class="ai-tile-back">🀫</div>'
+            ).join('');
+            
+            if (playerCount) {
+                playerCount.textContent = handSize;
+            }
+        }
     }
 }
 

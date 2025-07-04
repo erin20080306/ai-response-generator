@@ -109,6 +109,7 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 05, 2025. Implemented complete dual architecture system: Flask backend for stable single-player mode and Node.js Express with Socket.IO for high-performance multiplayer gaming
 - July 05, 2025. Simplified gaming system to focus on two core games: Tetris and Mahjong, removing Farm Story for better stability. Created new simple_games.js with original syntax and enhanced GBA-style animations
 - July 05, 2025. Removed Farm Story game and related files at user request to return to original interface
+- July 05, 2025. Major functionality improvements: Fixed 4-player Mahjong game with AI players, automated turn system, and smart tile management. Repaired all utility tools (calculator, QR code, barcode, password generator) with proper event handlers and modals. Enhanced document templates with 8+ detailed business templates including HR management, inventory tracking, sales reports, and budget planning. Added CANVA design modification feature allowing users to edit AI-generated designs with natural language instructions
 
 ## Enhanced Features Added
 

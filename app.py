@@ -1096,6 +1096,59 @@ def generate_design():
         logging.error(f"Design generation error: {str(e)}")
         return jsonify({'error': f'Failed to generate design: {str(e)}'}), 500
 
+@app.route('/modify_design', methods=['POST'])
+def modify_design():
+    """修改現有設計"""
+    try:
+        data = request.json
+        original_image = data.get('original_image', '')
+        modifications = data.get('modifications', '')
+        
+        if not modifications:
+            return jsonify({'error': '請描述需要修改的內容'}), 400
+        
+        if not openai_client.is_configured():
+            return jsonify({'error': 'OpenAI API not configured'}), 500
+        
+        # 生成修改提示
+        modify_prompt = f"""
+        Based on the existing design, make the following modifications:
+        {modifications}
+        
+        Maintain the overall design quality and professional appearance while implementing the requested changes.
+        Keep the same dimensions and ensure the design remains cohesive and visually appealing.
+        """
+        
+        try:
+            response = openai_client.client.images.generate(
+                model="dall-e-3",
+                prompt=modify_prompt,
+                size="1024x1024",
+                quality="standard",
+                n=1
+            )
+            
+            image_url = response.data[0].url
+            
+            # 下載並轉換圖片
+            img_response = requests.get(image_url)
+            img_base64 = base64.b64encode(img_response.content).decode()
+            
+            return jsonify({
+                'success': True,
+                'image': f'data:image/png;base64,{img_base64}',
+                'download_data': img_base64,
+                'modifications': modifications
+            })
+            
+        except Exception as e:
+            logging.error(f"Design modification error: {str(e)}")
+            return jsonify({'error': f'修改設計失敗: {str(e)}'}), 500
+            
+    except Exception as e:
+        logging.error(f"Modify design error: {str(e)}")
+        return jsonify({'error': f'修改設計失敗: {str(e)}'}), 500
+
 @app.route('/download/<filename>')
 def download_file(filename):
     """通用文件下載端點"""
