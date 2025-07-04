@@ -212,7 +212,12 @@ class EnhancedAIAssistant {
 
         // 檔案選擇按鈕 (檔案面板)
         if (selectFilesBtn && fileInputPanel) {
-            selectFilesBtn.addEventListener('click', () => fileInputPanel.click());
+            selectFilesBtn.addEventListener('click', () => {
+                console.log('點擊選擇檔案按鈕');
+                fileInputPanel.click();
+            });
+        } else {
+            console.log('選擇檔案按鈕或輸入框未找到:', { selectFilesBtn, fileInputPanel });
         }
 
         // 檔案選擇事件 (聊天區域)
@@ -890,6 +895,39 @@ class EnhancedAIAssistant {
     }
 
     // 設定相關方法
+    exportSettings() {
+        try {
+            const settings = {
+                theme: document.getElementById('themeSelect').value,
+                fontSize: document.getElementById('fontSizeSelect').value,
+                typingSpeed: document.getElementById('typingSpeedRange').value,
+                typewriterEffect: document.getElementById('typewriterEffect').checked,
+                voiceInput: document.getElementById('voiceInput').checked,
+                voiceOutput: document.getElementById('voiceOutput').checked,
+                voiceLanguage: document.getElementById('voiceLanguage').value,
+                aiTone: document.getElementById('aiToneSelect').value,
+                exportDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(settings, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `ai_assistant_settings_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            URL.revokeObjectURL(url);
+            this.showNotification('設定已匯出！', 'success');
+        } catch (error) {
+            console.error('匯出設定失敗:', error);
+            this.showNotification('匯出設定失敗', 'error');
+        }
+    }
+
     async loadSettings() {
         try {
             const saved = localStorage.getItem('aiAssistantSettings');
