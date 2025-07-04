@@ -18,6 +18,12 @@ function loadGameSelection(gameType) {
         case 'mahjong':
             loadMahjongGame();
             break;
+        case 'memory':
+            loadMemoryGame();
+            break;
+        case 'pinball':
+            loadPinballGame();
+            break;
         default:
             showGameSelection();
     }
@@ -39,6 +45,16 @@ function showGameSelection() {
                     <div class="game-icon">🀄</div>
                     <div class="game-name">麻將遊戲</div>
                     <div class="game-desc">傳統麻將對戰</div>
+                </button>
+                <button onclick="loadGameSelection('memory')" class="game-btn memory-btn">
+                    <div class="game-icon">🃏</div>
+                    <div class="game-name">翻牌配對</div>
+                    <div class="game-desc">記憶力挑戰</div>
+                </button>
+                <button onclick="loadGameSelection('pinball')" class="game-btn pinball-btn">
+                    <div class="game-icon">🎯</div>
+                    <div class="game-name">彈珠台</div>
+                    <div class="game-desc">經典彈珠遊戲</div>
                 </button>
             </div>
         </div>
@@ -237,6 +253,30 @@ var gameData = {
             '🀃', '🀃', '🀃', '🀃', '🀄', '🀄', '🀄', '🀄', '🀅', '🀅', '🀅', '🀅',
             '🀆', '🀆', '🀆', '🀆'
         ]
+    },
+    memory: {
+        cards: [],
+        flippedCards: [],
+        matchedPairs: 0,
+        flips: 0,
+        startTime: 0,
+        gameStarted: false,
+        isProcessing: false
+    },
+    pinball: {
+        canvas: null,
+        ctx: null,
+        score: 0,
+        balls: 3,
+        level: 1,
+        ball: null,
+        obstacles: [],
+        flippers: {
+            left: { active: false, angle: 0 },
+            right: { active: false, angle: 0 }
+        },
+        gameRunning: false,
+        animationId: null
     }
 };
 
@@ -714,6 +754,486 @@ function restartMahjong() {
     });
     gameData.mahjong.round = 1;
     initMahjongGame();
+}
+
+// ===== 翻牌配對遊戲 =====
+function loadMemoryGame() {
+    console.log('啟動翻牌配對遊戲');
+    
+    const gameContainer = document.getElementById('gameContainer');
+    gameContainer.innerHTML = `
+        <div class="memory-game-container">
+            <div class="memory-header">
+                <h3>🃏 翻牌配對遊戲</h3>
+                <div class="memory-stats">
+                    <div class="stat">翻牌: <span id="memoryFlips">0</span></div>
+                    <div class="stat">配對: <span id="memoryMatches">0</span>/8</div>
+                    <div class="stat">時間: <span id="memoryTime">00:00</span></div>
+                </div>
+                <button onclick="initMemoryGame()" class="btn btn-primary">重新開始</button>
+                <button onclick="showGameSelection()" class="btn btn-secondary">返回選單</button>
+            </div>
+            <div class="memory-board" id="memoryBoard"></div>
+        </div>
+    `;
+    
+    initMemoryGame();
+}
+
+function initMemoryGame() {
+    gameData.memory = {
+        cards: [],
+        flippedCards: [],
+        matchedPairs: 0,
+        flips: 0,
+        startTime: Date.now(),
+        gameStarted: false,
+        isProcessing: false
+    };
+    
+    // 創建16張卡片（8對）
+    const symbols = ['🎮', '🎯', '🎲', '🎪', '🎨', '🎭', '🎸', '🎺'];
+    const cards = [...symbols, ...symbols];
+    
+    // 洗牌
+    for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+    
+    gameData.memory.cards = cards.map((symbol, index) => ({
+        id: index,
+        symbol: symbol,
+        isFlipped: false,
+        isMatched: false
+    }));
+    
+    renderMemoryBoard();
+    updateMemoryStats();
+    startMemoryTimer();
+}
+
+function renderMemoryBoard() {
+    const board = document.getElementById('memoryBoard');
+    board.innerHTML = '';
+    
+    gameData.memory.cards.forEach(card => {
+        const cardElement = document.createElement('div');
+        cardElement.className = `memory-card ${card.isFlipped ? 'flipped' : ''} ${card.isMatched ? 'matched' : ''}`;
+        cardElement.onclick = () => flipCard(card.id);
+        
+        cardElement.innerHTML = `
+            <div class="card-front">❓</div>
+            <div class="card-back">${card.symbol}</div>
+        `;
+        
+        board.appendChild(cardElement);
+    });
+}
+
+function flipCard(cardId) {
+    if (gameData.memory.isProcessing) return;
+    
+    const card = gameData.memory.cards[cardId];
+    if (card.isFlipped || card.isMatched) return;
+    
+    if (gameData.memory.flippedCards.length >= 2) return;
+    
+    // 翻牌
+    card.isFlipped = true;
+    gameData.memory.flippedCards.push(card);
+    gameData.memory.flips++;
+    
+    if (!gameData.memory.gameStarted) {
+        gameData.memory.gameStarted = true;
+        gameData.memory.startTime = Date.now();
+    }
+    
+    renderMemoryBoard();
+    updateMemoryStats();
+    
+    // 檢查配對
+    if (gameData.memory.flippedCards.length === 2) {
+        gameData.memory.isProcessing = true;
+        
+        setTimeout(() => {
+            checkMemoryMatch();
+        }, 1000);
+    }
+}
+
+function checkMemoryMatch() {
+    const [card1, card2] = gameData.memory.flippedCards;
+    
+    if (card1.symbol === card2.symbol) {
+        // 配對成功
+        card1.isMatched = true;
+        card2.isMatched = true;
+        gameData.memory.matchedPairs++;
+        
+        // 檢查遊戲是否完成
+        if (gameData.memory.matchedPairs === 8) {
+            setTimeout(() => {
+                alert(`恭喜完成！用了 ${gameData.memory.flips} 次翻牌，時間 ${formatTime(Date.now() - gameData.memory.startTime)}`);
+            }, 500);
+        }
+    } else {
+        // 配對失敗，翻回去
+        card1.isFlipped = false;
+        card2.isFlipped = false;
+    }
+    
+    gameData.memory.flippedCards = [];
+    gameData.memory.isProcessing = false;
+    
+    renderMemoryBoard();
+    updateMemoryStats();
+}
+
+function updateMemoryStats() {
+    document.getElementById('memoryFlips').textContent = gameData.memory.flips;
+    document.getElementById('memoryMatches').textContent = gameData.memory.matchedPairs;
+}
+
+function startMemoryTimer() {
+    setInterval(() => {
+        if (gameData.memory.gameStarted && gameData.memory.matchedPairs < 8) {
+            const elapsed = Date.now() - gameData.memory.startTime;
+            document.getElementById('memoryTime').textContent = formatTime(elapsed);
+        }
+    }, 100);
+}
+
+function formatTime(ms) {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes.toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+}
+
+// ===== 彈珠台遊戲 =====
+function loadPinballGame() {
+    console.log('啟動彈珠台遊戲');
+    
+    const gameContainer = document.getElementById('gameContainer');
+    gameContainer.innerHTML = `
+        <div class="pinball-game-container">
+            <div class="pinball-header">
+                <h3>🎯 彈珠台遊戲</h3>
+                <div class="pinball-stats">
+                    <div class="stat">分數: <span id="pinballScore">0</span></div>
+                    <div class="stat">球數: <span id="pinballBalls">3</span></div>
+                    <div class="stat">等級: <span id="pinballLevel">1</span></div>
+                </div>
+                <button onclick="initPinballGame()" class="btn btn-primary">重新開始</button>
+                <button onclick="showGameSelection()" class="btn btn-secondary">返回選單</button>
+            </div>
+            <div class="pinball-board">
+                <canvas id="pinballCanvas" width="400" height="600"></canvas>
+                <div class="pinball-controls">
+                    <button id="leftFlipper" class="flipper-btn left">左擋板</button>
+                    <button id="launchBtn" class="launch-btn">發射</button>
+                    <button id="rightFlipper" class="flipper-btn right">右擋板</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    initPinballGame();
+}
+
+function initPinballGame() {
+    const canvas = document.getElementById('pinballCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    gameData.pinball = {
+        canvas: canvas,
+        ctx: ctx,
+        score: 0,
+        balls: 3,
+        level: 1,
+        ball: null,
+        obstacles: [],
+        flippers: {
+            left: { active: false, angle: 0 },
+            right: { active: false, angle: 0 }
+        },
+        gameRunning: false,
+        animationId: null
+    };
+    
+    createPinballObstacles();
+    resetBall();
+    setupPinballControls();
+    startPinballGame();
+}
+
+function createPinballObstacles() {
+    gameData.pinball.obstacles = [
+        // 邊界牆
+        { x: 0, y: 0, width: 10, height: 600, type: 'wall' },
+        { x: 390, y: 0, width: 10, height: 600, type: 'wall' },
+        { x: 0, y: 0, width: 400, height: 10, type: 'wall' },
+        
+        // 圓形障礙物
+        { x: 100, y: 150, radius: 20, type: 'bumper', score: 100 },
+        { x: 200, y: 120, radius: 20, type: 'bumper', score: 100 },
+        { x: 300, y: 150, radius: 20, type: 'bumper', score: 100 },
+        { x: 150, y: 250, radius: 15, type: 'bumper', score: 50 },
+        { x: 250, y: 250, radius: 15, type: 'bumper', score: 50 },
+        
+        // 三角形障礙物
+        { x: 80, y: 350, width: 40, height: 30, type: 'triangle', score: 200 },
+        { x: 280, y: 350, width: 40, height: 30, type: 'triangle', score: 200 },
+        
+        // 擋板
+        { x: 50, y: 520, width: 80, height: 10, type: 'flipper', side: 'left' },
+        { x: 270, y: 520, width: 80, height: 10, type: 'flipper', side: 'right' }
+    ];
+}
+
+function resetBall() {
+    gameData.pinball.ball = {
+        x: 380,
+        y: 550,
+        vx: 0,
+        vy: 0,
+        radius: 8,
+        launched: false
+    };
+}
+
+function setupPinballControls() {
+    const leftFlipper = document.getElementById('leftFlipper');
+    const rightFlipper = document.getElementById('rightFlipper');
+    const launchBtn = document.getElementById('launchBtn');
+    
+    leftFlipper.onmousedown = () => { gameData.pinball.flippers.left.active = true; };
+    leftFlipper.onmouseup = () => { gameData.pinball.flippers.left.active = false; };
+    
+    rightFlipper.onmousedown = () => { gameData.pinball.flippers.right.active = true; };
+    rightFlipper.onmouseup = () => { gameData.pinball.flippers.right.active = false; };
+    
+    launchBtn.onclick = launchBall;
+    
+    // 鍵盤控制
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+            gameData.pinball.flippers.left.active = true;
+        }
+        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+            gameData.pinball.flippers.right.active = true;
+        }
+        if (e.key === ' ') {
+            e.preventDefault();
+            launchBall();
+        }
+    });
+    
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+            gameData.pinball.flippers.left.active = false;
+        }
+        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+            gameData.pinball.flippers.right.active = false;
+        }
+    });
+}
+
+function launchBall() {
+    if (!gameData.pinball.ball.launched) {
+        gameData.pinball.ball.vx = -8 + Math.random() * 4;
+        gameData.pinball.ball.vy = -15;
+        gameData.pinball.ball.launched = true;
+    }
+}
+
+function startPinballGame() {
+    gameData.pinball.gameRunning = true;
+    updatePinballStats();
+    pinballGameLoop();
+}
+
+function pinballGameLoop() {
+    if (!gameData.pinball.gameRunning) return;
+    
+    updatePinballPhysics();
+    renderPinball();
+    
+    gameData.pinball.animationId = requestAnimationFrame(pinballGameLoop);
+}
+
+function updatePinballPhysics() {
+    const ball = gameData.pinball.ball;
+    
+    if (!ball.launched) return;
+    
+    // 重力
+    ball.vy += 0.3;
+    
+    // 更新位置
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+    
+    // 邊界碰撞
+    if (ball.x <= ball.radius || ball.x >= 400 - ball.radius) {
+        ball.vx *= -0.8;
+        ball.x = Math.max(ball.radius, Math.min(400 - ball.radius, ball.x));
+    }
+    
+    if (ball.y <= ball.radius) {
+        ball.vy *= -0.8;
+        ball.y = ball.radius;
+    }
+    
+    // 球掉落
+    if (ball.y > 600) {
+        gameData.pinball.balls--;
+        if (gameData.pinball.balls > 0) {
+            resetBall();
+        } else {
+            gameOver();
+        }
+        updatePinballStats();
+        return;
+    }
+    
+    // 障礙物碰撞
+    gameData.pinball.obstacles.forEach(obstacle => {
+        if (checkPinballCollision(ball, obstacle)) {
+            handlePinballCollision(ball, obstacle);
+        }
+    });
+    
+    // 摩擦力
+    ball.vx *= 0.995;
+    ball.vy *= 0.998;
+}
+
+function checkPinballCollision(ball, obstacle) {
+    if (obstacle.type === 'bumper') {
+        const dx = ball.x - obstacle.x;
+        const dy = ball.y - obstacle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < ball.radius + obstacle.radius;
+    }
+    
+    if (obstacle.type === 'wall' || obstacle.type === 'triangle' || obstacle.type === 'flipper') {
+        return ball.x + ball.radius > obstacle.x && 
+               ball.x - ball.radius < obstacle.x + obstacle.width &&
+               ball.y + ball.radius > obstacle.y && 
+               ball.y - ball.radius < obstacle.y + obstacle.height;
+    }
+    
+    return false;
+}
+
+function handlePinballCollision(ball, obstacle) {
+    if (obstacle.type === 'bumper') {
+        const dx = ball.x - obstacle.x;
+        const dy = ball.y - obstacle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > 0) {
+            const force = 8;
+            ball.vx = (dx / distance) * force;
+            ball.vy = (dy / distance) * force;
+        }
+        
+        gameData.pinball.score += obstacle.score;
+        updatePinballStats();
+    }
+    
+    if (obstacle.type === 'wall') {
+        if (ball.x < obstacle.x + obstacle.width/2) {
+            ball.vx = Math.abs(ball.vx) * -0.8;
+        } else {
+            ball.vx = Math.abs(ball.vx) * 0.8;
+        }
+    }
+    
+    if (obstacle.type === 'triangle') {
+        ball.vy *= -1.2;
+        ball.vx += (Math.random() - 0.5) * 4;
+        gameData.pinball.score += obstacle.score;
+        updatePinballStats();
+    }
+    
+    if (obstacle.type === 'flipper') {
+        const flipper = gameData.pinball.flippers[obstacle.side];
+        if (flipper.active) {
+            ball.vy = -Math.abs(ball.vy) * 1.5;
+            ball.vx += obstacle.side === 'left' ? 5 : -5;
+        } else {
+            ball.vy *= -0.6;
+        }
+    }
+}
+
+function renderPinball() {
+    const ctx = gameData.pinball.ctx;
+    
+    // 清空畫布
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, 400, 600);
+    
+    // 繪製障礙物
+    gameData.pinball.obstacles.forEach(obstacle => {
+        switch (obstacle.type) {
+            case 'wall':
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                break;
+            case 'bumper':
+                ctx.fillStyle = '#f39c12';
+                ctx.beginPath();
+                ctx.arc(obstacle.x, obstacle.y, obstacle.radius, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+            case 'triangle':
+                ctx.fillStyle = '#9b59b6';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                break;
+            case 'flipper':
+                const flipper = gameData.pinball.flippers[obstacle.side];
+                ctx.fillStyle = flipper.active ? '#2ecc71' : '#95a5a6';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                break;
+        }
+    });
+    
+    // 繪製球
+    ctx.fillStyle = '#ecf0f1';
+    ctx.beginPath();
+    ctx.arc(gameData.pinball.ball.x, gameData.pinball.ball.y, gameData.pinball.ball.radius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 繪製發射軌道
+    if (!gameData.pinball.ball.launched) {
+        ctx.strokeStyle = '#3498db';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(360, 500);
+        ctx.lineTo(400, 500);
+        ctx.lineTo(400, 600);
+        ctx.stroke();
+    }
+}
+
+function updatePinballStats() {
+    document.getElementById('pinballScore').textContent = gameData.pinball.score;
+    document.getElementById('pinballBalls').textContent = gameData.pinball.balls;
+    document.getElementById('pinballLevel').textContent = gameData.pinball.level;
+}
+
+function gameOver() {
+    gameData.pinball.gameRunning = false;
+    if (gameData.pinball.animationId) {
+        cancelAnimationFrame(gameData.pinball.animationId);
+    }
+    
+    setTimeout(() => {
+        alert(`遊戲結束！最終分數: ${gameData.pinball.score}`);
+    }, 500);
 }
 
 // 初始化

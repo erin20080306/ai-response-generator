@@ -665,3 +665,232 @@
         align-items: center;
     }
 }
+
+/* ===== 翻牌配對遊戲樣式 ===== */
+.memory-game-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.memory-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.memory-stats {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 15px 0;
+}
+
+.memory-stats .stat {
+    font-weight: bold;
+    padding: 8px 16px;
+    background: rgba(52, 73, 94, 0.8);
+    border-radius: 5px;
+    color: white;
+}
+
+.memory-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.memory-card {
+    width: 80px;
+    height: 80px;
+    perspective: 1000px;
+    cursor: pointer;
+}
+
+.memory-card .card-front,
+.memory-card .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border-radius: 8px;
+    backface-visibility: hidden;
+    transition: transform 0.6s;
+    border: 2px solid #34495e;
+}
+
+.memory-card .card-front {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.memory-card .card-back {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    transform: rotateY(180deg);
+}
+
+.memory-card.flipped .card-front {
+    transform: rotateY(180deg);
+}
+
+.memory-card.flipped .card-back {
+    transform: rotateY(0deg);
+}
+
+.memory-card.matched {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.memory-card.matched .card-back {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+}
+
+/* ===== 彈珠台遊戲樣式 ===== */
+.pinball-game-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.pinball-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.pinball-stats {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 15px 0;
+}
+
+.pinball-stats .stat {
+    font-weight: bold;
+    padding: 8px 16px;
+    background: rgba(52, 73, 94, 0.8);
+    border-radius: 5px;
+    color: white;
+}
+
+.pinball-board {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#pinballCanvas {
+    border: 3px solid #34495e;
+    border-radius: 10px;
+    background: #1a1a2e;
+}
+
+.pinball-controls {
+    display: flex;
+    justify-content: space-between;
+    width: 400px;
+    gap: 10px;
+}
+
+.flipper-btn {
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+    min-width: 100px;
+}
+
+.flipper-btn:hover {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    transform: translateY(-2px);
+}
+
+.flipper-btn:active {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    transform: translateY(0);
+}
+
+.launch-btn {
+    padding: 15px 25px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.launch-btn:hover {
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    transform: translateY(-2px);
+}
+
+.launch-btn:active {
+    background: linear-gradient(135deg, #a93226, #c0392b);
+    transform: translateY(0);
+}
+
+/* 新遊戲按鈕樣式 */
+.memory-btn {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+}
+
+.memory-btn:hover {
+    background: linear-gradient(135deg, #8e44ad, #9b59b6);
+    transform: translateY(-3px);
+}
+
+.pinball-btn {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+.pinball-btn:hover {
+    background: linear-gradient(135deg, #e67e22, #f39c12);
+    transform: translateY(-3px);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .memory-board {
+        max-width: 300px;
+    }
+    
+    .memory-card {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .memory-card .card-front,
+    .memory-card .card-back {
+        font-size: 18px;
+    }
+    
+    .pinball-controls {
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .flipper-btn,
+    .launch-btn {
+        width: 200px;
+    }
+    
+    #pinballCanvas {
+        width: 300px;
+        height: 450px;
+    }
+}
