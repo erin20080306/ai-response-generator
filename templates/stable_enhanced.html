@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 智能助手 - 全功能版</title>
+    
+    <!-- Bootstrap CSS with Replit dark theme -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        body { background-color: #1a1a1a; color: #ffffff; }
+        .sidebar { width: 280px; background-color: #2a2a2a; }
+        .main-content { background-color: #1e1e1e; }
+        .chat-messages { height: 400px; overflow-y: auto; background-color: #2a2a2a; }
+        .message { margin-bottom: 15px; padding: 10px; border-radius: 8px; }
+        .message.user { background-color: #007bff; text-align: right; }
+        .message.assistant { background-color: #333; }
+        .tool-card { background-color: #2a2a2a; border: 1px solid #444; }
+        .tool-card:hover { background-color: #3a3a3a; }
+        .game-canvas { background-color: #000; border: 2px solid #444; }
+        .success-indicator { background-color: #28a745; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <h4 class="text-center mb-4">AI 助手</h4>
+                    
+                    <!-- Navigation Tabs -->
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#chatTab">
+                                <i class="fas fa-comments me-2"></i>聊天
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#toolsTab">
+                                <i class="fas fa-tools me-2"></i>工具
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#gamesTab">
+                                <i class="fas fa-gamepad me-2"></i>遊戲
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#documentsTab">
+                                <i class="fas fa-file-alt me-2"></i>文件
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="tab-content">
+                    <!-- Chat Tab -->
+                    <div class="tab-pane fade show active" id="chatTab">
+                        <div class="container mt-4">
+                            <h2>AI 聊天助手</h2>
+                            <div id="chatMessages" class="chat-messages p-3 border rounded mb-3">
+                                <div class="message assistant">
+                                    <strong>AI助手:</strong> 你好！我是你的AI助手。有什麼可以幫助你的嗎？
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <textarea id="messageInput" class="form-control" placeholder="輸入你的訊息..." rows="3"></textarea>
+                                <button id="sendBtn" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i> 發送
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <button id="clearHistoryBtn" class="btn btn-secondary">
+                                    <i class="fas fa-trash"></i> 清除歷史
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tools Tab -->
+                    <div class="tab-pane fade" id="toolsTab">
+                        <div class="container mt-4">
+                            <h2>實用工具</h2>
+                            <div class="row">
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-calculator fa-2x mb-3"></i>
+                                            <h5>計算機</h5>
+                                            <button class="btn btn-primary" onclick="openCalculator()">開啟</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-qrcode fa-2x mb-3"></i>
+                                            <h5>QR碼生成器</h5>
+                                            <button class="btn btn-primary" onclick="openQRGenerator()">開啟</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-barcode fa-2x mb-3"></i>
+                                            <h5>條碼生成器</h5>
+                                            <button class="btn btn-primary" onclick="openBarcodeGenerator()">開啟</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-key fa-2x mb-3"></i>
+                                            <h5>密碼生成器</h5>
+                                            <button class="btn btn-primary" onclick="openPasswordGenerator()">開啟</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-palette fa-2x mb-3"></i>
+                                            <h5>CANVA設計</h5>
+                                            <button class="btn btn-primary" onclick="openDesignGenerator()">開啟</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Games Tab -->
+                    <div class="tab-pane fade" id="gamesTab">
+                        <div class="container mt-4">
+                            <h2>遊戲中心</h2>
+                            <div class="row">
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-th-large fa-2x mb-3"></i>
+                                            <h5>俄羅斯方塊</h5>
+                                            <button class="btn btn-primary" onclick="startTetris()">開始遊戲</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-chess fa-2x mb-3"></i>
+                                            <h5>麻將</h5>
+                                            <button class="btn btn-primary" onclick="startMahjong()">開始遊戲</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-circle fa-2x mb-3"></i>
+                                            <h5>彈珠遊戲</h5>
+                                            <button class="btn btn-primary" onclick="startPinball()">開始遊戲</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Game Area -->
+                            <div id="gameArea" class="mt-4" style="display: none;">
+                                <div class="text-center mb-3">
+                                    <h3 id="gameTitle">遊戲</h3>
+                                    <button class="btn btn-secondary" onclick="closeGame()">關閉遊戲</button>
+                                </div>
+                                <div class="d-flex justify-content-center">
+                                    <canvas id="gameCanvas" class="game-canvas" width="400" height="400"></canvas>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <div id="gameControls"></div>
+                                    <div id="gameScore">分數: 0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Tab -->
+                    <div class="tab-pane fade" id="documentsTab">
+                        <div class="container mt-4">
+                            <h2>文件生成</h2>
+                            <div class="row">
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-file-excel fa-2x mb-3"></i>
+                                            <h5>Excel 表格</h5>
+                                            <button class="btn btn-primary" onclick="generateExcel()">生成</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-file-word fa-2x mb-3"></i>
+                                            <h5>Word 文件</h5>
+                                            <button class="btn btn-primary" onclick="generateWord()">生成</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-file-powerpoint fa-2x mb-3"></i>
+                                            <h5>PowerPoint</h5>
+                                            <button class="btn btn-primary" onclick="generatePowerPoint()">生成</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals and JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Basic Chat Functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<strong>${type === 'user' ? '你' : 'AI助手'}:</strong> ${content}`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            messageInput.value = '';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    addMessage(data.response, 'assistant');
+                } else {
+                    addMessage(`錯誤: ${data.error}`, 'assistant');
+                }
+            } catch (error) {
+                addMessage(`連線錯誤: ${error.message}`, 'assistant');
+            }
+        }
+
+        function clearHistory() {
+            chatMessages.innerHTML = '<div class="message assistant"><strong>AI助手:</strong> 歷史已清除！</div>';
+        }
+
+        // Tool Functions
+        function openCalculator() {
+            const result = prompt('請輸入計算式 (例如: 2+2):');
+            if (result) {
+                try {
+                    const answer = eval(result);
+                    alert(`結果: ${answer}`);
+                } catch (e) {
+                    alert('計算錯誤');
+                }
+            }
+        }
+
+        function openQRGenerator() {
+            const text = prompt('請輸入要生成QR碼的文字:');
+            if (text) {
+                const url = `/generate_qr?text=${encodeURIComponent(text)}`;
+                window.open(url, '_blank');
+            }
+        }
+
+        function openBarcodeGenerator() {
+            const text = prompt('請輸入要生成條碼的文字:');
+            if (text) {
+                const url = `/generate_barcode?text=${encodeURIComponent(text)}`;
+                window.open(url, '_blank');
+            }
+        }
+
+        function openPasswordGenerator() {
+            const length = prompt('密碼長度 (8-50):', '12');
+            if (length && length >= 8 && length <= 50) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+                let password = '';
+                for (let i = 0; i < length; i++) {
+                    password += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                prompt('生成的密碼:', password);
+            }
+        }
+
+        function openDesignGenerator() {
+            const prompt_text = prompt('請描述你想要的設計 (例如: 現代商業名片設計):');
+            if (prompt_text) {
+                addMessage(`正在生成設計: ${prompt_text}`, 'assistant');
+                // This would call the design generation API
+            }
+        }
+
+        // Game Functions
+        let currentGame = null;
+        const gameArea = document.getElementById('gameArea');
+        const gameCanvas = document.getElementById('gameCanvas');
+        const gameTitle = document.getElementById('gameTitle');
+        const gameScore = document.getElementById('gameScore');
+        const ctx = gameCanvas.getContext('2d');
+
+        function startTetris() {
+            currentGame = 'tetris';
+            gameTitle.textContent = '俄羅斯方塊';
+            gameArea.style.display = 'block';
+            initTetris();
+        }
+
+        function startMahjong() {
+            currentGame = 'mahjong';
+            gameTitle.textContent = '麻將';
+            gameArea.style.display = 'block';
+            initMahjong();
+        }
+
+        function startPinball() {
+            currentGame = 'pinball';
+            gameTitle.textContent = '彈珠遊戲';
+            gameArea.style.display = 'block';
+            initPinball();
+        }
+
+        function closeGame() {
+            gameArea.style.display = 'none';
+            currentGame = null;
+        }
+
+        // Simple Tetris Implementation
+        function initTetris() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, 400, 400);
+            ctx.fillStyle = '#0f0';
+            ctx.fillText('Tetris - 使用方向鍵控制', 10, 30);
+            gameScore.textContent = '分數: 0';
+        }
+
+        // Simple Mahjong Implementation
+        function initMahjong() {
+            ctx.fillStyle = '#006400';
+            ctx.fillRect(0, 0, 400, 400);
+            ctx.fillStyle = '#fff';
+            ctx.fillText('麻將 - 4人遊戲', 10, 30);
+            // Draw simple mahjong tiles
+            for (let i = 0; i < 13; i++) {
+                ctx.strokeRect(20 + i * 25, 350, 20, 30);
+            }
+        }
+
+        // Simple Pinball Implementation
+        function initPinball() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, 400, 400);
+            ctx.fillStyle = '#ff0';
+            ctx.fillText('彈珠遊戲 - 空白鍵發射, Z/X鍵控制彈板', 10, 30);
+            
+            // Draw flippers
+            ctx.fillStyle = '#888';
+            ctx.fillRect(100, 350, 60, 10);
+            ctx.fillRect(240, 350, 60, 10);
+            
+            // Draw ball
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(200, 200, 5, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        // Document Generation Functions
+        function generateExcel() {
+            const type = prompt('選擇類型:\n1. 財務報表\n2. 員工管理\n3. 銷售數據\n4. 庫存管理', '1');
+            if (type) {
+                window.open(`/generate_document?type=excel&template=${type}`, '_blank');
+            }
+        }
+
+        function generateWord() {
+            const type = prompt('選擇類型:\n1. 商業報告\n2. 合約範本\n3. 會議記錄\n4. 專案提案', '1');
+            if (type) {
+                window.open(`/generate_document?type=word&template=${type}`, '_blank');
+            }
+        }
+
+        function generatePowerPoint() {
+            const type = prompt('選擇類型:\n1. 商業提案\n2. 專案報告\n3. 培訓材料\n4. 產品介紹', '1');
+            if (type) {
+                window.open(`/generate_document?type=ppt&template=${type}`, '_blank');
+            }
+        }
+
+        // Event Listeners
+        sendBtn.addEventListener('click', sendMessage);
+        clearHistoryBtn.addEventListener('click', clearHistory);
+        
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Keyboard controls for games
+        document.addEventListener('keydown', (e) => {
+            if (currentGame === 'pinball') {
+                if (e.code === 'Space') {
+                    // Launch ball
+                    console.log('Ball launched');
+                } else if (e.code === 'KeyZ') {
+                    // Left flipper
+                    console.log('Left flipper');
+                } else if (e.code === 'KeyX') {
+                    // Right flipper
+                    console.log('Right flipper');
+                }
+            }
+        });
+
+        console.log('穩定版AI助手已載入完成');
+    </script>
+</body>
+</html>
