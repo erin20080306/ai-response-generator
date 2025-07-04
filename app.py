@@ -982,16 +982,21 @@ def generate_barcode():
             return jsonify({'error': 'Text is required'}), 400
         
         # 支援的條碼類型
-        barcode_types = {
-            'code128': barcode.Code128,
-            'code39': barcode.Code39,
-            'ean13': barcode.EAN13,
-            'ean8': barcode.EAN8,
-            'upc': barcode.UPCA,
-            'isbn13': barcode.ISBN13,
-            'isbn10': barcode.ISBN10,
-            'issn': barcode.ISSN
-        }
+        from barcode import get_barcode_class
+        try:
+            barcode_types = {
+                'code128': get_barcode_class('code128'),
+                'code39': get_barcode_class('code39'),
+                'ean13': get_barcode_class('ean13'),
+                'ean8': get_barcode_class('ean8'),
+                'upc': get_barcode_class('upca'),
+                'isbn13': get_barcode_class('isbn13'),
+                'isbn10': get_barcode_class('isbn10'),
+                'issn': get_barcode_class('issn')
+            }
+        except Exception as e:
+            logging.error(f"Barcode class loading error: {str(e)}")
+            return jsonify({'error': 'Barcode generation not available'}), 500
         
         if barcode_type not in barcode_types:
             return jsonify({'error': 'Invalid barcode type'}), 400

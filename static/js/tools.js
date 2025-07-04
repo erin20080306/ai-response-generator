@@ -19,6 +19,12 @@ class ToolsManager {
             calculatorBtn.addEventListener('click', () => this.openCalculator());
         }
 
+        // 正確的ID映射
+        const calcBtn = document.getElementById('calcBtn');
+        if (calcBtn) {
+            calcBtn.addEventListener('click', () => this.openCalculator());
+        }
+
         // QR碼生成器按鈕
         const qrBtn = document.getElementById('qrBtn');
         if (qrBtn) {
@@ -35,6 +41,12 @@ class ToolsManager {
         const passwordBtn = document.getElementById('passwordBtn');
         if (passwordBtn) {
             passwordBtn.addEventListener('click', () => this.openPasswordGenerator());
+        }
+
+        // 顏色選擇器按鈕
+        const colorBtn = document.getElementById('colorBtn');
+        if (colorBtn) {
+            colorBtn.addEventListener('click', () => this.openColorPicker());
         }
 
         // Canva設計按鈕
@@ -387,6 +399,156 @@ class ToolsManager {
         copyBtn.innerHTML = '<i class="fas fa-check"></i>';
         setTimeout(() => {
             copyBtn.innerHTML = originalHTML;
+        }, 1000);
+    }
+
+    // 顏色選擇器
+    openColorPicker() {
+        this.showColorPickerModal();
+    }
+
+    createColorPickerModal() {
+        const modalHTML = `
+            <div class="modal fade" id="colorPickerModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fas fa-palette me-2"></i>顏色選擇器
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="colorPicker" class="form-label">選擇顏色</label>
+                                <input type="color" id="colorPicker" class="form-control form-control-color" value="#007bff">
+                            </div>
+                            <div class="mb-3">
+                                <label for="colorHex" class="form-label">HEX 值</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="colorHex" value="#007bff">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="toolsManager.copyColor('hex')">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="colorRgb" class="form-label">RGB 值</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="colorRgb" value="rgb(0, 123, 255)">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="toolsManager.copyColor('rgb')">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="colorHsl" class="form-label">HSL 值</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="colorHsl" value="hsl(210, 100%, 50%)">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="toolsManager.copyColor('hsl')">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // 設置顏色變化事件
+        const colorPicker = document.getElementById('colorPicker');
+        colorPicker.addEventListener('input', (e) => {
+            this.updateColorValues(e.target.value);
+        });
+
+        const colorHex = document.getElementById('colorHex');
+        colorHex.addEventListener('input', (e) => {
+            const hex = e.target.value;
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                colorPicker.value = hex;
+                this.updateColorValues(hex);
+            }
+        });
+    }
+
+    showColorPickerModal() {
+        if (!document.getElementById('colorPickerModal')) {
+            this.createColorPickerModal();
+        }
+        const modal = new bootstrap.Modal(document.getElementById('colorPickerModal'));
+        modal.show();
+    }
+
+    updateColorValues(hex) {
+        const rgb = this.hexToRgb(hex);
+        const hsl = this.rgbToHsl(rgb.r, rgb.g, rgb.b);
+        
+        document.getElementById('colorHex').value = hex;
+        document.getElementById('colorRgb').value = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+        document.getElementById('colorHsl').value = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+    }
+
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
+    rgbToHsl(r, g, b) {
+        r /= 255;
+        g /= 255;
+        b /= 255;
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+
+        if (max === min) {
+            h = s = 0;
+        } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+
+        return {
+            h: Math.round(h * 360),
+            s: Math.round(s * 100),
+            l: Math.round(l * 100)
+        };
+    }
+
+    copyColor(type) {
+        let value;
+        switch (type) {
+            case 'hex':
+                value = document.getElementById('colorHex').value;
+                break;
+            case 'rgb':
+                value = document.getElementById('colorRgb').value;
+                break;
+            case 'hsl':
+                value = document.getElementById('colorHsl').value;
+                break;
+        }
+        
+        navigator.clipboard.writeText(value);
+        
+        // 顯示複製成功提示
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
         }, 1000);
     }
 

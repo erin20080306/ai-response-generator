@@ -505,9 +505,6 @@ class DocumentGenerator {
                     ["產品發表會", "行銷部-林經理", "2025/02/15", "2025/02/15", "200000", "", "150", "規劃中", "", "需要場地"],
                     ["員工培訓", "人資部-陳經理", "2025/03/01", "2025/03/03", "30000", "", "50", "未開始", "", "外部講師"]
                 ]
-            }
-                    ["E003", "王小美", "32000", "1000", "2000", "3000", "38000", "1280", "462", "1800", "34458"]
-                ]
             },
             hr_leave: {
                 title: "請假申請記錄",
@@ -623,3 +620,18 @@ class DocumentGenerator {
 
 // 導出類別
 window.DocumentGenerator = DocumentGenerator;
+
+// 初始化文件生成器
+document.addEventListener('DOMContentLoaded', function() {
+    // 等待主應用載入完成
+    setTimeout(() => {
+        if (typeof window.app !== 'undefined') {
+            window.documentGenerator = new DocumentGenerator(window.app);
+            console.log('文件生成器已初始化');
+        } else {
+            // 如果主應用尚未載入，創建簡單實例
+            window.documentGenerator = new DocumentGenerator();
+            console.log('文件生成器已初始化（獨立模式）');
+        }
+    }, 500);
+});
