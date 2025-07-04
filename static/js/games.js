@@ -1391,12 +1391,38 @@ class GameCenter {
                     </div>
                 </div>
                 
-                <!-- 玩家手牌和副露區 -->
-                <div class="player-area">
-                    <div class="player-name text-center mb-2">玩家1 (你) - <span id="playerWind">東</span>風</div>
-                    <div class="exposed-tiles mb-2" id="playerExposed"></div>
-                    <div class="player-tiles" id="playerTiles"></div>
-                    <div class="drawn-tile mt-2" id="drawnTile"></div>
+                <!-- 玩家手牌和控制區 -->
+                <div class="d-flex player-control-area">
+                    <div class="player-area flex-grow-1">
+                        <div class="player-name text-center mb-2">玩家1 (你) - <span id="playerWind">東</span>風</div>
+                        <div class="exposed-tiles mb-2" id="playerExposed"></div>
+                        <div class="player-tiles" id="playerTiles"></div>
+                        <div class="drawn-tile mt-2" id="drawnTile"></div>
+                    </div>
+                    
+                    <!-- 遊戲控制面板 -->
+                    <div class="game-control-panel ms-3" style="min-width: 180px;">
+                        <!-- 動作按鈕區 -->
+                        <div class="action-buttons mb-3">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success btn-sm" id="drawTileBtn" style="display: none;">摸牌</button>
+                                <button class="btn btn-warning btn-sm" id="chiBtn" style="display: none;">吃</button>
+                                <button class="btn btn-info btn-sm" id="pengBtn" style="display: none;">碰</button>
+                                <button class="btn btn-secondary btn-sm" id="gangBtn" style="display: none;">槓</button>
+                                <button class="btn btn-danger btn-sm" id="huBtn" style="display: none;">胡</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 操作說明 -->
+                        <div class="operation-tips">
+                            <small class="text-muted">
+                                <strong>操作提示：</strong><br>
+                                • 點擊手牌可打出<br>
+                                • 按鈕會自動顯示<br>
+                                • 跟隨遊戲提示操作
+                            </small>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- 動作選擇模態框 -->
@@ -1576,7 +1602,7 @@ class GameCenter {
         }
         
         // 初始化遊戲狀態
-        const gameState = {
+        window.gameState = {
             currentPlayer: 0, // 0=玩家, 1-3=AI
             round: 0, // 東南西北圈
             game: 0, // 1-4局
@@ -1596,6 +1622,7 @@ class GameCenter {
             playerCanGang: false,
             playerCanHu: false
         };
+        const gameState = window.gameState;
         
         // 麻將牌組
         const MAHJONG_TILES = {
@@ -1863,10 +1890,22 @@ class GameCenter {
         
         // 顯示玩家動作提示
         function showPlayerActionPrompt() {
-            const promptArea = document.getElementById('gamePrompt');
-            if (promptArea) {
-                promptArea.innerHTML = '<div class="alert alert-info animate-pulse">輪到你了！點擊「摸牌」按鈕摸牌</div>';
-                promptArea.style.display = 'block';
+            const controlPanel = document.querySelector('.game-control-panel');
+            if (controlPanel) {
+                // 移除舊的提示
+                const oldPrompt = controlPanel.querySelector('.game-prompt');
+                if (oldPrompt) oldPrompt.remove();
+                
+                // 創建新提示
+                const promptDiv = document.createElement('div');
+                promptDiv.className = 'game-prompt alert alert-info alert-sm mb-2';
+                promptDiv.innerHTML = '<small><strong>輪到你了！</strong><br>點擊「摸牌」按鈕摸牌</small>';
+                
+                // 插入到按鈕區域前面
+                const actionButtons = controlPanel.querySelector('.action-buttons');
+                if (actionButtons) {
+                    controlPanel.insertBefore(promptDiv, actionButtons);
+                }
             }
         }
         
@@ -1897,10 +1936,17 @@ class GameCenter {
         
         // 顯示特殊動作提示
         function showSpecialActionPrompt(actions, tile) {
-            const promptArea = document.getElementById('gamePrompt');
-            if (promptArea) {
-                let promptHTML = '<div class="alert alert-warning animate-pulse">';
-                promptHTML += `<strong>可以執行的動作：</strong><br>`;
+            const controlPanel = document.querySelector('.game-control-panel');
+            if (controlPanel) {
+                // 移除舊的提示
+                const oldPrompt = controlPanel.querySelector('.game-prompt');
+                if (oldPrompt) oldPrompt.remove();
+                
+                // 創建新提示
+                const promptDiv = document.createElement('div');
+                promptDiv.className = 'game-prompt alert alert-warning mb-2';
+                
+                let promptHTML = '<small><strong>可以執行動作：</strong></small><br>';
                 
                 actions.forEach(action => {
                     let buttonClass = 'btn-warning';
@@ -1908,22 +1954,27 @@ class GameCenter {
                     else if (action === '碰') buttonClass = 'btn-success';
                     else if (action === '吃') buttonClass = 'btn-info';
                     
-                    promptHTML += `<button class="btn ${buttonClass} btn-sm me-2" onclick="executeSpecialAction('${action}', '${tile}')">${action}</button>`;
+                    promptHTML += `<button class="btn ${buttonClass} btn-sm me-1 mb-1" onclick="executeSpecialAction('${action}', '${tile}')">${action}</button>`;
                 });
                 
-                promptHTML += '<button class="btn btn-secondary btn-sm" onclick="passAction()">跳過</button>';
-                promptHTML += '</div>';
+                promptHTML += '<br><button class="btn btn-secondary btn-sm mt-1" onclick="passAction()">跳過</button>';
                 
-                promptArea.innerHTML = promptHTML;
-                promptArea.style.display = 'block';
+                promptDiv.innerHTML = promptHTML;
+                
+                // 插入到按鈕區域前面
+                const actionButtons = controlPanel.querySelector('.action-buttons');
+                if (actionButtons) {
+                    controlPanel.insertBefore(promptDiv, actionButtons);
+                }
             }
         }
         
         // 執行特殊動作
         function executeSpecialAction(action, tile) {
-            const promptArea = document.getElementById('gamePrompt');
-            if (promptArea) {
-                promptArea.style.display = 'none';
+            const controlPanel = document.querySelector('.game-control-panel');
+            if (controlPanel) {
+                const oldPrompt = controlPanel.querySelector('.game-prompt');
+                if (oldPrompt) oldPrompt.remove();
             }
             
             switch(action) {
@@ -1944,9 +1995,10 @@ class GameCenter {
         
         // 跳過動作
         function passAction() {
-            const promptArea = document.getElementById('gamePrompt');
-            if (promptArea) {
-                promptArea.style.display = 'none';
+            const controlPanel = document.querySelector('.game-control-panel');
+            if (controlPanel) {
+                const oldPrompt = controlPanel.querySelector('.game-prompt');
+                if (oldPrompt) oldPrompt.remove();
             }
         }
         
@@ -2303,6 +2355,51 @@ class GameCenter {
                 padding: 15px;
                 max-width: 100%;
                 overflow-x: auto;
+            }
+            
+            .player-control-area {
+                gap: 20px;
+                align-items: flex-start;
+            }
+            
+            .game-control-panel {
+                background: #2d2d2d;
+                border-radius: 8px;
+                padding: 15px;
+                border: 1px solid #3d3d3d;
+                min-width: 180px;
+            }
+            
+            .game-prompt {
+                border-radius: 6px;
+                padding: 10px;
+                margin-bottom: 10px;
+                text-align: center;
+                animation: fadeIn 0.3s ease-in-out;
+            }
+            
+            .operation-tips {
+                padding: 10px;
+                background: #333;
+                border-radius: 6px;
+                border-left: 3px solid #007bff;
+                font-size: 12px;
+            }
+            
+            .action-buttons .btn {
+                transition: all 0.2s ease;
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+            
+            .action-buttons .btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
             }
             .mahjong-tile {
                 display: inline-block;

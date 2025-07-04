@@ -99,6 +99,7 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 04, 2025. Added HR administrative spreadsheet templates including attendance tracking, payroll, performance reviews, and recruitment management
 - July 04, 2025. Implemented PowerPoint presentation generation using python-pptx with AI-powered content creation and structured slides
 - July 04, 2025. Developed Canva-style design generator using DALL-E 3 for creating professional graphics with customizable templates, styles, and color schemes
+- July 04, 2025. Redesigned Mahjong game UI with enhanced control panel layout, placing action buttons and prompts adjacent to player tiles for improved user experience
 
 ## Enhanced Features Added
 
