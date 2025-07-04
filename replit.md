@@ -84,8 +84,9 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 04, 2025. Initial setup
 - July 04, 2025. Fixed typewriter effect text duplication issue by optimizing JavaScript logic
 - July 04, 2025. Modified AI system prompt to provide more concise, focused responses
+- July 04, 2025. Updated AI system prompt to prioritize practical examples and function syntax for technical questions
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
-AI response style: Concise, focused on key points only.
+AI response style: Concise, focused on key points only. For technical questions, provide function syntax first, then brief explanation with practical examples.
