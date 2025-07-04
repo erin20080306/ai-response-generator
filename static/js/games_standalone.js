@@ -660,6 +660,10 @@ function initFarmStoryGame() {
     farmUILink.href = '/static/css/farm_story_ui.css';
     document.head.appendChild(farmUILink);
     
+    // 清除全域變數衝突
+    window.farmGameState = null;
+    window.currentTool = null;
+    
     // 創建專業遊戲介面
     createProfessionalFarmUI();
 }
@@ -754,23 +758,23 @@ function createMainGameInterface() {
             <div class="game-status-bar">
                 <div class="status-item">
                     <div class="status-icon">❤️</div>
-                    <div class="status-value">${farmGameState.player.health}/100</div>
+                    <div class="status-value">${window.farmGameState.player.health}/100</div>
                 </div>
                 <div class="status-item">
                     <div class="status-icon">⚡</div>
-                    <div class="status-value">${farmGameState.player.energy}/100</div>
+                    <div class="status-value">${window.farmGameState.player.energy}/100</div>
                 </div>
                 <div class="status-item">
                     <div class="status-icon">💰</div>
-                    <div class="status-value">${farmGameState.player.money}G</div>
+                    <div class="status-value">${window.farmGameState.player.money}G</div>
                 </div>
                 <div class="status-item">
                     <div class="status-icon">⭐</div>
-                    <div class="status-value">Lv.${farmGameState.player.level}</div>
+                    <div class="status-value">Lv.${window.farmGameState.player.level}</div>
                 </div>
                 <div class="status-item">
                     <div class="status-icon">🤖</div>
-                    <div class="status-value">AI: ${farmGameState.aiUsesLeft}/10</div>
+                    <div class="status-value">AI: ${window.farmGameState.aiUsesLeft}/10</div>
                 </div>
                 <div class="status-item">
                     <div class="status-icon">🌤️</div>
@@ -778,7 +782,7 @@ function createMainGameInterface() {
                 </div>
                 <div class="status-item">
                     <div class="status-icon">📅</div>
-                    <div class="status-value">${farmGameState.season} 第${farmGameState.day}天</div>
+                    <div class="status-value">${window.farmGameState.season} 第${window.farmGameState.day}天</div>
                 </div>
             </div>
 
@@ -871,41 +875,122 @@ function getWeatherIcon() {
 
 function createGameWorldHTML() {
     return `
-        <div style="position: relative; width: 100%; height: 100%; background: linear-gradient(to bottom, #87CEEB 30%, #90EE90 70%, #8FBC8F 100%);">
-            <!-- 村莊場景 -->
-            <div class="character" style="left: 100px; top: 200px;" onclick="talkToNPC('村長湯姆')">
-                <div style="width: 48px; height: 48px; background: linear-gradient(circle, #FDBCB4, #F4A460); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👨‍💼</div>
-                <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 10px; font-size: 10px; white-space: nowrap;">村長湯姆</div>
+        <div class="professional-game-world">
+            <!-- 3D風格村莊場景 -->
+            <div class="village-background">
+                <!-- 遠景山脈 -->
+                <div class="mountain-bg"></div>
+                <!-- 雲朵動畫 -->
+                <div class="cloud cloud-1"></div>
+                <div class="cloud cloud-2"></div>
+                <div class="cloud cloud-3"></div>
+                
+                <!-- 村莊建築群 -->
+                <div class="building town-hall" style="left: 80px; top: 120px;" onclick="enterBuilding('townhall')">
+                    <div class="building-sprite">🏛️</div>
+                    <div class="building-name">村公所</div>
+                    <div class="building-glow"></div>
+                </div>
+                
+                <div class="building shop" style="left: 220px; top: 100px;" onclick="enterBuilding('shop')">
+                    <div class="building-sprite">🏪</div>
+                    <div class="building-name">商店</div>
+                    <div class="building-glow"></div>
+                </div>
+                
+                <div class="building blacksmith" style="left: 360px; top: 140px;" onclick="enterBuilding('blacksmith')">
+                    <div class="building-sprite">⚒️</div>
+                    <div class="building-name">鐵匠鋪</div>
+                    <div class="building-glow"></div>
+                </div>
+                
+                <div class="building clinic" style="left: 500px; top: 80px;" onclick="enterBuilding('clinic')">
+                    <div class="building-sprite">🏥</div>
+                    <div class="building-name">診所</div>
+                    <div class="building-glow"></div>
+                </div>
+                
+                <!-- 互動式NPC -->
+                <div class="npc mayor" style="left: 120px; top: 200px;" onclick="talkToNPC('村長湯姆')">
+                    <div class="npc-sprite">👨‍💼</div>
+                    <div class="npc-name">村長湯姆</div>
+                    <div class="friendship-hearts">
+                        <span class="heart filled">❤️</span>
+                        <span class="heart filled">❤️</span>
+                        <span class="heart">🤍</span>
+                    </div>
+                    <div class="speech-bubble" id="mayor-bubble">你好！歡迎來到我們的村莊！</div>
+                </div>
+                
+                <div class="npc shopkeeper" style="left: 260px; top: 180px;" onclick="talkToNPC('商店瑪麗')">
+                    <div class="npc-sprite">👩‍💼</div>
+                    <div class="npc-name">商店瑪麗</div>
+                    <div class="friendship-hearts">
+                        <span class="heart filled">❤️</span>
+                        <span class="heart">🤍</span>
+                        <span class="heart">🤍</span>
+                    </div>
+                    <div class="speech-bubble" id="mary-bubble">需要買點什麼嗎？</div>
+                </div>
+                
+                <div class="npc blacksmith" style="left: 400px; top: 220px;" onclick="talkToNPC('鐵匠傑克')">
+                    <div class="npc-sprite">🔨</div>
+                    <div class="npc-name">鐵匠傑克</div>
+                    <div class="friendship-hearts">
+                        <span class="heart filled">❤️</span>
+                        <span class="heart filled">❤️</span>
+                        <span class="heart">🤍</span>
+                    </div>
+                    <div class="speech-bubble" id="jack-bubble">我可以升級你的工具！</div>
+                    <div class="work-effect">✨</div>
+                </div>
+                
+                <div class="npc doctor" style="left: 540px; top: 160px;" onclick="talkToNPC('醫生莉莉')">
+                    <div class="npc-sprite">👩‍⚕️</div>
+                    <div class="npc-name">醫生莉莉</div>
+                    <div class="friendship-hearts">
+                        <span class="heart filled">❤️</span>
+                        <span class="heart">🤍</span>
+                        <span class="heart">🤍</span>
+                    </div>
+                    <div class="speech-bubble" id="lily-bubble">感覺如何？需要治療嗎？</div>
+                </div>
+                
+                <!-- 玩家角色 -->
+                <div class="player-character" style="left: ${window.farmGameState.player.x}px; top: ${window.farmGameState.player.y}px;" id="playerCharacter">
+                    <div class="player-sprite">🧑‍🌾</div>
+                    <div class="player-shadow"></div>
+                    <div class="level-indicator">Lv.${window.farmGameState.player.level}</div>
+                </div>
+                
+                <!-- 農田區域 -->
+                <div class="farm-area" style="left: 50px; top: 300px;" onclick="goToFarm()">
+                    <div class="farm-plots">
+                        <div class="plot plot-1">🌱</div>
+                        <div class="plot plot-2">🌾</div>
+                        <div class="plot plot-3">🥕</div>
+                        <div class="plot plot-4">🌽</div>
+                    </div>
+                    <div class="area-name">我的農場</div>
+                </div>
+                
+                <!-- 森林區域 -->
+                <div class="forest-area" style="right: 50px; top: 280px;" onclick="goToForest()">
+                    <div class="forest-trees">🌲🌳🌲</div>
+                    <div class="area-name">神秘森林</div>
+                </div>
+                
+                <!-- 礦山入口 -->
+                <div class="mine-entrance" style="left: 400px; top: 350px;" onclick="goToMine()">
+                    <div class="mine-sprite">⛰️</div>
+                    <div class="area-name">地下礦坑</div>
+                </div>
+                
+                <!-- 環境裝飾 -->
+                <div class="decoration flowers" style="left: 150px; top: 280px;">🌸🌺🌻</div>
+                <div class="decoration fountain" style="left: 300px; top: 250px;">⛲</div>
+                <div class="decoration trees" style="right: 100px; top: 200px;">🌳🌲</div>
             </div>
-            
-            <div class="character" style="left: 250px; top: 180px;" onclick="talkToNPC('商店瑪麗')">
-                <div style="width: 48px; height: 48px; background: linear-gradient(circle, #FFB6C1, #FF69B4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👩‍💼</div>
-                <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 10px; font-size: 10px; white-space: nowrap;">商店瑪麗</div>
-            </div>
-            
-            <div class="character" style="left: 400px; top: 220px;" onclick="talkToNPC('鐵匠傑克')">
-                <div style="width: 48px; height: 48px; background: linear-gradient(circle, #D2B48C, #8B4513); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">🔨</div>
-                <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 10px; font-size: 10px; white-space: nowrap;">鐵匠傑克</div>
-            </div>
-            
-            <div class="character" style="left: 550px; top: 160px;" onclick="talkToNPC('醫生莉莉')">
-                <div style="width: 48px; height: 48px; background: linear-gradient(circle, #F0F8FF, #E0E0E0); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👩‍⚕️</div>
-                <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 10px; font-size: 10px; white-space: nowrap;">醫生莉莉</div>
-            </div>
-            
-            <!-- 玩家角色 -->
-            <div class="character player" style="left: ${farmGameState.player.x}px; top: ${farmGameState.player.y}px;" id="playerCharacter">
-                <div style="width: 48px; height: 48px; background: linear-gradient(circle, #98FB98, #32CD32); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #228B22;">🧑‍🌾</div>
-            </div>
-            
-            <!-- 建築物 -->
-            <div style="position: absolute; left: 80px; top: 120px; width: 60px; height: 40px; background: #8B4513; border-radius: 5px; display: flex; align-items: center; justify-content: center;">🏠</div>
-            <div style="position: absolute; left: 230px; top: 100px; width: 60px; height: 40px; background: #DEB887; border-radius: 5px; display: flex; align-items: center; justify-content: center;">🏪</div>
-            <div style="position: absolute; left: 380px; top: 140px; width: 60px; height: 40px; background: #696969; border-radius: 5px; display: flex; align-items: center; justify-content: center;">⚒️</div>
-            <div style="position: absolute; left: 530px; top: 80px; width: 60px; height: 40px; background: #F0F8FF; border-radius: 5px; display: flex; align-items: center; justify-content: center;">🏥</div>
-            
-            <!-- 農田區域 -->
-            <div style="position: absolute; left: 50px; top: 300px; width: 150px; height: 100px; background: repeating-linear-gradient(45deg, #8FBC8F, #8FBC8F 10px, #9ACD32 10px, #9ACD32 20px); border: 2px solid #556B2F; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🌾</div>
         </div>
     `;
 }
@@ -1006,6 +1091,37 @@ function createNPCRelationsHTML() {
 }
 
 function initializeGameLogic() {
+    // 初始化全域變數
+    window.farmGameState = {
+        player: {
+            x: 300,
+            y: 250,
+            health: 100,
+            energy: 100,
+            money: 500,
+            level: 1,
+            experience: 0
+        },
+        inventory: {
+            seeds: { carrot: 10, corn: 5, potato: 3 },
+            crops: { carrot: 0, corn: 0, potato: 0 },
+            tools: { hoe: 1, watering_can: 1, axe: 1, pickaxe: 1 },
+            items: { energy_potion: 3, health_potion: 2 }
+        },
+        npcs: {
+            mayor_tom: { friendship: 50, lastTalk: null },
+            shop_mary: { friendship: 30, lastTalk: null },
+            blacksmith_jack: { friendship: 40, lastTalk: null },
+            doctor_lily: { friendship: 20, lastTalk: null }
+        },
+        currentScene: 'village',
+        weather: 'sunny',
+        season: '春季',
+        day: 1,
+        time: '上午',
+        aiUsesLeft: 10
+    };
+    
     // 設置工具選擇
     window.currentTool = 'hoe';
     
@@ -1013,7 +1129,18 @@ function initializeGameLogic() {
     document.addEventListener('keydown', handleKeyPress);
     
     // 設置點擊移動
-    document.getElementById('gameWorld').addEventListener('click', handleWorldClick);
+    const gameWorld = document.getElementById('gameWorld') || document.querySelector('.game-world');
+    if (gameWorld) {
+        gameWorld.addEventListener('click', handleWorldClick);
+    }
+    
+    // 初始化UI顯示
+    setTimeout(() => {
+        updateStatusDisplay();
+        updateInventoryDisplay();
+    }, 100);
+    
+    console.log('農場遊戲邏輯初始化完成', window.farmGameState);
 }
 
 function startGameLoop() {
@@ -1348,4 +1475,298 @@ function restoreHealth() {
 function buyPotions() {
     showNotification('藥水商店', '藥水購買功能開發中...');
     closeDialogue();
+}
+
+// 新增遊戲功能函數
+function enterBuilding(buildingType) {
+    const buildingNames = {
+        'townhall': '村公所',
+        'shop': '商店', 
+        'blacksmith': '鐵匠鋪',
+        'clinic': '診所'
+    };
+    
+    showNotification('進入建築', `進入${buildingNames[buildingType]}中...`);
+    
+    // 模擬進入不同建築的功能
+    switch(buildingType) {
+        case 'shop':
+            openShop('general');
+            break;
+        case 'blacksmith':
+            upgradeTools();
+            break;
+        case 'clinic':
+            restoreHealth();
+            break;
+        default:
+            showNotification('建築功能', '此建築功能開發中...');
+    }
+}
+
+function goToFarm() {
+    showNotification('農場', '前往農場管理作物...');
+    // 可以擴展為切換到農場場景
+}
+
+function goToForest() {
+    showNotification('森林', '探索神秘森林，收集材料...');
+    if (window.farmGameState.player.energy >= 20) {
+        window.farmGameState.player.energy -= 20;
+        const wood = Math.floor(Math.random() * 5) + 3;
+        window.farmGameState.player.money += wood * 15;
+        showNotification('森林收穫', `收集了${wood}塊珍貴木材！獲得${wood * 15}金幣。`);
+        updateInventoryDisplay();
+    } else {
+        showNotification('精力不足', '需要更多精力才能探索森林！');
+    }
+}
+
+function goToMine() {
+    showNotification('礦坑', '深入地下礦坑挖掘礦石...');
+    if (window.farmGameState.player.energy >= 30) {
+        window.farmGameState.player.energy -= 30;
+        const minerals = Math.floor(Math.random() * 3) + 2;
+        window.farmGameState.player.money += minerals * 50;
+        showNotification('礦坑收穫', `挖掘了${minerals}塊稀有礦石！獲得${minerals * 50}金幣。`);
+        updateInventoryDisplay();
+    } else {
+        showNotification('精力不足', '挖礦需要充足的精力！');
+    }
+}
+
+// 修復變數引用問題
+function createInventoryHTML() {
+    let html = '';
+    const inventory = window.farmGameState.inventory;
+    
+    // 種子
+    Object.entries(inventory.seeds).forEach(([item, count]) => {
+        if (count > 0) {
+            const icons = { carrot: '🥕', corn: '🌽', potato: '🥔' };
+            html += `<div class="inventory-slot has-item" title="${item}種子">
+                <div class="item-icon">${icons[item]}</div>
+                <div class="item-count">${count}</div>
+            </div>`;
+        }
+    });
+    
+    // 作物
+    Object.entries(inventory.crops).forEach(([item, count]) => {
+        if (count > 0) {
+            const icons = { carrot: '🥕', corn: '🌽', potato: '🥔' };
+            html += `<div class="inventory-slot has-item" title="${item}">
+                <div class="item-icon">${icons[item]}</div>
+                <div class="item-count">${count}</div>
+            </div>`;
+        }
+    });
+    
+    // 工具
+    Object.entries(inventory.tools).forEach(([tool, count]) => {
+        if (count > 0) {
+            const icons = { hoe: '🔨', watering_can: '🪣', axe: '🪓', pickaxe: '⛏️' };
+            html += `<div class="inventory-slot has-item" title="${tool}">
+                <div class="item-icon">${icons[tool]}</div>
+                <div class="item-count">${count}</div>
+            </div>`;
+        }
+    });
+    
+    // 道具
+    Object.entries(inventory.items).forEach(([item, count]) => {
+        if (count > 0) {
+            const icons = { energy_potion: '⚡', health_potion: '❤️' };
+            html += `<div class="inventory-slot has-item" title="${item}">
+                <div class="item-icon">${icons[item]}</div>
+                <div class="item-count">${count}</div>
+            </div>`;
+        }
+    });
+    
+    // 填充空格子
+    while (html.split('inventory-slot').length - 1 < 16) {
+        html += '<div class="inventory-slot"></div>';
+    }
+    
+    return html;
+}
+
+function createNPCRelationsHTML() {
+    const npcs = window.farmGameState.npcs;
+    let html = '';
+    
+    Object.entries(npcs).forEach(([npc, data]) => {
+        const names = {
+            mayor_tom: '村長湯姆',
+            shop_mary: '商店瑪麗', 
+            blacksmith_jack: '鐵匠傑克',
+            doctor_lily: '醫生莉莉'
+        };
+        
+        const hearts = Math.floor(data.friendship / 20);
+        const heartDisplay = '❤️'.repeat(hearts) + '🤍'.repeat(5 - hearts);
+        
+        html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 5px; background: rgba(255,255,255,0.5); border-radius: 5px;">
+                <span style="font-size: 12px; font-weight: bold;">${names[npc]}</span>
+                <span style="font-size: 12px;">${heartDisplay}</span>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+// 修復玩家移動函數
+function movePlayer(x, y) {
+    window.farmGameState.player.x = x;
+    window.farmGameState.player.y = y;
+    
+    const playerElement = document.getElementById('playerCharacter');
+    if (playerElement) {
+        playerElement.style.left = x + 'px';
+        playerElement.style.top = y + 'px';
+    }
+}
+
+function handleKeyPress(event) {
+    const player = window.farmGameState.player;
+    const speed = 10;
+    
+    switch(event.key) {
+        case 'ArrowUp':
+        case 'w':
+            movePlayer(player.x, Math.max(80, player.y - speed));
+            break;
+        case 'ArrowDown':
+        case 's':
+            movePlayer(player.x, Math.min(350, player.y + speed));
+            break;
+        case 'ArrowLeft':
+        case 'a':
+            movePlayer(Math.max(0, player.x - speed), player.y);
+            break;
+        case 'ArrowRight':
+        case 'd':
+            movePlayer(Math.min(600, player.x + speed), player.y);
+            break;
+        case 'Space':
+        case ' ':
+            event.preventDefault();
+            useCurrentTool();
+            break;
+    }
+}
+
+function useCurrentTool() {
+    const tool = window.currentTool;
+    const energy = window.farmGameState.player.energy;
+    
+    if (energy <= 0) {
+        showNotification('精力不足', '需要休息或使用能量藥水！');
+        return;
+    }
+    
+    switch(tool) {
+        case 'hoe':
+            farmTile();
+            break;
+        case 'watering_can':
+            waterCrops();
+            break;
+        case 'seeds':
+            plantSeeds();
+            break;
+        case 'axe':
+            chopWood();
+            break;
+        case 'pickaxe':
+            mineStone();
+            break;
+    }
+}
+
+function farmTile() {
+    window.farmGameState.player.energy -= 5;
+    showNotification('農作', '翻土完成！準備種植種子。');
+    updateStatusDisplay();
+}
+
+function waterCrops() {
+    if (window.farmGameState.player.energy >= 10) {
+        window.farmGameState.player.energy -= 10;
+        showNotification('澆水', '作物正在茁壯成長！');
+        updateStatusDisplay();
+    } else {
+        showNotification('精力不足', '需要休息！');
+    }
+}
+
+function plantSeeds() {
+    if (window.farmGameState.inventory.seeds.carrot > 0) {
+        window.farmGameState.inventory.seeds.carrot--;
+        window.farmGameState.player.energy -= 5;
+        showNotification('種植', '種下了蘿蔔種子！記得澆水。');
+        updateInventoryDisplay();
+        updateStatusDisplay();
+    } else {
+        showNotification('沒有種子', '去商店購買種子吧！');
+    }
+}
+
+function chopWood() {
+    window.farmGameState.player.energy -= 15;
+    const wood = Math.floor(Math.random() * 3) + 1;
+    window.farmGameState.player.money += wood * 10;
+    showNotification('砍柴', `收集了${wood}塊木材！獲得${wood * 10}金幣。`);
+    updateStatusDisplay();
+}
+
+function mineStone() {
+    window.farmGameState.player.energy -= 20;
+    const ore = Math.floor(Math.random() * 2) + 1;
+    window.farmGameState.player.money += ore * 25;
+    showNotification('挖礦', `挖到了${ore}塊礦石！獲得${ore * 25}金幣。`);
+    updateStatusDisplay();
+}
+
+function updateStatusDisplay() {
+    // 更新狀態欄顯示
+    const statusElements = document.querySelectorAll('.status-value');
+    if (statusElements.length >= 7) {
+        statusElements[0].textContent = `${window.farmGameState.player.health}/100`;
+        statusElements[1].textContent = `${window.farmGameState.player.energy}/100`;
+        statusElements[2].textContent = `${window.farmGameState.player.money}G`;
+        statusElements[3].textContent = `Lv.${window.farmGameState.player.level}`;
+        statusElements[4].textContent = `AI: ${window.farmGameState.aiUsesLeft}/10`;
+    }
+}
+
+function useAIAssistant() {
+    if (window.farmGameState.aiUsesLeft > 0) {
+        window.farmGameState.aiUsesLeft--;
+        showNotification('AI助手', `AI助手已啟用！剩餘 ${window.farmGameState.aiUsesLeft}/10 次使用。`);
+        updateStatusDisplay();
+        
+        // 模擬AI互動 - 提供有用的遊戲建議
+        const aiAdvice = [
+            '建議先種植蘿蔔，成長快速且利潤不錯！',
+            '記得定期澆水，作物才會健康成長。',
+            '去森林收集木材可以賺取額外金錢。',
+            '升級工具可以提高工作效率。',
+            '與村民多互動可以提升友好度。',
+            '保持充足的精力，避免過度勞累。',
+            '礦坑雖然危險，但礦石價值很高。',
+            '多樣化種植可以分散風險。'
+        ];
+        
+        setTimeout(() => {
+            const advice = aiAdvice[Math.floor(Math.random() * aiAdvice.length)];
+            showNotification('AI建議', advice);
+        }, 1000);
+        
+    } else {
+        showNotification('AI使用完畢', '今天的AI助手使用次數已用完！明天再來吧。');
+    }
 }
