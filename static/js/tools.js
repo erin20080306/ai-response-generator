@@ -43,10 +43,20 @@ class ToolsManager {
             passwordBtn.addEventListener('click', () => this.openPasswordGenerator());
         }
 
+        const passwordGenBtn = document.getElementById('passwordGenBtn');
+        if (passwordGenBtn) {
+            passwordGenBtn.addEventListener('click', () => this.openPasswordGenerator());
+        }
+
         // 顏色選擇器按鈕
         const colorBtn = document.getElementById('colorBtn');
         if (colorBtn) {
             colorBtn.addEventListener('click', () => this.openColorPicker());
+        }
+
+        const colorPickerBtn = document.getElementById('colorPickerBtn');
+        if (colorPickerBtn) {
+            colorPickerBtn.addEventListener('click', () => this.openColorPicker());
         }
 
         // Canva設計按鈕
