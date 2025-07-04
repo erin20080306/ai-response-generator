@@ -119,7 +119,7 @@ def chat():
             
             # Check for APPS SCRIPT
             if 'apps script' in user_message.lower() or 'app script' in user_message.lower():
-                # GS Code
+                # Always provide GS Code
                 gs_prompt = chat_history + [{
                     'role': 'user', 
                     'content': f"{user_message}\n\n請只提供正確的GS程式碼，要求：1. 使用標準Google Apps Script函式語法 2. 確保函式可以在Apps Script環境正常執行 3. 提供正確的函式調用方式"
@@ -127,13 +127,17 @@ def chat():
                 gs_response = openai_client.get_response(gs_prompt)
                 responses.append(gs_response)
                 
-                # HTML Code
-                html_prompt = chat_history + [{
-                    'role': 'user', 
-                    'content': f"{user_message}\n\n請只提供HTML程式碼部分，並包含使用教學：1. 如何在Apps Script中建立HTML檔案 2. 如何部署和使用"
-                }]
-                html_response = openai_client.get_response(html_prompt)
-                responses.append(html_response)
+                # Only provide HTML if it's a UI-related request
+                html_keywords = ['介面', '網頁', 'ui', '表單', '按鈕', '輸入', '顯示', '視窗', 'html', '前端', '使用者介面']
+                needs_html = any(keyword in user_message.lower() for keyword in html_keywords)
+                
+                if needs_html:
+                    html_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請只提供HTML程式碼部分，並包含使用教學：1. 如何在Apps Script中建立HTML檔案 2. 如何部署和使用"
+                    }]
+                    html_response = openai_client.get_response(html_prompt)
+                    responses.append(html_response)
                 
             # Check for general web development
             elif any(lang in user_message.lower() for lang in ['html', 'css', 'javascript', 'js']):
