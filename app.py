@@ -1114,10 +1114,7 @@ def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy', 'openai_configured': openai_client.is_configured()})
 
-@app.route('/farm-game')
-def farm_game():
-    """Standalone 2D Farm Story Game"""
-    return send_from_directory('static', 'farm_game_new.html')
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
