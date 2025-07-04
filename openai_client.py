@@ -18,32 +18,36 @@ class OpenAIClient:
     def get_response(self, chat_history):
         """Get AI response from OpenAI API"""
         if not self.is_configured():
-            return "AI服務需要設定API金鑰才能使用。"
+            raise Exception("OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.")
         
         try:
-            # Simple system message
+            # Add system message for better AI behavior
             messages = [
                 {
                     "role": "system",
-                    "content": "你是一個友善的AI助手，請提供有用的回答。"
+                    "content": """You are a helpful AI assistant. For any question, provide direct, practical answers.
+                    - Give the key information or solution first
+                    - Follow with a brief, simple explanation
+                    - Include practical examples when relevant
+                    - Keep responses short and actionable
+                    - Focus on what the user needs to know immediately"""
                 }
             ]
             
-            # Add only last 3 messages to reduce complexity
-            messages.extend(chat_history[-3:] if chat_history else [])
+            # Add chat history
+            messages.extend(chat_history)
             
             # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
             # do not change this unless explicitly requested by the user
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=messages,
-                max_tokens=500,
-                temperature=0.7,
-                timeout=20
+                max_tokens=2000,
+                temperature=0.7
             )
             
             return response.choices[0].message.content
             
         except Exception as e:
             logging.error(f"OpenAI API error: {str(e)}")
-            return "抱歉，AI服務暫時無法回應。請稍後再試。"
+            raise Exception(f"Failed to get AI response: {str(e)}")

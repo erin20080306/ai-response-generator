@@ -318,7 +318,19 @@
                                     </div>
                                 </div>
                                 
-
+                                <!-- Date Time Converter -->
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card tool-card">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-clock fa-2x mb-3"></i>
+                                            <h5>時間轉換</h5>
+                                            <p class="text-muted">時間格式轉換</p>
+                                            <button type="button" class="btn btn-primary" id="dateTimeBtn">
+                                                開啟
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                                 
                                 <!-- Color Picker -->
                                 <div class="col-md-6 col-lg-4 mb-4">
@@ -817,7 +829,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Custom JavaScript -->
-    <!-- Core JavaScript Files -->
     <script src="{{ url_for('static', filename='js/enhanced_app.js') }}"></script>
     <script src="{{ url_for('static', filename='js/file_handler.js') }}"></script>
     <script src="{{ url_for('static', filename='js/tools.js') }}"></script>
@@ -830,65 +841,6 @@
     
     <!-- Socket.IO for Node.js support -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    
-    <!-- Initialize Application -->
-    <script>
-        // Initialize the app when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Enhanced AI Assistant Loading...');
-            
-            try {
-                // Initialize Enhanced App first
-                if (typeof EnhancedAIApp !== 'undefined') {
-                    window.enhancedApp = new EnhancedAIApp();
-                    console.log('✓ Enhanced AI App initialized');
-                }
-                
-                // Initialize Tools
-                if (typeof Tools !== 'undefined') {
-                    window.tools = new Tools();
-                    console.log('✓ Tools initialized');
-                }
-                
-                // Initialize File Handler
-                if (typeof FileHandler !== 'undefined') {
-                    window.fileHandler = new FileHandler();
-                    window.fileHandler.init();
-                    console.log('✓ File Handler initialized');
-                }
-                
-                // Initialize Voice module
-                if (typeof VoiceModule !== 'undefined') {
-                    window.voiceModule = new VoiceModule();
-                    console.log('✓ Voice Module initialized');
-                }
-                
-                // Initialize Collaboration
-                if (typeof Collaboration !== 'undefined') {
-                    window.collaboration = new Collaboration();
-                    window.collaboration.init();
-                    console.log('✓ Collaboration initialized');
-                }
-                
-                // Initialize Games
-                if (typeof SimpleGames !== 'undefined') {
-                    window.simpleGames = new SimpleGames();
-                    console.log('✓ Games initialized');
-                }
-                
-                // Initialize Document Generator
-                if (typeof DocumentGenerator !== 'undefined') {
-                    window.documentGenerator = new DocumentGenerator(window.enhancedApp || window.aiAssistant);
-                    console.log('✓ Document Generator initialized');
-                }
-                
-                console.log('🎉 All modules loaded successfully!');
-                
-            } catch (error) {
-                console.error('Error during initialization:', error);
-            }
-        });
-    </script>
 
 </body>
 </html>

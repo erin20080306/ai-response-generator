@@ -14,7 +14,7 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
-from flask import Flask, render_template, request, jsonify, session, send_file, make_response, send_from_directory
+from flask import Flask, render_template, request, jsonify, session, send_file, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -66,23 +66,13 @@ with app.app_context():
 
 @app.route('/')
 def index():
-    """Render the original style AI assistant with typewriter effect"""
-    return render_template('original_with_avatar.html')
+    """Render the enhanced main chat interface"""
+    return render_template('enhanced_index.html')
 
 @app.route('/simple')
 def simple_index():
     """Render the simple chat interface"""
     return render_template('index.html')
-
-@app.route('/test')
-def test_page():
-    """Test page to check if server is running"""
-    return render_template('test.html')
-
-@app.route('/simple-enhanced')
-def simple_enhanced():
-    """Simple enhanced version of the app"""
-    return render_template('simple_enhanced.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -90,32 +80,13 @@ def chat():
     try:
         data = request.get_json()
         user_message = data.get('message', '').strip()
-        avatar_settings = data.get('avatar_settings', {})
         
         if not user_message:
-            return jsonify({'error': 'Message cannot be empty', 'success': False}), 400
+            return jsonify({'error': 'Message cannot be empty'}), 400
         
         # Get chat history from session
         if 'chat_history' not in session:
             session['chat_history'] = []
-        
-        # Create personalized system prompt based on avatar settings
-        personality = avatar_settings.get('personality', 'friendly')
-        ai_name = avatar_settings.get('name', 'AI助手')
-        
-        personality_prompts = {
-            'friendly': '友善親切，樂於助人',
-            'professional': '專業嚴謹，提供精確的資訊',
-            'playful': '活潑有趣，用輕鬆的語調交流',
-            'wise': '智慧深沉，提供深度見解',
-            'creative': '富有創意，善於創新思考'
-        }
-        
-        system_prompt = f"你是{ai_name}，一個{personality_prompts.get(personality, '友善親切')}的AI助手。請保持這個個性特徵來回應用戶。"
-        
-        # Prepare chat history with system prompt
-        chat_history_with_system = [{'role': 'system', 'content': system_prompt}]
-        chat_history_with_system.extend(session['chat_history'])
         
         # Add user message to history
         session['chat_history'].append({
@@ -123,8 +94,8 @@ def chat():
             'content': user_message
         })
         
-        # Get AI response with personality
-        ai_response = openai_client.get_response(chat_history_with_system + [{'role': 'user', 'content': user_message}])
+        # Get AI response
+        ai_response = openai_client.get_response(session['chat_history'])
         
         # Add AI response to history
         session['chat_history'].append({
@@ -1011,21 +982,16 @@ def generate_barcode():
             return jsonify({'error': 'Text is required'}), 400
         
         # 支援的條碼類型
-        from barcode import get_barcode_class
-        try:
-            barcode_types = {
-                'code128': get_barcode_class('code128'),
-                'code39': get_barcode_class('code39'),
-                'ean13': get_barcode_class('ean13'),
-                'ean8': get_barcode_class('ean8'),
-                'upc': get_barcode_class('upca'),
-                'isbn13': get_barcode_class('isbn13'),
-                'isbn10': get_barcode_class('isbn10'),
-                'issn': get_barcode_class('issn')
-            }
-        except Exception as e:
-            logging.error(f"Barcode class loading error: {str(e)}")
-            return jsonify({'error': 'Barcode generation not available'}), 500
+        barcode_types = {
+            'code128': barcode.Code128,
+            'code39': barcode.Code39,
+            'ean13': barcode.EAN13,
+            'ean8': barcode.EAN8,
+            'upc': barcode.UPCA,
+            'isbn13': barcode.ISBN13,
+            'isbn10': barcode.ISBN10,
+            'issn': barcode.ISSN
+        }
         
         if barcode_type not in barcode_types:
             return jsonify({'error': 'Invalid barcode type'}), 400
@@ -1130,59 +1096,6 @@ def generate_design():
         logging.error(f"Design generation error: {str(e)}")
         return jsonify({'error': f'Failed to generate design: {str(e)}'}), 500
 
-@app.route('/modify_design', methods=['POST'])
-def modify_design():
-    """修改現有設計"""
-    try:
-        data = request.json
-        original_image = data.get('original_image', '')
-        modifications = data.get('modifications', '')
-        
-        if not modifications:
-            return jsonify({'error': '請描述需要修改的內容'}), 400
-        
-        if not openai_client.is_configured():
-            return jsonify({'error': 'OpenAI API not configured'}), 500
-        
-        # 生成修改提示
-        modify_prompt = f"""
-        Based on the existing design, make the following modifications:
-        {modifications}
-        
-        Maintain the overall design quality and professional appearance while implementing the requested changes.
-        Keep the same dimensions and ensure the design remains cohesive and visually appealing.
-        """
-        
-        try:
-            response = openai_client.client.images.generate(
-                model="dall-e-3",
-                prompt=modify_prompt,
-                size="1024x1024",
-                quality="standard",
-                n=1
-            )
-            
-            image_url = response.data[0].url
-            
-            # 下載並轉換圖片
-            img_response = requests.get(image_url)
-            img_base64 = base64.b64encode(img_response.content).decode()
-            
-            return jsonify({
-                'success': True,
-                'image': f'data:image/png;base64,{img_base64}',
-                'download_data': img_base64,
-                'modifications': modifications
-            })
-            
-        except Exception as e:
-            logging.error(f"Design modification error: {str(e)}")
-            return jsonify({'error': f'修改設計失敗: {str(e)}'}), 500
-            
-    except Exception as e:
-        logging.error(f"Modify design error: {str(e)}")
-        return jsonify({'error': f'修改設計失敗: {str(e)}'}), 500
-
 @app.route('/download/<filename>')
 def download_file(filename):
     """通用文件下載端點"""
@@ -1200,8 +1113,6 @@ def download_file(filename):
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy', 'openai_configured': openai_client.is_configured()})
-
-
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
