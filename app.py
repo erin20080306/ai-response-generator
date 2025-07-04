@@ -87,26 +87,33 @@ def chat():
         if not user_message:
             return jsonify({'error': 'Message cannot be empty'}), 400
         
-        # Get chat history from session
+        # Get chat history from session - limit to prevent cookie overflow
         if 'chat_history' not in session:
             session['chat_history'] = []
         
+        # Limit chat history to last 10 messages to prevent cookie size issues
+        chat_history = session['chat_history']
+        if len(chat_history) > 10:
+            chat_history = chat_history[-10:]
+            session['chat_history'] = chat_history
+        
         # Add user message to history
-        session['chat_history'].append({
+        chat_history.append({
             'role': 'user',
             'content': user_message
         })
         
         # Get AI response
-        ai_response = openai_client.get_response(session['chat_history'])
+        ai_response = openai_client.get_response(chat_history)
         
         # Add AI response to history
-        session['chat_history'].append({
+        chat_history.append({
             'role': 'assistant',
             'content': ai_response
         })
         
-        # Save session
+        # Update session with limited history
+        session['chat_history'] = chat_history
         session.modified = True
         
         return jsonify({
