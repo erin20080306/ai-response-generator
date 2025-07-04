@@ -1,6 +1,52 @@
 // 簡化版遊戲系統 - 只包含俄羅斯方塊和麻將
 console.log('載入簡化版遊戲系統...');
 
+// 確保遊戲標籤可見
+function ensureGamesTabVisible() {
+    const gamesTab = document.getElementById('games-tab');
+    const gamesPanel = document.getElementById('games-panel');
+    
+    if (gamesTab && gamesPanel) {
+        // 啟動遊戲標籤
+        gamesTab.classList.add('active');
+        gamesPanel.classList.add('show', 'active');
+        
+        // 關閉其他標籤
+        const allTabs = document.querySelectorAll('.nav-link');
+        const allPanels = document.querySelectorAll('.tab-pane');
+        
+        allTabs.forEach(tab => {
+            if (tab !== gamesTab) {
+                tab.classList.remove('active');
+            }
+        });
+        
+        allPanels.forEach(panel => {
+            if (panel !== gamesPanel) {
+                panel.classList.remove('show', 'active');
+            }
+        });
+        
+        console.log('遊戲標籤已啟動');
+    } else {
+        console.error('找不到遊戲標籤元素');
+    }
+}
+
+// 當頁面載入完成時確保遊戲介面可見
+document.addEventListener('DOMContentLoaded', function() {
+    // 不自動切換到遊戲標籤，讓用戶手動點擊
+    console.log('遊戲系統已準備就緒');
+    
+    // 確保遊戲容器存在
+    const gameContainer = document.getElementById('gameContainer');
+    if (gameContainer) {
+        console.log('遊戲容器已找到');
+    } else {
+        console.error('遊戲容器未找到');
+    }
+});
+
 // 遊戲選擇函數
 function loadGameSelection(gameType) {
     console.log('載入遊戲:', gameType);
@@ -9,6 +55,15 @@ function loadGameSelection(gameType) {
     if (!gameContainer) {
         console.error('找不到遊戲容器');
         return;
+    }
+    
+    // 確保遊戲容器可見
+    gameContainer.style.display = 'block';
+    
+    // 隱藏歡迎訊息
+    const gameWelcome = document.getElementById('gameWelcome');
+    if (gameWelcome) {
+        gameWelcome.style.display = 'none';
     }
     
     switch(gameType) {
