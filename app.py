@@ -1,6 +1,10 @@
 import os
 import logging
-from flask import Flask, render_template, request, jsonify, session
+import base64
+import requests
+from io import BytesIO
+from PIL import Image
+from flask import Flask, render_template, request, jsonify, session, send_file
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -94,6 +98,160 @@ def chat():
             'error': f'AI service error: {str(e)}',
             'success': False
         }), 500
+
+@app.route('/generate_image', methods=['POST'])
+def generate_image():
+    """Generate image using AI"""
+    try:
+        data = request.get_json()
+        prompt = data.get('prompt', '').strip()
+        
+        if not prompt:
+            return jsonify({'success': False, 'error': '請提供圖片描述'})
+        
+        if not openai_client.is_configured():
+            return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
+        
+        # 使用 OpenAI DALL-E 生成圖片
+        response = openai_client.client.images.generate(
+            model="dall-e-3",
+            prompt=prompt,
+            size="1024x1024",
+            quality="standard",
+            n=1,
+        )
+        
+        image_url = response.data[0].url
+        
+        # 下載圖片並轉換為 base64
+        img_response = requests.get(image_url)
+        if img_response.status_code == 200:
+            img = Image.open(BytesIO(img_response.content))
+            
+            # 轉換為 base64
+            buffer = BytesIO()
+            img.save(buffer, format='PNG')
+            img_base64 = base64.b64encode(buffer.getvalue()).decode()
+            
+            return jsonify({
+                'success': True,
+                'image_url': f"data:image/png;base64,{img_base64}",
+                'original_url': image_url,
+                'prompt': prompt
+            })
+        else:
+            return jsonify({'success': False, 'error': '無法下載生成的圖片'})
+            
+    except Exception as e:
+        logging.error(f"圖片生成錯誤: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/analyze_image', methods=['POST'])
+def analyze_image():
+    """Analyze uploaded image using AI"""
+    try:
+        data = request.get_json()
+        image_base64 = data.get('image', '').strip()
+        
+        if not image_base64:
+            return jsonify({'success': False, 'error': '請提供圖片'})
+        
+        if not openai_client.is_configured():
+            return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
+        
+        # 使用 OpenAI GPT-4o 分析圖片
+        response = openai_client.client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "請詳細分析這張圖片，描述其內容、風格、顏色、構圖等元素。"
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens=500
+        )
+        
+        analysis = response.choices[0].message.content
+        
+        return jsonify({
+            'success': True,
+            'analysis': analysis
+        })
+        
+    except Exception as e:
+        logging.error(f"圖片分析錯誤: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/voice_to_text', methods=['POST'])
+def voice_to_text():
+    """Convert voice to text using AI"""
+    try:
+        if 'audio' not in request.files:
+            return jsonify({'success': False, 'error': '請提供音頻檔案'})
+        
+        audio_file = request.files['audio']
+        
+        if not openai_client.is_configured():
+            return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
+        
+        # 使用 OpenAI Whisper 轉錄音頻
+        transcript = openai_client.client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file
+        )
+        
+        return jsonify({
+            'success': True,
+            'text': transcript.text
+        })
+        
+    except Exception as e:
+        logging.error(f"語音轉文字錯誤: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/text_to_speech', methods=['POST'])
+def text_to_speech():
+    """Convert text to speech using AI"""
+    try:
+        data = request.get_json()
+        text = data.get('text', '').strip()
+        voice = data.get('voice', 'alloy')  # alloy, echo, fable, onyx, nova, shimmer
+        
+        if not text:
+            return jsonify({'success': False, 'error': '請提供文字'})
+        
+        if not openai_client.is_configured():
+            return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
+        
+        # 使用 OpenAI TTS 生成語音
+        response = openai_client.client.audio.speech.create(
+            model="tts-1",
+            voice=voice,
+            input=text,
+        )
+        
+        # 將音頻轉換為 base64
+        audio_base64 = base64.b64encode(response.content).decode()
+        
+        return jsonify({
+            'success': True,
+            'audio_url': f"data:audio/mp3;base64,{audio_base64}"
+        })
+        
+    except Exception as e:
+        logging.error(f"文字轉語音錯誤: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/clear_history', methods=['POST'])
 def clear_history():

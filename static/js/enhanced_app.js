@@ -420,6 +420,12 @@ class EnhancedAIAssistant {
             messageInput.value = '';
             this.updateInputHeight();
 
+            // 檢查是否為圖片生成指令
+            if (this.isImageGenerationRequest(message)) {
+                await this.handleImageGeneration(message);
+                return;
+            }
+
             // 顯示載入狀態
             this.showLoading();
 
@@ -469,6 +475,138 @@ class EnhancedAIAssistant {
             console.error('發送訊息錯誤:', error);
             this.addMessage('抱歉，發生錯誤。請稍後再試。', 'system');
             this.showNotification('發送訊息失敗', 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    isImageGenerationRequest(message) {
+        const imageKeywords = ['畫', '繪', '生成圖片', '產生圖片', '創作圖片', '畫一個', '畫一張', '繪製', '創建圖片', '製作圖片', 'draw', 'paint', 'create image', 'generate image'];
+        return imageKeywords.some(keyword => message.toLowerCase().includes(keyword.toLowerCase()));
+    }
+
+    async handleImageGeneration(message) {
+        try {
+            this.showLoading();
+            this.addMessage('正在生成圖片，請稍候...', 'system');
+
+            // 提取圖片描述
+            const prompt = this.extractImagePrompt(message);
+
+            const response = await fetch('/generate_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: prompt })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // 顯示生成的圖片
+                this.addImageMessage(data.image_url, prompt);
+                this.showNotification('圖片生成成功！', 'success');
+            } else {
+                this.addMessage(`圖片生成失敗：${data.error}`, 'system');
+                this.showNotification(data.error, 'error');
+            }
+
+        } catch (error) {
+            console.error('圖片生成錯誤:', error);
+            this.addMessage('圖片生成過程中發生錯誤', 'system');
+            this.showNotification('圖片生成失敗', 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    extractImagePrompt(message) {
+        // 簡單的提示詞提取邏輯
+        let prompt = message;
+        
+        // 移除常見的生成指令詞
+        const removeWords = ['畫', '繪', '生成圖片', '產生圖片', '創作圖片', '畫一個', '畫一張', '繪製', '創建圖片', '製作圖片', '請', '幫我'];
+        removeWords.forEach(word => {
+            prompt = prompt.replace(new RegExp(word, 'gi'), '');
+        });
+
+        return prompt.trim() || message;
+    }
+
+    addImageMessage(imageUrl, prompt) {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+
+        const messageItem = document.createElement('div');
+        messageItem.className = 'message-item ai-message';
+
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+
+        const icon = '<i class="fas fa-robot me-2"></i>';
+        
+        const imageHtml = `
+            ${icon}
+            <div class="generated-image-container mt-2">
+                <img src="${imageUrl}" alt="${prompt}" class="generated-image img-fluid rounded" style="max-width: 100%; height: auto;">
+                <div class="image-caption mt-2">
+                    <small class="text-muted">生成提示：${prompt}</small>
+                    <div class="image-actions mt-1">
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="window.aiAssistant.downloadImage('${imageUrl}', '${prompt}')">
+                            <i class="fas fa-download"></i> 下載
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="window.aiAssistant.analyzeGeneratedImage('${imageUrl}')">
+                            <i class="fas fa-search"></i> 分析
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        messageContent.innerHTML = imageHtml;
+        messageItem.appendChild(messageContent);
+        chatMessages.appendChild(messageItem);
+
+        // 滾動到底部
+        this.scrollToBottom();
+    }
+
+    downloadImage(imageUrl, prompt) {
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.download = `generated_image_${prompt.substring(0, 20)}_${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    async analyzeGeneratedImage(imageUrl) {
+        try {
+            this.showLoading();
+            
+            // 將 data URL 轉換為 base64
+            const base64Data = imageUrl.split(',')[1];
+            
+            const response = await fetch('/analyze_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: base64Data })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.addMessage(`圖片分析結果：\n${data.analysis}`, 'ai');
+            } else {
+                this.showNotification(data.error, 'error');
+            }
+
+        } catch (error) {
+            console.error('圖片分析錯誤:', error);
+            this.showNotification('圖片分析失敗', 'error');
         } finally {
             this.hideLoading();
         }
