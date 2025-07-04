@@ -108,14 +108,14 @@ def chat():
             # Get AI response for GS code first
             gs_prompt = chat_history + [{
                 'role': 'user', 
-                'content': f"{user_message}\n\n請只提供GS程式碼部分，不要HTML程式碼。"
+                'content': f"{user_message}\n\n請只提供GS程式碼部分，並包含設置教學：1. 在Google Apps Script中貼上程式碼的步驟 2. 函數的用途說明"
             }]
             gs_response = openai_client.get_response(gs_prompt)
             
             # Get AI response for HTML code
             html_prompt = chat_history + [{
                 'role': 'user', 
-                'content': f"{user_message}\n\n請只提供HTML程式碼部分，不要GS程式碼。"
+                'content': f"{user_message}\n\n請只提供HTML程式碼部分，並包含使用教學：1. 如何在Apps Script中建立HTML檔案 2. 如何部署和使用"
             }]
             html_response = openai_client.get_response(html_prompt)
             

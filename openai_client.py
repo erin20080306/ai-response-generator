@@ -34,13 +34,10 @@ class OpenAIClient:
                     - Keep code display clean and minimal
 
                     FOR APPS SCRIPT QUESTIONS:
-                    - Start with "GS程式碼:" immediately
-                    - Follow with GS code block
-                    - Add blank line separation
-                    - Then "HTML程式碼:" in new paragraph
-                    - Follow with HTML code block
-                    - Each code type must be in separate paragraphs
-                    - Brief explanation at the end only
+                    - When asked for only GS code: provide GS code with brief setup tutorial
+                    - When asked for only HTML code: provide HTML code with usage tutorial
+                    - Include step-by-step instructions for each part
+                    - Explain where to paste the code and how to use it
 
                     FOR TECHNICAL QUESTIONS:
                     - Direct answer first
