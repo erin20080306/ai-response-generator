@@ -1831,11 +1831,19 @@ class GameCenter {
         
         // AI玩家自動打牌
         function aiPlay(playerIndex) {
+            console.log(`AI玩家 ${playerIndex} 開始行動`);
+            if (!gameState.players || !gameState.players[playerIndex]) {
+                console.error(`AI玩家 ${playerIndex} 不存在`);
+                return;
+            }
+            
             const player = gameState.players[playerIndex];
+            console.log(`AI玩家當前手牌:`, player.hand);
             
             // AI摸牌
-            const drawnTile = drawTile(playerIndex);
-            if (!drawnTile) {
+            drawTile(playerIndex);
+            
+            if (gameState.wallTiles.length === 0) {
                 gameState.gameOver = true;
                 alert('牌摸完了，平局！');
                 return;
@@ -1843,22 +1851,33 @@ class GameCenter {
             
             // AI隨機打牌 (簡化版AI邏輯)
             setTimeout(() => {
+                if (player.hand.length === 0) {
+                    console.log(`AI玩家 ${playerIndex} 沒有手牌`);
+                    nextTurn();
+                    return;
+                }
+                
                 const randomIndex = Math.floor(Math.random() * player.hand.length);
+                console.log(`AI玩家 ${playerIndex} 打出第 ${randomIndex} 張牌`);
                 const discardedTile = discardTile(playerIndex, randomIndex);
                 
                 updateDisplay();
+                console.log(`AI玩家 ${playerIndex} 打出了 ${discardedTile}`);
                 
                 // 檢查玩家是否可以執行特殊動作
                 checkSpecialActions(discardedTile, playerIndex);
                 
-                // 如果沒有特殊動作可執行，繼續下一位
+                // 如果沒有特殊動作提示，繼續下一位
                 setTimeout(() => {
-                    const promptArea = document.getElementById('gamePrompt');
-                    if (!promptArea || promptArea.style.display === 'none') {
+                    const controlPanel = document.querySelector('.game-control-panel');
+                    const hasPrompt = controlPanel && controlPanel.querySelector('.game-prompt');
+                    
+                    if (!hasPrompt) {
+                        console.log(`AI玩家 ${playerIndex} 回合結束，輪到下一位`);
                         nextTurn();
                     }
-                }, 500);
-            }, 1000);
+                }, 800);
+            }, 1200);
         }
         
         // 下一回合
