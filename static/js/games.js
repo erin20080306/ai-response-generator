@@ -1341,6 +1341,9 @@ class GameCenter {
                     </div>
                 </div>
                 
+                <!-- 遊戲提示區域 -->
+                <div id="gamePrompt" style="display: none; margin-bottom: 15px;"></div>
+                
                 <!-- 對手手牌顯示 -->
                 <div class="opponents-area mb-3">
                     <!-- 上家 (對面) -->
@@ -1811,10 +1814,16 @@ class GameCenter {
                 
                 updateDisplay();
                 
-                // 如果當前不是玩家回合且沒有動作，繼續下一位
-                if (!gameState.playerCanChi && !gameState.playerCanPeng && !gameState.playerCanGang && !gameState.playerCanHu) {
-                    nextTurn();
-                }
+                // 檢查玩家是否可以執行特殊動作
+                checkSpecialActions(discardedTile, playerIndex);
+                
+                // 如果沒有特殊動作可執行，繼續下一位
+                setTimeout(() => {
+                    const promptArea = document.getElementById('gamePrompt');
+                    if (!promptArea || promptArea.style.display === 'none') {
+                        nextTurn();
+                    }
+                }, 500);
             }, 1000);
         }
         
@@ -1844,7 +1853,232 @@ class GameCenter {
             const currentPlayerElement = document.getElementById('currentPlayer');
             if (currentPlayerElement) {
                 currentPlayerElement.textContent = gameState.players[gameState.currentPlayer].name;
+                
+                // 如果輪到玩家，顯示摸牌提示
+                if (gameState.currentPlayer === 0) {
+                    showPlayerActionPrompt();
+                }
             }
+        }
+        
+        // 顯示玩家動作提示
+        function showPlayerActionPrompt() {
+            const promptArea = document.getElementById('gamePrompt');
+            if (promptArea) {
+                promptArea.innerHTML = '<div class="alert alert-info animate-pulse">輪到你了！點擊「摸牌」按鈕摸牌</div>';
+                promptArea.style.display = 'block';
+            }
+        }
+        
+        // 檢查特殊動作提示（吃、碰、胡）
+        function checkSpecialActions(discardedTile, discardingPlayer) {
+            const player = gameState.players[0]; // 玩家
+            const actions = [];
+            
+            // 檢查胡牌
+            if (canWin(0, discardedTile)) {
+                actions.push('胡');
+            }
+            
+            // 檢查碰牌
+            if (canPong(0, discardedTile)) {
+                actions.push('碰');
+            }
+            
+            // 檢查吃牌（只能吃上家的牌）
+            if (discardingPlayer === 3 && canChow(0, discardedTile)) {
+                actions.push('吃');
+            }
+            
+            if (actions.length > 0) {
+                showSpecialActionPrompt(actions, discardedTile);
+            }
+        }
+        
+        // 顯示特殊動作提示
+        function showSpecialActionPrompt(actions, tile) {
+            const promptArea = document.getElementById('gamePrompt');
+            if (promptArea) {
+                let promptHTML = '<div class="alert alert-warning animate-pulse">';
+                promptHTML += `<strong>可以執行的動作：</strong><br>`;
+                
+                actions.forEach(action => {
+                    let buttonClass = 'btn-warning';
+                    if (action === '胡') buttonClass = 'btn-danger';
+                    else if (action === '碰') buttonClass = 'btn-success';
+                    else if (action === '吃') buttonClass = 'btn-info';
+                    
+                    promptHTML += `<button class="btn ${buttonClass} btn-sm me-2" onclick="executeSpecialAction('${action}', '${tile}')">${action}</button>`;
+                });
+                
+                promptHTML += '<button class="btn btn-secondary btn-sm" onclick="passAction()">跳過</button>';
+                promptHTML += '</div>';
+                
+                promptArea.innerHTML = promptHTML;
+                promptArea.style.display = 'block';
+            }
+        }
+        
+        // 執行特殊動作
+        function executeSpecialAction(action, tile) {
+            const promptArea = document.getElementById('gamePrompt');
+            if (promptArea) {
+                promptArea.style.display = 'none';
+            }
+            
+            switch(action) {
+                case '胡':
+                    gameState.gameOver = true;
+                    showGameResult('恭喜！你胡牌了！');
+                    break;
+                case '碰':
+                    pongTile(0, tile);
+                    break;
+                case '吃':
+                    chowTile(0, tile);
+                    break;
+            }
+            
+            updateDisplay();
+        }
+        
+        // 跳過動作
+        function passAction() {
+            const promptArea = document.getElementById('gamePrompt');
+            if (promptArea) {
+                promptArea.style.display = 'none';
+            }
+        }
+        
+        // 顯示遊戲結果
+        function showGameResult(message) {
+            const promptArea = document.getElementById('gamePrompt');
+            if (promptArea) {
+                promptArea.innerHTML = `<div class="alert alert-success">${message}</div>`;
+                promptArea.style.display = 'block';
+            }
+        }
+        
+        // 檢查是否可以胡牌
+        function canWin(playerIndex, newTile = null) {
+            const player = gameState.players[playerIndex];
+            let hand = [...player.hand];
+            if (newTile) hand.push(newTile);
+            
+            // 簡化胡牌檢查：14張牌，至少有一個對子
+            if (hand.length !== 14) return false;
+            
+            // 統計牌型
+            const counts = {};
+            hand.forEach(tile => {
+                counts[tile] = (counts[tile] || 0) + 1;
+            });
+            
+            // 檢查是否有對子
+            let pairs = 0;
+            for (let tile in counts) {
+                if (counts[tile] >= 2) pairs++;
+            }
+            
+            return pairs >= 1; // 簡化版：只要有對子就可以胡
+        }
+        
+        // 檢查是否可以碰牌
+        function canPong(playerIndex, tile) {
+            const player = gameState.players[playerIndex];
+            let count = 0;
+            player.hand.forEach(handTile => {
+                if (handTile === tile) count++;
+            });
+            return count >= 2;
+        }
+        
+        // 檢查是否可以吃牌
+        function canChow(playerIndex, tile) {
+            const player = gameState.players[playerIndex];
+            
+            // 簡化版：檢查是否有相鄰的牌
+            const numbers = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+            const suits = ['萬', '條', '筒'];
+            
+            for (let suit of suits) {
+                if (tile.includes(suit)) {
+                    const num = tile.replace(suit, '');
+                    const numIndex = numbers.indexOf(num);
+                    
+                    if (numIndex >= 0) {
+                        // 檢查順子可能性
+                        const prev = numIndex > 0 ? numbers[numIndex - 1] + suit : null;
+                        const next = numIndex < 8 ? numbers[numIndex + 1] + suit : null;
+                        const prevPrev = numIndex > 1 ? numbers[numIndex - 2] + suit : null;
+                        const nextNext = numIndex < 7 ? numbers[numIndex + 2] + suit : null;
+                        
+                        // 檢查手牌中是否有組成順子的牌
+                        const hasSeq1 = prev && next && player.hand.includes(prev) && player.hand.includes(next);
+                        const hasSeq2 = prevPrev && prev && player.hand.includes(prevPrev) && player.hand.includes(prev);
+                        const hasSeq3 = next && nextNext && player.hand.includes(next) && player.hand.includes(nextNext);
+                        
+                        if (hasSeq1 || hasSeq2 || hasSeq3) return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        // 執行碰牌
+        function pongTile(playerIndex, tile) {
+            const player = gameState.players[playerIndex];
+            
+            // 移除手牌中的兩張相同牌
+            let removed = 0;
+            for (let i = player.hand.length - 1; i >= 0 && removed < 2; i--) {
+                if (player.hand[i] === tile) {
+                    player.hand.splice(i, 1);
+                    removed++;
+                }
+            }
+            
+            // 添加到副露區
+            player.exposed.push([tile, tile, tile]);
+            
+            // 碰牌後輪到該玩家打牌
+            gameState.currentPlayer = playerIndex;
+            updateCurrentPlayer();
+        }
+        
+        // 執行吃牌
+        function chowTile(playerIndex, tile) {
+            const player = gameState.players[playerIndex];
+            // 簡化版：隨機移除兩張牌組成順子
+            const numbers = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+            const suits = ['萬', '條', '筒'];
+            
+            for (let suit of suits) {
+                if (tile.includes(suit)) {
+                    const num = tile.replace(suit, '');
+                    const numIndex = numbers.indexOf(num);
+                    
+                    if (numIndex >= 1 && numIndex <= 7) {
+                        const prev = numbers[numIndex - 1] + suit;
+                        const next = numbers[numIndex + 1] + suit;
+                        
+                        if (player.hand.includes(prev) && player.hand.includes(next)) {
+                            // 移除手牌
+                            player.hand.splice(player.hand.indexOf(prev), 1);
+                            player.hand.splice(player.hand.indexOf(next), 1);
+                            
+                            // 添加到副露區
+                            player.exposed.push([prev, tile, next]);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // 吃牌後輪到該玩家打牌
+            gameState.currentPlayer = playerIndex;
+            updateCurrentPlayer();
         }
         
         // 更新遊戲顯示
