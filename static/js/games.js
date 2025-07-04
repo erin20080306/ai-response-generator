@@ -1736,7 +1736,12 @@ class GameCenter {
         
         // 檢查玩家可以進行的動作
         function checkPlayerActions() {
-            if (gameState.currentPlayer === 0 || !gameState.lastDiscarded) return;
+            console.log('檢查玩家特殊動作', gameState.currentPlayer, gameState.lastDiscarded);
+            
+            if (gameState.currentPlayer === 0 || !gameState.lastDiscarded) {
+                console.log('當前玩家回合或無最後打出牌，跳過檢查');
+                return;
+            }
             
             if (!gameState.players || !gameState.players[0] || !gameState.players[0].hand) {
                 console.error('玩家手牌不存在');
@@ -1883,16 +1888,17 @@ class GameCenter {
                 console.log(`AI玩家 ${playerIndex} 打出了 ${discardedTile}`);
                 
                 // 檢查玩家是否可以執行特殊動作
-                checkSpecialActions(discardedTile, playerIndex);
+                const hasSpecialActions = checkSpecialActions(discardedTile, playerIndex);
                 
-                // 如果沒有特殊動作提示，繼續下一位
+                // 等待一下再檢查是否需要下一輪
                 setTimeout(() => {
-                    const controlPanel = document.querySelector('.game-control-panel');
-                    const hasPrompt = controlPanel && controlPanel.querySelector('.game-prompt');
+                    console.log(`AI玩家 ${playerIndex} 動作完成，檢查是否繼續`);
                     
-                    if (!hasPrompt) {
-                        console.log(`AI玩家 ${playerIndex} 回合結束，輪到下一位`);
+                    if (!hasSpecialActions) {
+                        console.log(`沒有特殊動作，輪到下一位玩家`);
                         nextTurn();
+                    } else {
+                        console.log(`有特殊動作可執行，等待玩家選擇`);
                     }
                 }, 800);
             }, 1200);
@@ -1955,6 +1961,13 @@ class GameCenter {
         
         // 檢查特殊動作提示（吃、碰、胡）
         function checkSpecialActions(discardedTile, discardingPlayer) {
+            console.log('檢查特殊動作:', discardedTile, '來自玩家', discardingPlayer);
+            
+            if (!gameState.players || !gameState.players[0] || !gameState.players[0].hand) {
+                console.error('玩家手牌不存在');
+                return false;
+            }
+            
             const player = gameState.players[0]; // 玩家
             const actions = [];
             
@@ -1973,9 +1986,14 @@ class GameCenter {
                 actions.push('吃');
             }
             
+            console.log('可執行動作:', actions);
+            
             if (actions.length > 0) {
                 showSpecialActionPrompt(actions, discardedTile);
+                return true; // 有特殊動作
             }
+            
+            return false; // 沒有特殊動作
         }
         
         // 顯示特殊動作提示
@@ -2039,11 +2057,16 @@ class GameCenter {
         
         // 跳過動作
         function passAction() {
+            console.log('玩家選擇跳過特殊動作');
+            
             const controlPanel = document.querySelector('.game-control-panel');
             if (controlPanel) {
                 const oldPrompt = controlPanel.querySelector('.game-prompt');
                 if (oldPrompt) oldPrompt.remove();
             }
+            
+            hideActionButtons();
+            nextTurn();
         }
         
         // 顯示遊戲結果
