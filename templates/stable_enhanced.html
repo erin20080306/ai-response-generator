@@ -22,6 +22,12 @@
         .tool-card:hover { background-color: #3a3a3a; }
         .game-canvas { background-color: #000; border: 2px solid #444; }
         .success-indicator { background-color: #28a745; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .avatar-preview { border: 2px solid #007bff; border-radius: 50%; padding: 10px; background: #f8f9fa; display: flex; justify-content: center; align-items: center; }
+        .avatar-svg { border-radius: 50%; }
+        .preset-avatar { border: 2px solid transparent; border-radius: 10px; padding: 10px; transition: all 0.3s ease; cursor: pointer; }
+        .preset-avatar:hover { border-color: #007bff; background: rgba(0, 123, 255, 0.1); }
+        .preset-preview { font-size: 2rem; margin-bottom: 5px; }
+        .cursor-pointer { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -52,6 +58,11 @@
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#documentsTab">
                                 <i class="fas fa-file-alt me-2"></i>文件
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#avatarTab">
+                                <i class="fas fa-user-circle me-2"></i>AI形象
                             </a>
                         </li>
                     </ul>
@@ -218,6 +229,185 @@
                                             <i class="fas fa-file-powerpoint fa-2x mb-3"></i>
                                             <h5>PowerPoint</h5>
                                             <button class="btn btn-primary" onclick="generatePowerPoint()">生成</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Avatar Tab -->
+                    <div class="tab-pane fade" id="avatarTab">
+                        <div class="container mt-4">
+                            <h2>個人化AI助理形象</h2>
+                            
+                            <!-- Avatar Preview -->
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <div class="card tool-card text-center">
+                                        <div class="card-header">
+                                            <h5>AI助理預覽</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="avatarPreview" class="avatar-preview mb-3">
+                                                <svg width="120" height="120" viewBox="0 0 120 120" class="avatar-svg">
+                                                    <!-- Avatar Head -->
+                                                    <circle cx="60" cy="45" r="25" fill="#FFE4B5" stroke="#D2B48C" stroke-width="2"/>
+                                                    <!-- Eyes -->
+                                                    <circle cx="52" cy="40" r="3" fill="#333" id="leftEye"/>
+                                                    <circle cx="68" cy="40" r="3" fill="#333" id="rightEye"/>
+                                                    <!-- Mouth -->
+                                                    <path d="M 50 50 Q 60 58 70 50" stroke="#333" stroke-width="2" fill="none" id="mouth"/>
+                                                    <!-- Hair -->
+                                                    <path d="M 35 35 Q 60 15 85 35" fill="#8B4513" id="hair"/>
+                                                    <!-- Body -->
+                                                    <rect x="45" y="70" width="30" height="35" fill="#4169E1" rx="5" id="body"/>
+                                                </svg>
+                                            </div>
+                                            <div id="avatarName" class="fw-bold">AI助手</div>
+                                            <div id="avatarPersonality" class="text-muted">友善的助手</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Customization Panel -->
+                                <div class="col-md-8">
+                                    <div class="card tool-card">
+                                        <div class="card-header">
+                                            <h5>自定義設定</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <!-- Name Settings -->
+                                            <div class="mb-3">
+                                                <label class="form-label">AI助手名稱</label>
+                                                <input type="text" class="form-control" id="aiName" value="AI助手" onchange="updateAvatar()">
+                                            </div>
+                                            
+                                            <!-- Personality Settings -->
+                                            <div class="mb-3">
+                                                <label class="form-label">個性特徵</label>
+                                                <select class="form-select" id="aiPersonality" onchange="updateAvatar()">
+                                                    <option value="friendly">友善的</option>
+                                                    <option value="professional">專業的</option>
+                                                    <option value="playful">活潑的</option>
+                                                    <option value="wise">智慧的</option>
+                                                    <option value="creative">創意的</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- Appearance Settings -->
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">髮色</label>
+                                                    <select class="form-select" id="hairColor" onchange="updateAvatarAppearance()">
+                                                        <option value="#8B4513">棕色</option>
+                                                        <option value="#000000">黑色</option>
+                                                        <option value="#FFD700">金色</option>
+                                                        <option value="#FF6347">紅色</option>
+                                                        <option value="#4169E1">藍色</option>
+                                                        <option value="#9370DB">紫色</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">服裝顏色</label>
+                                                    <select class="form-select" id="bodyColor" onchange="updateAvatarAppearance()">
+                                                        <option value="#4169E1">藍色</option>
+                                                        <option value="#FF6347">紅色</option>
+                                                        <option value="#32CD32">綠色</option>
+                                                        <option value="#9370DB">紫色</option>
+                                                        <option value="#FF69B4">粉色</option>
+                                                        <option value="#FFD700">金色</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Voice Settings -->
+                                            <div class="mb-3">
+                                                <label class="form-label">語音風格</label>
+                                                <select class="form-select" id="voiceStyle" onchange="updateAvatar()">
+                                                    <option value="alloy">標準</option>
+                                                    <option value="echo">迴響</option>
+                                                    <option value="fable">寓言</option>
+                                                    <option value="onyx">深沉</option>
+                                                    <option value="nova">新星</option>
+                                                    <option value="shimmer">閃爍</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- Behavior Settings -->
+                                            <div class="mb-3">
+                                                <label class="form-label">對話風格</label>
+                                                <select class="form-select" id="conversationStyle" onchange="updateAvatar()">
+                                                    <option value="casual">輕鬆對話</option>
+                                                    <option value="formal">正式交流</option>
+                                                    <option value="detailed">詳細解釋</option>
+                                                    <option value="concise">簡潔回應</option>
+                                                    <option value="creative">創意思維</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- Action Buttons -->
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-primary" onclick="saveAvatarSettings()">
+                                                    <i class="fas fa-save me-2"></i>保存設定
+                                                </button>
+                                                <button class="btn btn-success" onclick="generateAvatarImage()">
+                                                    <i class="fas fa-image me-2"></i>生成AI頭像
+                                                </button>
+                                                <button class="btn btn-info" onclick="testVoice()">
+                                                    <i class="fas fa-volume-up me-2"></i>測試語音
+                                                </button>
+                                                <button class="btn btn-secondary" onclick="resetToDefault()">
+                                                    <i class="fas fa-undo me-2"></i>重置
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Preset Avatars -->
+                            <div class="card tool-card">
+                                <div class="card-header">
+                                    <h5>預設形象</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-2 col-sm-4 mb-3" onclick="applyPreset('assistant')">
+                                            <div class="preset-avatar text-center cursor-pointer">
+                                                <div class="preset-preview mb-2">👩‍💼</div>
+                                                <small>專業助理</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 col-sm-4 mb-3" onclick="applyPreset('scientist')">
+                                            <div class="preset-avatar text-center cursor-pointer">
+                                                <div class="preset-preview mb-2">👨‍🔬</div>
+                                                <small>科學家</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 col-sm-4 mb-3" onclick="applyPreset('teacher')">
+                                            <div class="preset-avatar text-center cursor-pointer">
+                                                <div class="preset-preview mb-2">👩‍🏫</div>
+                                                <small>老師</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 col-sm-4 mb-3" onclick="applyPreset('artist')">
+                                            <div class="preset-avatar text-center cursor-pointer">
+                                                <div class="preset-preview mb-2">👨‍🎨</div>
+                                                <small>藝術家</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 col-sm-4 mb-3" onclick="applyPreset('robot')">
+                                            <div class="preset-avatar text-center cursor-pointer">
+                                                <div class="preset-preview mb-2">🤖</div>
+                                                <small>機器人</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 col-sm-4 mb-3" onclick="applyPreset('wizard')">
+                                            <div class="preset-avatar text-center cursor-pointer">
+                                                <div class="preset-preview mb-2">🧙‍♂️</div>
+                                                <small>智者</small>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -421,16 +611,46 @@
             }
         }
 
-        // Event Listeners
-        sendBtn.addEventListener('click', sendMessage);
-        clearHistoryBtn.addEventListener('click', clearHistory);
-        
-        messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
+        // Initialize DOM elements
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const chatMessages = document.getElementById('chatMessages');
+
+        // Core Chat Functions
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<strong>${type === 'user' ? '你' : currentAvatarSettings.name}:</strong> ${content}`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function clearHistory() {
+            try {
+                const response = await fetch('/clear_history', { method: 'POST' });
+                if (response.ok) {
+                    chatMessages.innerHTML = `<div class="message assistant">
+                        <strong>${currentAvatarSettings.name}:</strong> 聊天記錄已清除！
+                    </div>`;
+                }
+            } catch (error) {
+                console.error('清除記錄失敗:', error);
             }
-        });
+        }
+
+        // Event Listeners
+        if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+        if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', clearHistory);
+        
+        if (messageInput) {
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
 
         // Keyboard controls for games
         document.addEventListener('keydown', (e) => {
@@ -449,6 +669,258 @@
         });
 
         console.log('穩定版AI助手已載入完成');
+
+        // AI Avatar System
+        let currentAvatarSettings = {
+            name: 'AI助手',
+            personality: 'friendly',
+            hairColor: '#8B4513',
+            bodyColor: '#4169E1',
+            voiceStyle: 'alloy',
+            conversationStyle: 'casual'
+        };
+
+        // Avatar Management Functions
+        function updateAvatar() {
+            const name = document.getElementById('aiName').value;
+            const personality = document.getElementById('aiPersonality').value;
+            const voiceStyle = document.getElementById('voiceStyle').value;
+            const conversationStyle = document.getElementById('conversationStyle').value;
+
+            currentAvatarSettings.name = name;
+            currentAvatarSettings.personality = personality;
+            currentAvatarSettings.voiceStyle = voiceStyle;
+            currentAvatarSettings.conversationStyle = conversationStyle;
+
+            document.getElementById('avatarName').textContent = name;
+            
+            const personalityTexts = {
+                'friendly': '友善的助手',
+                'professional': '專業的顧問',
+                'playful': '活潑的夥伴',
+                'wise': '智慧的導師',
+                'creative': '創意的靈感'
+            };
+            
+            document.getElementById('avatarPersonality').textContent = personalityTexts[personality] || '友善的助手';
+        }
+
+        function updateAvatarAppearance() {
+            const hairColor = document.getElementById('hairColor').value;
+            const bodyColor = document.getElementById('bodyColor').value;
+
+            currentAvatarSettings.hairColor = hairColor;
+            currentAvatarSettings.bodyColor = bodyColor;
+
+            document.getElementById('hair').setAttribute('fill', hairColor);
+            document.getElementById('body').setAttribute('fill', bodyColor);
+        }
+
+        function saveAvatarSettings() {
+            localStorage.setItem('aiAvatarSettings', JSON.stringify(currentAvatarSettings));
+            alert('設定已保存！');
+        }
+
+        function loadAvatarSettings() {
+            const saved = localStorage.getItem('aiAvatarSettings');
+            if (saved) {
+                currentAvatarSettings = JSON.parse(saved);
+                
+                document.getElementById('aiName').value = currentAvatarSettings.name;
+                document.getElementById('aiPersonality').value = currentAvatarSettings.personality;
+                document.getElementById('hairColor').value = currentAvatarSettings.hairColor;
+                document.getElementById('bodyColor').value = currentAvatarSettings.bodyColor;
+                document.getElementById('voiceStyle').value = currentAvatarSettings.voiceStyle;
+                document.getElementById('conversationStyle').value = currentAvatarSettings.conversationStyle;
+                
+                updateAvatar();
+                updateAvatarAppearance();
+            }
+        }
+
+        async function generateAvatarImage() {
+            const description = `Create a professional AI assistant avatar with ${currentAvatarSettings.personality} personality, modern style, friendly appearance`;
+            
+            try {
+                const response = await fetch('/generate_image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: description,
+                        context: 'avatar'
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success && data.image_url) {
+                    const avatarPreview = document.getElementById('avatarPreview');
+                    avatarPreview.innerHTML = `<img src="${data.image_url}" alt="AI Avatar" class="img-fluid rounded" style="max-width: 120px; max-height: 120px;">`;
+                    alert('AI頭像生成成功！');
+                } else {
+                    alert('頭像生成失敗：' + (data.error || '未知錯誤'));
+                }
+            } catch (error) {
+                alert('頭像生成錯誤：' + error.message);
+            }
+        }
+
+        async function testVoice() {
+            const testText = `你好，我是${currentAvatarSettings.name}，很高興為你服務！`;
+            
+            try {
+                const response = await fetch('/text_to_speech', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        text: testText,
+                        voice: currentAvatarSettings.voiceStyle
+                    })
+                });
+
+                if (response.ok) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                } else {
+                    alert('語音測試失敗');
+                }
+            } catch (error) {
+                alert('語音測試錯誤：' + error.message);
+            }
+        }
+
+        function resetToDefault() {
+            currentAvatarSettings = {
+                name: 'AI助手',
+                personality: 'friendly',
+                hairColor: '#8B4513',
+                bodyColor: '#4169E1',
+                voiceStyle: 'alloy',
+                conversationStyle: 'casual'
+            };
+            
+            document.getElementById('aiName').value = currentAvatarSettings.name;
+            document.getElementById('aiPersonality').value = currentAvatarSettings.personality;
+            document.getElementById('hairColor').value = currentAvatarSettings.hairColor;
+            document.getElementById('bodyColor').value = currentAvatarSettings.bodyColor;
+            document.getElementById('voiceStyle').value = currentAvatarSettings.voiceStyle;
+            document.getElementById('conversationStyle').value = currentAvatarSettings.conversationStyle;
+            
+            updateAvatar();
+            updateAvatarAppearance();
+            
+            // Reset avatar preview to SVG
+            document.getElementById('avatarPreview').innerHTML = `
+                <svg width="120" height="120" viewBox="0 0 120 120" class="avatar-svg">
+                    <circle cx="60" cy="45" r="25" fill="#FFE4B5" stroke="#D2B48C" stroke-width="2"/>
+                    <circle cx="52" cy="40" r="3" fill="#333" id="leftEye"/>
+                    <circle cx="68" cy="40" r="3" fill="#333" id="rightEye"/>
+                    <path d="M 50 50 Q 60 58 70 50" stroke="#333" stroke-width="2" fill="none" id="mouth"/>
+                    <path d="M 35 35 Q 60 15 85 35" fill="#8B4513" id="hair"/>
+                    <rect x="45" y="70" width="30" height="35" fill="#4169E1" rx="5" id="body"/>
+                </svg>
+            `;
+        }
+
+        function applyPreset(preset) {
+            const presets = {
+                'assistant': {
+                    name: '專業助理',
+                    personality: 'professional',
+                    hairColor: '#000000',
+                    bodyColor: '#4169E1',
+                    voiceStyle: 'alloy',
+                    conversationStyle: 'formal'
+                },
+                'scientist': {
+                    name: '科學博士',
+                    personality: 'wise',
+                    hairColor: '#808080',
+                    bodyColor: '#FFFFFF',
+                    voiceStyle: 'onyx',
+                    conversationStyle: 'detailed'
+                },
+                'teacher': {
+                    name: '智慧老師',
+                    personality: 'wise',
+                    hairColor: '#8B4513',
+                    bodyColor: '#32CD32',
+                    voiceStyle: 'nova',
+                    conversationStyle: 'detailed'
+                },
+                'artist': {
+                    name: '創意藝術家',
+                    personality: 'creative',
+                    hairColor: '#9370DB',
+                    bodyColor: '#FF69B4',
+                    voiceStyle: 'shimmer',
+                    conversationStyle: 'creative'
+                },
+                'robot': {
+                    name: '機器助手',
+                    personality: 'professional',
+                    hairColor: '#C0C0C0',
+                    bodyColor: '#708090',
+                    voiceStyle: 'echo',
+                    conversationStyle: 'concise'
+                },
+                'wizard': {
+                    name: '智慧導師',
+                    personality: 'wise',
+                    hairColor: '#FFFFFF',
+                    bodyColor: '#9370DB',
+                    voiceStyle: 'fable',
+                    conversationStyle: 'detailed'
+                }
+            };
+
+            if (presets[preset]) {
+                currentAvatarSettings = { ...presets[preset] };
+                
+                document.getElementById('aiName').value = currentAvatarSettings.name;
+                document.getElementById('aiPersonality').value = currentAvatarSettings.personality;
+                document.getElementById('hairColor').value = currentAvatarSettings.hairColor;
+                document.getElementById('bodyColor').value = currentAvatarSettings.bodyColor;
+                document.getElementById('voiceStyle').value = currentAvatarSettings.voiceStyle;
+                document.getElementById('conversationStyle').value = currentAvatarSettings.conversationStyle;
+                
+                updateAvatar();
+                updateAvatarAppearance();
+            }
+        }
+
+        // Enhanced sendMessage function with avatar support
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            messageInput.value = '';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: message,
+                        avatar_settings: currentAvatarSettings
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    addMessage(data.response, 'assistant');
+                } else {
+                    addMessage(`錯誤: ${data.error}`, 'assistant');
+                }
+            } catch (error) {
+                addMessage(`連線錯誤: ${error.message}`, 'assistant');
+            }
+        }
+
+        // Load saved settings on page load
+        loadAvatarSettings();
     </script>
 </body>
 </html>
