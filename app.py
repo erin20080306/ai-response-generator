@@ -66,8 +66,8 @@ with app.app_context():
 
 @app.route('/')
 def index():
-    """Render the stable enhanced chat interface"""
-    return render_template('stable_enhanced.html')
+    """Render the simple enhanced chat interface with avatar"""
+    return render_template('simple_enhanced.html')
 
 @app.route('/simple')
 def simple_index():
@@ -90,13 +90,32 @@ def chat():
     try:
         data = request.get_json()
         user_message = data.get('message', '').strip()
+        avatar_settings = data.get('avatar_settings', {})
         
         if not user_message:
-            return jsonify({'error': 'Message cannot be empty'}), 400
+            return jsonify({'error': 'Message cannot be empty', 'success': False}), 400
         
         # Get chat history from session
         if 'chat_history' not in session:
             session['chat_history'] = []
+        
+        # Create personalized system prompt based on avatar settings
+        personality = avatar_settings.get('personality', 'friendly')
+        ai_name = avatar_settings.get('name', 'AI助手')
+        
+        personality_prompts = {
+            'friendly': '友善親切，樂於助人',
+            'professional': '專業嚴謹，提供精確的資訊',
+            'playful': '活潑有趣，用輕鬆的語調交流',
+            'wise': '智慧深沉，提供深度見解',
+            'creative': '富有創意，善於創新思考'
+        }
+        
+        system_prompt = f"你是{ai_name}，一個{personality_prompts.get(personality, '友善親切')}的AI助手。請保持這個個性特徵來回應用戶。"
+        
+        # Prepare chat history with system prompt
+        chat_history_with_system = [{'role': 'system', 'content': system_prompt}]
+        chat_history_with_system.extend(session['chat_history'])
         
         # Add user message to history
         session['chat_history'].append({
@@ -104,8 +123,8 @@ def chat():
             'content': user_message
         })
         
-        # Get AI response
-        ai_response = openai_client.get_response(session['chat_history'])
+        # Get AI response with personality
+        ai_response = openai_client.get_response(chat_history_with_system + [{'role': 'user', 'content': user_message}])
         
         # Add AI response to history
         session['chat_history'].append({
