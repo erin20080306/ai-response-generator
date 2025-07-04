@@ -745,28 +745,51 @@ class EnhancedAIAssistant {
 
     typewriterEffect(element, text, icon) {
         const speed = parseInt(this.settings.typingSpeed) || 50;
-        const delay = Math.max(10, Math.min(80, 101 - speed));
+        const delay = Math.max(15, Math.min(60, 101 - speed));
         
         let index = 0;
         const cursor = '<span class="typewriter-cursor">|</span>';
         
-        // 清空元素內容
+        // 清空元素內容並顯示圖標
         element.innerHTML = icon;
         
         const type = () => {
-            if (index < text.length) {
-                const currentText = text.substring(0, index + 1);
-                const formattedText = this.formatMessage(currentText);
-                
-                element.innerHTML = icon + formattedText + cursor;
-                
-                // 滾動到底部
-                this.scrollToBottom();
-                
-                index++;
-                setTimeout(type, delay);
-            } else {
-                // 完成時移除游標
+            try {
+                if (index < text.length) {
+                    // 每次增加1個字符
+                    const currentText = text.substring(0, index + 1);
+                    
+                    // 直接顯示文本，不格式化以避免中斷
+                    element.innerHTML = icon + this.escapeHtml(currentText) + cursor;
+                    
+                    // 滾動到底部
+                    this.scrollToBottom();
+                    
+                    index++;
+                    
+                    // 調試信息 - 每100個字符打印一次進度
+                    if (index % 100 === 0) {
+                        console.log(`打字機進度: ${index}/${text.length}`);
+                    }
+                    
+                    // 繼續下一個字符
+                    if (index < text.length) {
+                        setTimeout(type, delay);
+                    } else {
+                        // 完成時格式化並移除游標
+                        console.log('打字機效果完成');
+                        element.innerHTML = icon + this.formatMessage(text);
+                        this.highlightCode(element);
+                    }
+                } else {
+                    // 完成時格式化並移除游標
+                    console.log('打字機效果完成 (分支2)');
+                    element.innerHTML = icon + this.formatMessage(text);
+                    this.highlightCode(element);
+                }
+            } catch (error) {
+                console.error('打字機效果錯誤 (位置:', index, '/', text.length, '):', error);
+                // 發生錯誤時直接顯示完整文本
                 element.innerHTML = icon + this.formatMessage(text);
                 this.highlightCode(element);
             }
