@@ -199,43 +199,65 @@ class EnhancedAIAssistant {
     }
 
     setupFileEvents() {
-        const fileUploadBtn = document.getElementById('fileUploadBtn');
-        const fileInput = document.getElementById('fileInput');
-        const selectFilesBtn = document.getElementById('selectFilesBtn');
-        const fileInputPanel = document.getElementById('fileInputPanel');
-        const uploadArea = document.getElementById('uploadArea');
+        // 延遲綁定確保DOM完全加載
+        setTimeout(() => {
+            const fileUploadBtn = document.getElementById('fileUploadBtn');
+            const fileInput = document.getElementById('fileInput');
+            const selectFilesBtn = document.getElementById('selectFilesBtn');
+            const fileInputPanel = document.getElementById('fileInputPanel');
+            const uploadArea = document.getElementById('uploadArea');
 
-        // 檔案上傳按鈕 (聊天區域)
-        if (fileUploadBtn && fileInput) {
-            fileUploadBtn.addEventListener('click', () => fileInput.click());
-        }
+            console.log('設置檔案事件監聽器:', { fileUploadBtn, fileInput, selectFilesBtn, fileInputPanel, uploadArea });
 
-        // 檔案選擇按鈕 (檔案面板)
-        if (selectFilesBtn && fileInputPanel) {
-            selectFilesBtn.addEventListener('click', () => {
-                console.log('點擊選擇檔案按鈕');
-                fileInputPanel.click();
-            });
-        } else {
-            console.log('選擇檔案按鈕或輸入框未找到:', { selectFilesBtn, fileInputPanel });
-        }
+            // 檔案上傳按鈕 (聊天區域)
+            if (fileUploadBtn && fileInput) {
+                fileUploadBtn.addEventListener('click', () => fileInput.click());
+            }
 
-        // 檔案選擇事件 (聊天區域)
-        if (fileInput) {
-            fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
-        }
+            // 檔案選擇按鈕 (檔案面板) - 多種綁定方式
+            if (selectFilesBtn && fileInputPanel) {
+                selectFilesBtn.addEventListener('click', (e) => {
+                    console.log('點擊選擇檔案按鈕');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileInputPanel.click();
+                });
+                
+                // 添加額外的事件監聽器
+                selectFilesBtn.addEventListener('touchstart', (e) => {
+                    console.log('觸摸選擇檔案按鈕');
+                    e.preventDefault();
+                    fileInputPanel.click();
+                });
+                
+                // 鍵盤訪問性
+                selectFilesBtn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        console.log('鍵盤選擇檔案按鈕');
+                        e.preventDefault();
+                        fileInputPanel.click();
+                    }
+                });
+            } else {
+                console.log('選擇檔案按鈕或輸入框未找到:', { selectFilesBtn, fileInputPanel });
+            }
+            // 檔案選擇事件 (聊天區域)
+            if (fileInput) {
+                fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+            }
 
-        // 檔案選擇事件 (檔案面板)
-        if (fileInputPanel) {
-            fileInputPanel.addEventListener('change', (e) => this.handleFileSelect(e));
-        }
+            // 檔案選擇事件 (檔案面板)
+            if (fileInputPanel) {
+                fileInputPanel.addEventListener('change', (e) => this.handleFileSelect(e));
+            }
 
-        // 拖拽上傳
-        if (uploadArea) {
-            uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
-            uploadArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
-            uploadArea.addEventListener('drop', (e) => this.handleFileDrop(e));
-        }
+            // 拖拽上傳
+            if (uploadArea) {
+                uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
+                uploadArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+                uploadArea.addEventListener('drop', (e) => this.handleFileDrop(e));
+            }
+        }, 100);
     }
 
     setupSettingsEvents() {
