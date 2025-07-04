@@ -212,26 +212,26 @@ function resetFarmGame() {
 // 森林場景互動功能
 window.collectForestItems = function() {
     const earnings = Math.floor(Math.random() * 50) + 30;
-    gameState.player.money += earnings;
-    gameState.player.energy -= 5;
+    farmGameState.player.money += earnings;
+    farmGameState.player.energy -= 5;
     showMessage(`🌰 在森林中採集到野果和堅果！獲得 ${earnings} 金幣。`);
     updateDisplay();
 };
 
 window.restInForest = function() {
     const recovery = Math.floor(Math.random() * 30) + 20;
-    gameState.player.energy = Math.min(100, gameState.player.energy + recovery);
+    farmGameState.player.energy = Math.min(100, farmGameState.player.energy + recovery);
     showMessage(`🛀 在清澈的溪水邊休息，恢復了 ${recovery} 點體力。`);
     updateDisplay();
 };
 
 window.exploreForest = function() {
     const treasureChance = Math.random();
-    gameState.player.energy -= 15;
+    farmGameState.player.energy -= 15;
     
     if (treasureChance > 0.7) {
         const treasure = Math.floor(Math.random() * 100) + 50;
-        gameState.player.money += treasure;
+        farmGameState.player.money += treasure;
         showMessage(`🔍 深入探索森林，發現了古老的寶箱！獲得 ${treasure} 金幣。`);
     } else if (treasureChance > 0.4) {
         showMessage(`🔍 在森林深處發現了美麗的瀑布，但沒有找到特別的東西。`);
@@ -245,19 +245,19 @@ window.exploreForest = function() {
 // 礦坑場景互動功能
 window.digForOre = function() {
     const oreValue = Math.floor(Math.random() * 80) + 40;
-    gameState.player.money += oreValue;
-    gameState.player.energy -= 20;
+    farmGameState.player.money += oreValue;
+    farmGameState.player.energy -= 20;
     showMessage(`⛏️ 辛苦挖掘後找到了有價值的礦石！獲得 ${oreValue} 金幣。`);
     updateDisplay();
 };
 
 window.searchForGems = function() {
     const gemChance = Math.random();
-    gameState.player.energy -= 25;
+    farmGameState.player.energy -= 25;
     
     if (gemChance > 0.6) {
         const gemValue = Math.floor(Math.random() * 200) + 100;
-        gameState.player.money += gemValue;
+        farmGameState.player.money += gemValue;
         showMessage(`💎 幸運地發現了閃亮的寶石！獲得 ${gemValue} 金幣。`);
     } else {
         showMessage(`💎 在岩石中搜尋了很久，但只找到了一些普通的石頭。`);
@@ -268,11 +268,11 @@ window.searchForGems = function() {
 
 window.useMinecart = function() {
     const rideOutcome = Math.random();
-    gameState.player.energy -= 10;
+    farmGameState.player.energy -= 10;
     
     if (rideOutcome > 0.5) {
         const bonus = Math.floor(Math.random() * 60) + 30;
-        gameState.player.money += bonus;
+        farmGameState.player.money += bonus;
         showMessage(`🚗 礦車帶你到了一個新的區域，發現了遺留的金幣！獲得 ${bonus} 金幣。`);
     } else {
         showMessage(`🚗 礦車搖搖晃晃地在軌道上行駛，給你帶來了刺激的體驗。`);
@@ -650,12 +650,15 @@ function initMahjongGame() {
     dealCards();
 }
 
+// 全域農場遊戲狀態
+let farmGameState = null;
+
 function initFarmStoryGame() {
     const board = document.getElementById('farmStoryBoard');
     if (!board) return;
     
-    // 遊戲狀態
-    let gameState = {
+    // 初始化遊戲狀態
+    farmGameState = {
         player: {
             name: '農場主',
             health: 100,
@@ -684,32 +687,33 @@ function initFarmStoryGame() {
         currentScene: 'village'
     };
     
-    function showVillageScene() {
-        gameState.currentScene = 'village';
+    // 將函數定義為全域可訪問
+    window.showVillageScene = function() {
+        farmGameState.currentScene = 'village';
         updateDisplay();
-    }
+    };
     
-    function updateDisplay() {
+    window.updateDisplay = function() {
         let content = '';
         
-        if (gameState.currentScene === 'village') {
+        if (farmGameState.currentScene === 'village') {
             content = `
                 <div class="farm-story-rpg">
                     <div class="player-status mb-3">
                         <div class="row">
                             <div class="col-md-6">
-                                <h6>🧑‍🌾 ${gameState.player.name} (等級 ${gameState.player.level})</h6>
+                                <h6>🧑‍🌾 ${farmGameState.player.name} (等級 ${farmGameState.player.level})</h6>
                                 <div class="progress mb-1" style="height: 15px;">
-                                    <div class="progress-bar bg-success" style="width: ${gameState.player.health}%">${gameState.player.health}/100 ❤️</div>
+                                    <div class="progress-bar bg-success" style="width: ${farmGameState.player.health}%">${farmGameState.player.health}/100 ❤️</div>
                                 </div>
                                 <div class="progress mb-2" style="height: 15px;">
-                                    <div class="progress-bar bg-info" style="width: ${gameState.player.energy}%">${gameState.player.energy}/100 ⚡</div>
+                                    <div class="progress-bar bg-info" style="width: ${farmGameState.player.energy}%">${farmGameState.player.energy}/100 ⚡</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <p class="mb-1">💰 金錢: ${gameState.player.money}</p>
-                                <p class="mb-1">⭐ 經驗: ${gameState.player.experience}</p>
-                                <p class="mb-0">🤖 AI助手剩餘: ${gameState.aiUsesLeft}次</p>
+                                <p class="mb-1">💰 金錢: ${farmGameState.player.money}</p>
+                                <p class="mb-1">⭐ 經驗: ${farmGameState.player.experience}</p>
+                                <p class="mb-0">🤖 AI助手剩餘: ${farmGameState.aiUsesLeft}次</p>
                             </div>
                         </div>
                     </div>
@@ -811,22 +815,22 @@ function initFarmStoryGame() {
                             <div class="row">
                                 <div class="col-6 col-md-3 mb-2">
                                     <button class="btn btn-outline-primary btn-sm w-100" onclick="talkToNPC('村長湯姆')">
-                                        👨‍💼 村長湯姆<br><small>友好度: ${gameState.npcs.mayor_tom.friendship}</small>
+                                        👨‍💼 村長湯姆<br><small>友好度: ${farmGameState.npcs.mayor_tom.friendship}</small>
                                     </button>
                                 </div>
                                 <div class="col-6 col-md-3 mb-2">
                                     <button class="btn btn-outline-success btn-sm w-100" onclick="talkToNPC('商店瑪麗')">
-                                        👩‍💼 商店瑪麗<br><small>友好度: ${gameState.npcs.shop_mary.friendship}</small>
+                                        👩‍💼 商店瑪麗<br><small>友好度: ${farmGameState.npcs.shop_mary.friendship}</small>
                                     </button>
                                 </div>
                                 <div class="col-6 col-md-3 mb-2">
                                     <button class="btn btn-outline-warning btn-sm w-100" onclick="talkToNPC('鐵匠傑克')">
-                                        🔨 鐵匠傑克<br><small>友好度: ${gameState.npcs.blacksmith_jack.friendship}</small>
+                                        🔨 鐵匠傑克<br><small>友好度: ${farmGameState.npcs.blacksmith_jack.friendship}</small>
                                     </button>
                                 </div>
                                 <div class="col-6 col-md-3 mb-2">
                                     <button class="btn btn-outline-info btn-sm w-100" onclick="talkToNPC('醫生莉莉')">
-                                        👩‍⚕️ 醫生莉莉<br><small>友好度: ${gameState.npcs.doctor_lily.friendship}</small>
+                                        👩‍⚕️ 醫生莉莉<br><small>友好度: ${farmGameState.npcs.doctor_lily.friendship}</small>
                                     </button>
                                 </div>
                             </div>
@@ -855,7 +859,7 @@ function initFarmStoryGame() {
                     </div>
                 </div>
             `;
-        } else if (gameState.currentScene === 'farm') {
+        } else if (farmGameState.currentScene === 'farm') {
             content = `
                 <div class="farm-scene">
                     <!-- 農場真實視覺場景 -->
@@ -937,11 +941,11 @@ function initFarmStoryGame() {
                     </div>
                     
                     <div class="farm-grid mb-3">
-                        ${gameState.farm.plots.map((plot, index) => `
-                            <div class="farm-plot ${plot ? 'planted' : 'empty'} ${gameState.farm.water_status[index] ? 'watered' : ''}" 
+                        ${farmGameState.farm.plots.map((plot, index) => `
+                            <div class="farm-plot ${plot ? 'planted' : 'empty'} ${farmGameState.farm.water_status[index] ? 'watered' : ''}" 
                                  onclick="managePlot(${index})">
                                 ${plot ? `🌱` : '🟫'}
-                                ${gameState.farm.water_status[index] ? '💧' : ''}
+                                ${farmGameState.farm.water_status[index] ? '💧' : ''}
                                 ${plot ? `<small>${plot}</small>` : ''}
                             </div>
                         `).join('')}
@@ -955,11 +959,11 @@ function initFarmStoryGame() {
                     </div>
                     
                     <div class="inventory-display">
-                        <small>種子: 🥕${gameState.inventory.seeds.carrot} 🌽${gameState.inventory.seeds.corn}</small>
+                        <small>種子: 🥕${farmGameState.inventory.seeds.carrot} 🌽${farmGameState.inventory.seeds.corn}</small>
                     </div>
                 </div>
             `;
-        } else if (gameState.currentScene === 'forest') {
+        } else if (farmGameState.currentScene === 'forest') {
             content = `
                 <div class="forest-scene">
                     <div class="scene-visual mb-3">
@@ -1053,7 +1057,7 @@ function initFarmStoryGame() {
                     </div>
                 </div>
             `;
-        } else if (gameState.currentScene === 'mine') {
+        } else if (farmGameState.currentScene === 'mine') {
             content = `
                 <div class="mine-scene">
                     <div class="scene-visual mb-3">
@@ -1181,6 +1185,7 @@ function initFarmStoryGame() {
     }
     
     // NPC對話系統
+    // NPC對話函數
     window.talkToNPC = function(npcName) {
         let dialogue = '';
         
@@ -1252,37 +1257,37 @@ function initFarmStoryGame() {
     
     // 地點移動
     window.goToFarm = function() {
-        gameState.currentScene = 'farm';
+        farmGameState.currentScene = 'farm';
         updateDisplay();
     };
     
     window.goToForest = function() {
-        gameState.currentScene = 'forest';
+        farmGameState.currentScene = 'forest';
         updateDisplay();
     };
     
     window.goToMine = function() {
-        gameState.currentScene = 'mine';
+        farmGameState.currentScene = 'mine';
         updateDisplay();
     };
     
     // 農場管理
     window.managePlot = function(plotIndex) {
-        const plot = gameState.farm.plots[plotIndex];
+        const plot = farmGameState.farm.plots[plotIndex];
         if (plot) {
             if (Math.random() > 0.5) {
                 showMessage(`收穫了${plot}！獲得作物和經驗。`);
-                gameState.inventory.crops[plot] = (gameState.inventory.crops[plot] || 0) + 1;
-                gameState.player.experience += 10;
-                gameState.farm.plots[plotIndex] = null;
-                gameState.farm.water_status[plotIndex] = false;
+                farmGameState.inventory.crops[plot] = (farmGameState.inventory.crops[plot] || 0) + 1;
+                farmGameState.player.experience += 10;
+                farmGameState.farm.plots[plotIndex] = null;
+                farmGameState.farm.water_status[plotIndex] = false;
             } else {
                 showMessage('作物還沒成熟，再等等吧！');
             }
         } else {
-            if (gameState.inventory.seeds.carrot > 0) {
-                gameState.farm.plots[plotIndex] = 'carrot';
-                gameState.inventory.seeds.carrot--;
+            if (farmGameState.inventory.seeds.carrot > 0) {
+                farmGameState.farm.plots[plotIndex] = 'carrot';
+                farmGameState.inventory.seeds.carrot--;
                 showMessage('種下了蘿蔔種子！');
             } else {
                 showMessage('沒有種子了！去商店買一些吧。');
@@ -1293,19 +1298,19 @@ function initFarmStoryGame() {
     
     // 購買系統
     window.buyItem = function(item, cost) {
-        if (gameState.player.money >= cost) {
-            gameState.player.money -= cost;
+        if (farmGameState.player.money >= cost) {
+            farmGameState.player.money -= cost;
             switch(item) {
                 case 'carrot_seeds':
-                    gameState.inventory.seeds.carrot += 5;
+                    farmGameState.inventory.seeds.carrot += 5;
                     showMessage('購買了5個蘿蔔種子！');
                     break;
                 case 'corn_seeds':
-                    gameState.inventory.seeds.corn += 3;
+                    farmGameState.inventory.seeds.corn += 3;
                     showMessage('購買了3個玉米種子！');
                     break;
                 case 'energy_potion':
-                    gameState.inventory.items.energy_potion++;
+                    farmGameState.inventory.items.energy_potion++;
                     showMessage('購買了能量藥水！');
                     break;
             }
@@ -1317,9 +1322,9 @@ function initFarmStoryGame() {
     
     // AI助手系統
     window.useAIHelper = function() {
-        if (gameState.aiUsesLeft > 0) {
-            gameState.aiUsesLeft--;
-            showMessage(`🤖 AI助手：「建議你先種植作物，然後定期澆水。記得照顧好健康！」\n剩餘使用次數：${gameState.aiUsesLeft}`);
+        if (farmGameState.aiUsesLeft > 0) {
+            farmGameState.aiUsesLeft--;
+            showMessage(`🤖 AI助手：「建議你先種植作物，然後定期澆水。記得照顧好健康！」\n剩餘使用次數：${farmGameState.aiUsesLeft}`);
         } else {
             showMessage('AI助手使用次數已用完！');
         }
@@ -1327,7 +1332,7 @@ function initFarmStoryGame() {
     
     // 輔助函數
     window.gainFriendship = function(npc, amount) {
-        gameState.npcs[npc].friendship = Math.min(100, gameState.npcs[npc].friendship + amount);
+        farmGameState.npcs[npc].friendship = Math.min(100, farmGameState.npcs[npc].friendship + amount);
     };
     
     window.showMessage = function(message) {
@@ -1335,11 +1340,48 @@ function initFarmStoryGame() {
         updateDisplay();
     };
     
-    window.showVillageScene = showVillageScene;
-    window.updateGameInfo = updateDisplay;
+    // 缺少的輔助函數
+    window.sellCrops = function() {
+        let totalValue = 0;
+        if (farmGameState.inventory.crops.carrot > 0) {
+            totalValue += farmGameState.inventory.crops.carrot * 30;
+            farmGameState.inventory.crops.carrot = 0;
+        }
+        if (farmGameState.inventory.crops.corn > 0) {
+            totalValue += farmGameState.inventory.crops.corn * 50;
+            farmGameState.inventory.crops.corn = 0;
+        }
+        if (totalValue > 0) {
+            farmGameState.player.money += totalValue;
+            showMessage(`賣出作物獲得${totalValue}金幣！`);
+        } else {
+            showMessage('沒有作物可以賣出！');
+        }
+    };
+    
+    window.upgradeTools = function(tool, cost) {
+        if (farmGameState.player.money >= cost) {
+            farmGameState.player.money -= cost;
+            showMessage(`升級了${tool}！工作效率提升了！`);
+            gainFriendship('blacksmith_jack', 3);
+        } else {
+            showMessage('金錢不足！');
+        }
+    };
+    
+    window.restoreHealth = function(amount, cost) {
+        if (cost === 0 || farmGameState.player.money >= cost) {
+            if (cost > 0) farmGameState.player.money -= cost;
+            farmGameState.player.health = Math.min(100, farmGameState.player.health + amount);
+            showMessage(`恢復了${amount}點健康！`);
+            gainFriendship('doctor_lily', 2);
+        } else {
+            showMessage('金錢不足！');
+        }
+    };
     
     // 開始遊戲
-    showVillageScene();
+    window.showVillageScene();
 }
 
 function playTile(tile) {
