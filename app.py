@@ -103,34 +103,98 @@ def chat():
             'content': user_message
         })
         
-        # Check if this is an APPS SCRIPT question
-        if 'apps script' in user_message.lower() or 'app script' in user_message.lower():
-            # Get AI response for GS code first
-            gs_prompt = chat_history + [{
-                'role': 'user', 
-                'content': f"{user_message}\n\n請只提供GS程式碼部分，並包含設置教學：1. 在Google Apps Script中貼上程式碼的步驟 2. 函數的用途說明"
-            }]
-            gs_response = openai_client.get_response(gs_prompt)
+        # Check if this needs separate code responses
+        needs_separation = any(keyword in user_message.lower() for keyword in [
+            'apps script', 'app script', 'html', 'css', 'javascript', 'js', 
+            '程式碼', '前端', '後端', 'frontend', 'backend'
+        ])
+        
+        # Also check if message contains multiple programming languages
+        code_keywords = ['html', 'css', 'javascript', 'js', 'python', 'sql', 'php']
+        mentioned_languages = [lang for lang in code_keywords if lang in user_message.lower()]
+        
+        if needs_separation or len(mentioned_languages) > 1:
+            # Determine code types based on context
+            responses = []
             
-            # Get AI response for HTML code
-            html_prompt = chat_history + [{
-                'role': 'user', 
-                'content': f"{user_message}\n\n請只提供HTML程式碼部分，並包含使用教學：1. 如何在Apps Script中建立HTML檔案 2. 如何部署和使用"
-            }]
-            html_response = openai_client.get_response(html_prompt)
+            # Check for APPS SCRIPT
+            if 'apps script' in user_message.lower() or 'app script' in user_message.lower():
+                # GS Code
+                gs_prompt = chat_history + [{
+                    'role': 'user', 
+                    'content': f"{user_message}\n\n請只提供GS程式碼部分，並包含設置教學：1. 在Google Apps Script中貼上程式碼的步驟 2. 函數的用途說明"
+                }]
+                gs_response = openai_client.get_response(gs_prompt)
+                responses.append(gs_response)
+                
+                # HTML Code
+                html_prompt = chat_history + [{
+                    'role': 'user', 
+                    'content': f"{user_message}\n\n請只提供HTML程式碼部分，並包含使用教學：1. 如何在Apps Script中建立HTML檔案 2. 如何部署和使用"
+                }]
+                html_response = openai_client.get_response(html_prompt)
+                responses.append(html_response)
+                
+            # Check for general web development
+            elif any(lang in user_message.lower() for lang in ['html', 'css', 'javascript', 'js']):
+                # HTML Code
+                if 'html' in user_message.lower():
+                    html_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請只提供HTML程式碼部分，並包含使用教學：1. 如何建立HTML檔案 2. 如何使用"
+                    }]
+                    html_response = openai_client.get_response(html_prompt)
+                    responses.append(html_response)
+                
+                # CSS Code
+                if 'css' in user_message.lower():
+                    css_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請只提供CSS程式碼部分，並包含使用教學：1. 如何連結CSS檔案 2. 樣式設定說明"
+                    }]
+                    css_response = openai_client.get_response(css_prompt)
+                    responses.append(css_response)
+                
+                # JavaScript Code
+                if any(js in user_message.lower() for js in ['javascript', 'js']):
+                    js_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請只提供JavaScript程式碼部分，並包含使用教學：1. 如何連結JS檔案 2. 函數使用說明"
+                    }]
+                    js_response = openai_client.get_response(js_prompt)
+                    responses.append(js_response)
             
-            # Add both to history as separate entries
-            chat_history.append({'role': 'assistant', 'content': gs_response})
-            chat_history.append({'role': 'assistant', 'content': html_response})
+            # Check for backend languages
+            elif any(lang in user_message.lower() for lang in ['python', 'sql', 'php']):
+                # Python Code
+                if 'python' in user_message.lower():
+                    python_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請只提供Python程式碼部分，並包含使用教學：1. 如何執行Python程式 2. 程式功能說明"
+                    }]
+                    python_response = openai_client.get_response(python_prompt)
+                    responses.append(python_response)
+                
+                # SQL Code
+                if 'sql' in user_message.lower():
+                    sql_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請只提供SQL程式碼部分，並包含使用教學：1. 如何在資料庫中執行 2. 查詢說明"
+                    }]
+                    sql_response = openai_client.get_response(sql_prompt)
+                    responses.append(sql_response)
+            
+            # Add all responses to history
+            for response in responses:
+                chat_history.append({'role': 'assistant', 'content': response})
             
             # Update session
             session['chat_history'] = chat_history
             session.modified = True
             
             return jsonify({
-                'response': gs_response,
-                'html_response': html_response,
-                'is_apps_script': True,
+                'responses': responses,
+                'is_multi_code': True,
                 'success': True
             })
         else:
