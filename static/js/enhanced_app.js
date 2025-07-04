@@ -767,7 +767,10 @@ class EnhancedAIAssistant {
                     
                     index++;
                     
-                    // 進度追蹤 (移除調試信息)
+                    // 調試信息 - 每100個字符打印一次進度
+                    if (index % 100 === 0) {
+                        console.log(`打字機進度: ${index}/${text.length}`);
+                    }
                     
                     // 繼續下一個字符
                     if (index < text.length) {

@@ -69,23 +69,13 @@ with app.app_context():
 
 @app.route('/')
 def index():
-    """Render the simple, clean chat interface"""
-    return render_template('simple_index.html')
-
-@app.route('/enhanced')
-def enhanced_index():
-    """Render the enhanced chat interface with sidebar"""
+    """Render the enhanced main chat interface"""
     return render_template('enhanced_index.html')
 
 @app.route('/simple')
 def simple_index():
     """Render the simple chat interface"""
-    return render_template('simple_index.html')
-
-@app.route('/classic')
-def classic_index():
-    """Render the clean, original-style interface"""
-    return render_template('simple_index.html')
+    return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
