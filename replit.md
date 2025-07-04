@@ -86,6 +86,7 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 04, 2025. Modified AI system prompt to provide more concise, focused responses
 - July 04, 2025. Updated AI system prompt to prioritize practical examples and function syntax for technical questions
 - July 04, 2025. Refined AI system prompt to provide direct, practical answers for all types of questions
+- July 04, 2025. Temporarily disabled typewriter effect to prevent text duplication issues
 
 ## User Preferences
 

@@ -118,90 +118,25 @@ class AIAssistant {
     }
 
     typewriterEffect(element, text, icon) {
-        // Check if text contains code blocks
-        if (text.includes('```')) {
-            this.typewriterWithCodeBlocks(element, text, icon);
-        } else {
-            this.simpleTypewriter(element, text, icon);
-        }
+        // Disable typewriter effect temporarily - show message directly
+        element.innerHTML = icon + this.formatMessage(text);
+        this.highlightCode(element);
+        this.scrollToBottom();
     }
 
     simpleTypewriter(element, text, icon) {
-        let index = 0;
-        const cursor = '<span class="typewriter-cursor">|</span>';
-        
-        const typeInterval = setInterval(() => {
-            if (index < text.length) {
-                const currentText = text.substring(0, index + 1);
-                // Simply display the text character by character
-                const displayText = currentText.replace(/&/g, '&amp;')
-                                              .replace(/</g, '&lt;')
-                                              .replace(/>/g, '&gt;')
-                                              .replace(/\n/g, '<br>');
-                element.innerHTML = icon + displayText + cursor;
-                index++;
-                this.scrollToBottom();
-            } else {
-                // Format the complete message at the end
-                element.innerHTML = icon + this.formatMessage(text);
-                clearInterval(typeInterval);
-                this.highlightCode(element);
-            }
-        }, 30);
+        // This function is currently disabled to prevent text duplication
+        // We'll show the message directly instead
+        element.innerHTML = icon + this.formatMessage(text);
+        this.highlightCode(element);
+        this.scrollToBottom();
     }
 
     typewriterWithCodeBlocks(element, text, icon) {
-        // Split text by code blocks
-        const parts = text.split(/(```[\s\S]*?```)/);
-        let currentIndex = 0;
-        
-        const processNext = () => {
-            if (currentIndex >= parts.length) {
-                this.highlightCode(element);
-                return;
-            }
-            
-            const part = parts[currentIndex];
-            
-            if (part.startsWith('```') && part.endsWith('```')) {
-                // This is a code block - show it instantly
-                const currentContent = element.innerHTML;
-                element.innerHTML = currentContent + this.formatMessage(part);
-                currentIndex++;
-                this.scrollToBottom();
-                setTimeout(processNext, 200);
-            } else if (part.trim()) {
-                // This is regular text - use typewriter effect
-                let charIndex = 0;
-                const cursor = '<span class="typewriter-cursor">|</span>';
-                
-                const typeInterval = setInterval(() => {
-                    if (charIndex < part.length) {
-                        const currentContent = element.innerHTML.replace(cursor, '');
-                        const currentText = part.substring(0, charIndex + 1);
-                        const displayText = currentText.replace(/&/g, '&amp;')
-                                                    .replace(/</g, '&lt;')
-                                                    .replace(/>/g, '&gt;')
-                                                    .replace(/\n/g, '<br>');
-                        element.innerHTML = currentContent + displayText + cursor;
-                        charIndex++;
-                        this.scrollToBottom();
-                    } else {
-                        element.innerHTML = element.innerHTML.replace(cursor, '');
-                        currentIndex++;
-                        clearInterval(typeInterval);
-                        setTimeout(processNext, 100);
-                    }
-                }, 30);
-            } else {
-                // Empty part, skip
-                currentIndex++;
-                setTimeout(processNext, 50);
-            }
-        };
-        
-        element.innerHTML = icon;
-        processNext();
+        // Disable typewriter effect temporarily - show message directly
+        element.innerHTML = icon + this.formatMessage(text);
+        this.highlightCode(element);
+        this.scrollToBottom();
     }
 
     formatMessage(text) {
