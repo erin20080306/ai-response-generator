@@ -1803,57 +1803,290 @@ class EnhancedAIAssistant {
 
     // 添加缺失的工具方法
     openPasswordGenerator() {
-        if (typeof openPasswordGenerator === 'function') {
-            openPasswordGenerator();
-        } else {
-            this.showNotification('密碼生成器功能暫時不可用', 'error');
-        }
+        const modalContent = `
+            <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="passwordModalLabel">
+                                <i class="fas fa-key me-2"></i>密碼生成器
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="passwordLength" class="form-label">密碼長度</label>
+                                <input type="number" class="form-control" id="passwordLength" min="8" max="50" value="16">
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="includeUppercase" checked>
+                                <label class="form-check-label" for="includeUppercase">包含大寫字母</label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="includeLowercase" checked>
+                                <label class="form-check-label" for="includeLowercase">包含小寫字母</label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="includeNumbers" checked>
+                                <label class="form-check-label" for="includeNumbers">包含數字</label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="includeSymbols">
+                                <label class="form-check-label" for="includeSymbols">包含特殊符號</label>
+                            </div>
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" id="generatePasswordBtn">
+                                    <i class="fas fa-magic me-2"></i>生成密碼
+                                </button>
+                                <button type="button" class="btn btn-secondary ms-2" id="copyPasswordBtn" style="display:none;">
+                                    <i class="fas fa-copy me-2"></i>複製密碼
+                                </button>
+                            </div>
+                            <div id="passwordResult" class="mt-3" style="display:none;">
+                                <label class="form-label">生成的密碼：</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="generatedPassword" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalContent);
+        
+        // 生成密碼事件
+        document.getElementById('generatePasswordBtn').addEventListener('click', () => {
+            const length = parseInt(document.getElementById('passwordLength').value);
+            const uppercase = document.getElementById('includeUppercase').checked;
+            const lowercase = document.getElementById('includeLowercase').checked;
+            const numbers = document.getElementById('includeNumbers').checked;
+            const symbols = document.getElementById('includeSymbols').checked;
+            
+            if (!uppercase && !lowercase && !numbers && !symbols) {
+                this.showNotification('請至少選擇一種字符類型', 'error');
+                return;
+            }
+            
+            let chars = '';
+            if (uppercase) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            if (lowercase) chars += 'abcdefghijklmnopqrstuvwxyz';
+            if (numbers) chars += '0123456789';
+            if (symbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+            
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            
+            document.getElementById('generatedPassword').value = password;
+            document.getElementById('passwordResult').style.display = 'block';
+            document.getElementById('copyPasswordBtn').style.display = 'inline-block';
+            
+            this.showNotification('密碼生成成功！', 'success');
+        });
+        
+        // 複製密碼事件
+        document.getElementById('copyPasswordBtn').addEventListener('click', () => {
+            const password = document.getElementById('generatedPassword').value;
+            navigator.clipboard.writeText(password).then(() => {
+                this.showNotification('密碼已複製到剪貼簿！', 'success');
+            });
+        });
+        
+        // 清理函數
+        document.getElementById('passwordModal').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('passwordModal').remove();
+        });
+        
+        ModalManager.showModal(document.getElementById('passwordModal'));
     }
 
     openCalculator() {
-        if (typeof openCalculator === 'function') {
-            openCalculator();
-        } else {
-            this.showNotification('計算器功能暫時不可用', 'error');
-        }
+        const modalContent = `
+            <div class="modal fade" id="calculatorModal" tabindex="-1" aria-labelledby="calculatorModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="calculatorModalLabel">
+                                <i class="fas fa-calculator me-2"></i>計算器
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="calculatorInput" class="form-label">運算式</label>
+                                <input type="text" class="form-control" id="calculatorInput" placeholder="例如: 2 + 3 * 4">
+                            </div>
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" id="calculateBtn">
+                                    <i class="fas fa-equals me-2"></i>計算
+                                </button>
+                                <button type="button" class="btn btn-secondary ms-2" id="clearCalculatorBtn">
+                                    <i class="fas fa-trash me-2"></i>清除
+                                </button>
+                            </div>
+                            <div id="calculatorResult" class="mt-3" style="display:none;">
+                                <label class="form-label">計算結果：</label>
+                                <div class="alert alert-success" id="resultDisplay"></div>
+                            </div>
+                            <div class="mt-3">
+                                <small class="text-muted">支援基本運算符: +, -, *, /, (, )</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalContent);
+        
+        // 計算事件
+        document.getElementById('calculateBtn').addEventListener('click', () => {
+            const input = document.getElementById('calculatorInput').value.trim();
+            if (!input) {
+                this.showNotification('請輸入運算式', 'error');
+                return;
+            }
+            
+            try {
+                // 安全的計算方式，只允許基本運算符
+                const sanitized = input.replace(/[^0-9+\-*/().\s]/g, '');
+                if (sanitized !== input) {
+                    throw new Error('包含不允許的字符');
+                }
+                
+                const result = Function('"use strict"; return (' + sanitized + ')')();
+                
+                if (isNaN(result) || !isFinite(result)) {
+                    throw new Error('計算結果無效');
+                }
+                
+                document.getElementById('resultDisplay').textContent = `${input} = ${result}`;
+                document.getElementById('calculatorResult').style.display = 'block';
+                
+                this.showNotification('計算完成！', 'success');
+            } catch (error) {
+                this.showNotification('計算錯誤：請輸入有效的運算式', 'error');
+            }
+        });
+        
+        // 清除事件
+        document.getElementById('clearCalculatorBtn').addEventListener('click', () => {
+            document.getElementById('calculatorInput').value = '';
+            document.getElementById('calculatorResult').style.display = 'none';
+        });
+        
+        // Enter鍵計算
+        document.getElementById('calculatorInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('calculateBtn').click();
+            }
+        });
+        
+        // 清理函數
+        document.getElementById('calculatorModal').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('calculatorModal').remove();
+        });
+        
+        ModalManager.showModal(document.getElementById('calculatorModal'));
     }
 
     openURLShortener() {
-        const url = prompt('請輸入要縮短的網址:');
-        if (url) {
+        const modalContent = `
+            <div class="modal fade" id="urlShortenerModal" tabindex="-1" aria-labelledby="urlShortenerModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="urlShortenerModalLabel">
+                                <i class="fas fa-link me-2"></i>網址縮短器
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="originalUrl" class="form-label">原始網址</label>
+                                <input type="url" class="form-control" id="originalUrl" placeholder="https://example.com">
+                            </div>
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" id="shortenUrlBtn">
+                                    <i class="fas fa-compress me-2"></i>縮短網址
+                                </button>
+                            </div>
+                            <div id="urlResult" class="mt-3" style="display:none;">
+                                <div class="mb-3">
+                                    <label class="form-label">原始網址：</label>
+                                    <div class="form-control" id="originalUrlDisplay" style="word-break: break-all;"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">縮短網址：</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="shortUrlDisplay" readonly>
+                                        <button class="btn btn-outline-secondary" id="copyShortUrlBtn">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info">
+                                    <small><i class="fas fa-info-circle me-1"></i>這是示例功能，實際應用需要真實的縮短服務</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalContent);
+        
+        // 縮短網址事件
+        document.getElementById('shortenUrlBtn').addEventListener('click', () => {
+            const url = document.getElementById('originalUrl').value.trim();
+            if (!url) {
+                this.showNotification('請輸入網址', 'error');
+                return;
+            }
+            
             try {
                 // 驗證URL格式
                 new URL(url);
                 
-                // 這是一個簡單的縮短器，實際應用中應使用真實的API
+                // 生成縮短網址
                 const shortCode = Math.random().toString(36).substring(2, 8).toUpperCase();
                 const shortUrl = `https://short.ly/${shortCode}`;
                 
-                const newWindow = window.open('', '_blank');
-                newWindow.document.write(`
-                    <html>
-                        <head><title>網址縮短器</title></head>
-                        <body style="font-family: Arial; text-align: center; padding: 20px;">
-                            <h2>網址縮短器</h2>
-                            <p><strong>原始網址:</strong></p>
-                            <div style="background: #f0f0f0; padding: 10px; margin: 10px; word-break: break-all; border: 1px solid #ccc;">
-                                ${url}
-                            </div>
-                            <p><strong>縮短網址:</strong></p>
-                            <div style="background: #e0f0ff; padding: 10px; margin: 10px; font-family: monospace; font-size: 18px; border: 1px solid #ccc;">
-                                ${shortUrl}
-                            </div>
-                            <button onclick="navigator.clipboard.writeText('${shortUrl}')">複製縮短網址</button>
-                            <br><br>
-                            <p class="text-muted">*這是示例功能，實際應用需要真實的縮短服務</p>
-                        </body>
-                    </html>
-                `);
+                document.getElementById('originalUrlDisplay').textContent = url;
+                document.getElementById('shortUrlDisplay').value = shortUrl;
+                document.getElementById('urlResult').style.display = 'block';
                 
+                this.showNotification('網址縮短成功！', 'success');
             } catch (error) {
-                alert('請輸入有效的網址 (例如: https://example.com)');
+                this.showNotification('請輸入有效的網址 (例如: https://example.com)', 'error');
             }
-        }
+        });
+        
+        // 複製縮短網址事件
+        document.getElementById('copyShortUrlBtn').addEventListener('click', () => {
+            const shortUrl = document.getElementById('shortUrlDisplay').value;
+            navigator.clipboard.writeText(shortUrl).then(() => {
+                this.showNotification('縮短網址已複製到剪貼簿！', 'success');
+            });
+        });
+        
+        // Enter鍵縮短
+        document.getElementById('originalUrl').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('shortenUrlBtn').click();
+            }
+        });
+        
+        // 清理函數
+        document.getElementById('urlShortenerModal').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('urlShortenerModal').remove();
+        });
+        
+        ModalManager.showModal(document.getElementById('urlShortenerModal'));
     }
 
     openDateTimeConverter() {
@@ -1917,11 +2150,231 @@ class EnhancedAIAssistant {
     }
 
     openColorPicker() {
-        if (typeof openColorConverter === 'function') {
-            openColorConverter();
-        } else {
-            this.showNotification('顏色轉換器功能暫時不可用', 'error');
+        const modalContent = `
+            <div class="modal fade" id="colorPickerModal" tabindex="-1" aria-labelledby="colorPickerModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="colorPickerModalLabel">
+                                <i class="fas fa-palette me-2"></i>顏色轉換器
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="colorInput" class="form-label">顏色輸入</label>
+                                <input type="text" class="form-control" id="colorInput" placeholder="例如: #FF0000, red, rgb(255,0,0)">
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="colorPicker" class="form-label">或選擇顏色</label>
+                                    <input type="color" class="form-control form-control-color" id="colorPicker" value="#ff0000">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">顏色預覽</label>
+                                    <div id="colorPreview" style="height: 38px; border: 1px solid #ced4da; border-radius: 0.375rem; background-color: #ff0000;"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" id="convertColorBtn">
+                                    <i class="fas fa-exchange-alt me-2"></i>轉換顏色
+                                </button>
+                            </div>
+                            <div id="colorResult" class="mt-3" style="display:none;">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">HEX:</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="hexValue" readonly>
+                                            <button class="btn btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('hexValue').value)">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">RGB:</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="rgbValue" readonly>
+                                            <button class="btn btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('rgbValue').value)">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">HSL:</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="hslValue" readonly>
+                                            <button class="btn btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('hslValue').value)">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">HSV:</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="hsvValue" readonly>
+                                            <button class="btn btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('hsvValue').value)">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalContent);
+        
+        // 顏色轉換功能
+        const convertColor = (color) => {
+            try {
+                // 創建臨時canvas來解析顏色
+                const canvas = document.createElement('canvas');
+                canvas.width = canvas.height = 1;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = color;
+                ctx.fillRect(0, 0, 1, 1);
+                const imageData = ctx.getImageData(0, 0, 1, 1);
+                const [r, g, b] = imageData.data;
+                
+                // 更新預覽
+                document.getElementById('colorPreview').style.backgroundColor = color;
+                
+                // HEX
+                const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+                
+                // RGB
+                const rgb = `rgb(${r}, ${g}, ${b})`;
+                
+                // HSL
+                const hsl = rgbToHsl(r, g, b);
+                const hslString = `hsl(${Math.round(hsl[0] * 360)}, ${Math.round(hsl[1] * 100)}%, ${Math.round(hsl[2] * 100)}%)`;
+                
+                // HSV
+                const hsv = rgbToHsv(r, g, b);
+                const hsvString = `hsv(${Math.round(hsv[0] * 360)}, ${Math.round(hsv[1] * 100)}%, ${Math.round(hsv[2] * 100)}%)`;
+                
+                // 更新結果
+                document.getElementById('hexValue').value = hex;
+                document.getElementById('rgbValue').value = rgb;
+                document.getElementById('hslValue').value = hslString;
+                document.getElementById('hsvValue').value = hsvString;
+                document.getElementById('colorResult').style.display = 'block';
+                
+                return true;
+            } catch (error) {
+                return false;
+            }
+        };
+        
+        // RGB to HSL conversion
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return [h, s, l];
         }
+        
+        // RGB to HSV conversion
+        function rgbToHsv(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, v = max;
+            const d = max - min;
+            s = max === 0 ? 0 : d / max;
+            
+            if (max === min) {
+                h = 0;
+            } else {
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return [h, s, v];
+        }
+        
+        // 轉換按鈕事件
+        document.getElementById('convertColorBtn').addEventListener('click', () => {
+            const colorInput = document.getElementById('colorInput').value.trim();
+            if (!colorInput) {
+                this.showNotification('請輸入顏色值', 'error');
+                return;
+            }
+            
+            if (convertColor(colorInput)) {
+                this.showNotification('顏色轉換成功！', 'success');
+            } else {
+                this.showNotification('無效的顏色格式', 'error');
+            }
+        });
+        
+        // 顏色選擇器事件
+        document.getElementById('colorPicker').addEventListener('change', (e) => {
+            const color = e.target.value;
+            document.getElementById('colorInput').value = color;
+            convertColor(color);
+        });
+        
+        // 清理函數
+        document.getElementById('colorPickerModal').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('colorPickerModal').remove();
+        });
+        
+        ModalManager.showModal(document.getElementById('colorPickerModal'));
+    }
+
+    // 添加缺失的函數來修復錯誤
+    handleResize() {
+        // 響應式處理函數
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        
+        if (window.innerWidth < 768) {
+            // 移動設備處理
+            if (sidebar) {
+                sidebar.classList.add('sidebar-mobile');
+            }
+        } else {
+            // 桌面設備處理
+            if (sidebar) {
+                sidebar.classList.remove('sidebar-mobile');
+            }
+        }
+    }
+
+    handleFileSelect(event) {
+        // 檔案選擇處理函數
+        const files = event.target.files;
+        if (files && files.length > 0) {
+            for (let file of files) {
+                this.processFile(file);
+            }
+        }
+    }
+
+    processFile(file) {
+        // 處理上傳的檔案
+        console.log('Processing file:', file.name);
+        // 這裡可以添加檔案處理邏輯
     }
 }
 
