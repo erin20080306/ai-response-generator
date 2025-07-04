@@ -122,7 +122,7 @@ def chat():
                 # GS Code
                 gs_prompt = chat_history + [{
                     'role': 'user', 
-                    'content': f"{user_message}\n\n請只提供GS程式碼部分，並包含設置教學：1. 在Google Apps Script中貼上程式碼的步驟 2. 函數的用途說明"
+                    'content': f"{user_message}\n\n請只提供簡單的GS程式碼，要求：1. 程式碼要非常簡潔 2. 使用最基本的語法 3. 包含簡單的設置步驟說明"
                 }]
                 gs_response = openai_client.get_response(gs_prompt)
                 responses.append(gs_response)

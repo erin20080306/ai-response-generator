@@ -537,22 +537,20 @@ class EnhancedAIAssistant {
             console.log('解析後端數據:', data);
 
             if (data.success) {
-                if (data.is_apps_script) {
-                    // APPS SCRIPT 問題：分別顯示 GS 和 HTML 回應
-                    console.log('顯示GS程式碼:', data.response);
-                    console.log('顯示HTML程式碼:', data.html_response);
+                if (data.is_multi_code && data.responses) {
+                    // 多重程式碼回應：依序顯示每個程式碼類型
+                    console.log('顯示多重程式碼回應:', data.responses);
                     
                     const useTypewriter = this.settings.typewriterEffect;
                     
-                    // 先顯示 GS 程式碼
-                    this.addMessage(data.response, 'ai', useTypewriter);
+                    // 依序顯示每個回應
+                    data.responses.forEach((response, index) => {
+                        setTimeout(() => {
+                            this.addMessage(response, 'ai', useTypewriter);
+                        }, index * 1000);
+                    });
                     
-                    // 延遲一點再顯示 HTML 程式碼
-                    setTimeout(() => {
-                        this.addMessage(data.html_response, 'ai', useTypewriter);
-                    }, 1000);
-                    
-                    this.showNotification('APPS SCRIPT程式碼回應完成', 'success');
+                    this.showNotification('程式碼分類回應完成', 'success');
                 } else {
                     // 一般回應
                     console.log('顯示AI回應:', data.response);
