@@ -48,7 +48,7 @@
 
 .ai-message .message-content {
     background-color: var(--bs-secondary);
-    color: var(--bs-body-color);
+    color: #ffffff;
     border-bottom-left-radius: 0.25rem;
 }
 
