@@ -5,7 +5,10 @@ import requests
 import tempfile
 import json
 import qrcode
-import barcode
+from barcode.codex import Code128, Code39
+from barcode.ean import EAN13, EAN8
+from barcode.upc import UPCA
+from barcode.isxn import ISBN13, ISBN10, ISSN
 from barcode.writer import ImageWriter
 from datetime import datetime
 from io import BytesIO
@@ -983,14 +986,14 @@ def generate_barcode():
         
         # 支援的條碼類型
         barcode_types = {
-            'code128': barcode.Code128,
-            'code39': barcode.Code39,
-            'ean13': barcode.EAN13,
-            'ean8': barcode.EAN8,
-            'upc': barcode.UPCA,
-            'isbn13': barcode.ISBN13,
-            'isbn10': barcode.ISBN10,
-            'issn': barcode.ISSN
+            'code128': Code128,
+            'code39': Code39,
+            'ean13': EAN13,
+            'ean8': EAN8,
+            'upc': UPCA,
+            'isbn13': ISBN13,
+            'isbn10': ISBN10,
+            'issn': ISSN
         }
         
         if barcode_type not in barcode_types:

@@ -1915,6 +1915,14 @@ class EnhancedAIAssistant {
             }
         }
     }
+
+    openColorPicker() {
+        if (typeof openColorConverter === 'function') {
+            openColorConverter();
+        } else {
+            this.showNotification('顏色轉換器功能暫時不可用', 'error');
+        }
+    }
 }
 
 // 初始化應用程式
