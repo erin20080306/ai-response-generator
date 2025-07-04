@@ -822,8 +822,14 @@ class EnhancedAIAssistant {
         // 將連續的 <li> 包裝在 <ul> 中
         text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
 
-        // 處理換行 (在程式碼區塊外)
+        // 處理雙換行為段落分隔
+        text = text.replace(/\n\n/g, '</p><p>');
+        
+        // 處理單換行為行內換行
         text = text.replace(/\n/g, '<br>');
+        
+        // 包裝在段落標籤中
+        text = '<p>' + text + '</p>';
 
         // 處理連結
         text = text.replace(
