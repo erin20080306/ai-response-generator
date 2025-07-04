@@ -1459,10 +1459,11 @@ def create_collaboration_room():
         room_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         
         # 使用資料庫模型創建房間
-        from models import init_db
-        models = init_db(db)
+        import models
+        model_classes = models.init_db(db)
+        CollaborationRoom = model_classes['CollaborationRoom']
         
-        new_room = models['CollaborationRoom'](
+        new_room = CollaborationRoom(
             name=name,
             room_code=room_code,
             created_by='system',  # 簡化實現，實際應該是用戶ID
@@ -1500,10 +1501,12 @@ def join_collaboration_room():
             return jsonify({'success': False, 'error': '房間代碼不能為空'})
         
         # 使用資料庫模型查詢房間
-        from models import init_db
-        models = init_db(db)
+        import models
+        model_classes = models.init_db(db)
+        CollaborationRoom = model_classes['CollaborationRoom']
+        RoomParticipant = model_classes['RoomParticipant']
         
-        room = models['CollaborationRoom'].query.filter_by(
+        room = CollaborationRoom.query.filter_by(
             room_code=room_code, 
             is_active=True
         ).first()
@@ -1512,7 +1515,7 @@ def join_collaboration_room():
             return jsonify({'success': False, 'error': '房間不存在或已關閉'})
         
         # 檢查房間參與者數量
-        current_participants = models['RoomParticipant'].query.filter_by(
+        current_participants = RoomParticipant.query.filter_by(
             room_id=room.id,
             is_active=True
         ).count()
@@ -1521,7 +1524,7 @@ def join_collaboration_room():
             return jsonify({'success': False, 'error': '房間已滿'})
         
         # 檢查用戶是否已在房間中
-        existing_participant = models['RoomParticipant'].query.filter_by(
+        existing_participant = RoomParticipant.query.filter_by(
             room_id=room.id,
             username=username,
             is_active=True
@@ -1529,7 +1532,7 @@ def join_collaboration_room():
         
         if not existing_participant:
             # 添加新參與者
-            new_participant = models['RoomParticipant'](
+            new_participant = RoomParticipant(
                 room_id=room.id,
                 username=username
             )
@@ -1563,15 +1566,17 @@ def leave_collaboration_room():
             return jsonify({'success': False, 'error': '缺少必要參數'})
         
         # 使用資料庫模型
-        from models import init_db
-        models = init_db(db)
+        import models
+        model_classes = models.init_db(db)
+        CollaborationRoom = model_classes['CollaborationRoom']
+        RoomParticipant = model_classes['RoomParticipant']
         
-        room = models['CollaborationRoom'].query.filter_by(room_code=room_code).first()
+        room = CollaborationRoom.query.filter_by(room_code=room_code).first()
         if not room:
             return jsonify({'success': False, 'error': '房間不存在'})
         
         # 更新參與者狀態
-        participant = models['RoomParticipant'].query.filter_by(
+        participant = RoomParticipant.query.filter_by(
             room_id=room.id,
             username=username,
             is_active=True
@@ -1592,10 +1597,12 @@ def get_room_info(room_code):
     """獲取房間資訊"""
     try:
         # 使用資料庫模型
-        from models import init_db
-        models = init_db(db)
+        import models
+        model_classes = models.init_db(db)
+        CollaborationRoom = model_classes['CollaborationRoom']
+        RoomParticipant = model_classes['RoomParticipant']
         
-        room = models['CollaborationRoom'].query.filter_by(
+        room = CollaborationRoom.query.filter_by(
             room_code=room_code.upper(),
             is_active=True
         ).first()
@@ -1603,7 +1610,7 @@ def get_room_info(room_code):
         if not room:
             return jsonify({'success': False, 'error': '房間不存在'})
         
-        participants = models['RoomParticipant'].query.filter_by(
+        participants = RoomParticipant.query.filter_by(
             room_id=room.id,
             is_active=True
         ).all()
