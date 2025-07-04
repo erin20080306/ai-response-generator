@@ -206,8 +206,16 @@ class GameCenter {
         `;
 
         document.body.appendChild(modal);
-        const bsModal = new bootstrap.Modal(modal);
-        bsModal.show();
+        
+        // 確保Bootstrap已經加載
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+        } else {
+            // 使用原生方式顯示模態框
+            modal.style.display = 'block';
+            modal.classList.add('show');
+        }
 
         return modal;
     }
