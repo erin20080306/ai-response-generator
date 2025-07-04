@@ -714,21 +714,92 @@ function initFarmStoryGame() {
                         </div>
                     </div>
                     
-                    <!-- 村莊視覺場景 -->
+                    <!-- 村莊真實視覺場景 -->
                     <div class="scene-visual mb-3">
-                        <div class="village-scene">
-                            <div class="sky">☀️ ☁️ ☁️</div>
-                            <div class="village-buildings">
-                                <div class="building town-hall">🏛️<br><small>村公所</small></div>
-                                <div class="building shop">🏪<br><small>商店</small></div>
-                                <div class="building blacksmith">⚒️<br><small>鐵匠</small></div>
-                                <div class="building clinic">🏥<br><small>診所</small></div>
-                            </div>
-                            <div class="village-ground">
-                                <div class="path">🛤️🛤️🛤️🛤️🛤️🛤️</div>
-                                <div class="decorations">🌸🌳🌸🪴🌳🌸</div>
-                            </div>
-                        </div>
+                        <svg viewBox="0 0 600 300" class="village-svg">
+                            <!-- 天空背景 -->
+                            <defs>
+                                <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#E0F6FF;stop-opacity:1" />
+                                </linearGradient>
+                                <linearGradient id="grassGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#90EE90;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#228B22;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            
+                            <!-- 天空 -->
+                            <rect width="600" height="180" fill="url(#skyGradient)"/>
+                            
+                            <!-- 雲朵 -->
+                            <ellipse cx="100" cy="50" rx="25" ry="15" fill="white" opacity="0.8"/>
+                            <ellipse cx="110" cy="45" rx="30" ry="18" fill="white" opacity="0.7"/>
+                            <ellipse cx="450" cy="40" rx="20" ry="12" fill="white" opacity="0.8"/>
+                            
+                            <!-- 太陽 -->
+                            <circle cx="520" cy="60" r="25" fill="#FFD700"/>
+                            <g stroke="#FFD700" stroke-width="2">
+                                <line x1="520" y1="20" x2="520" y2="10"/>
+                                <line x1="545" y1="35" x2="552" y2="28"/>
+                                <line x1="560" y1="60" x2="570" y2="60"/>
+                                <line x1="545" y1="85" x2="552" y2="92"/>
+                                <line x1="495" y1="85" x2="488" y2="92"/>
+                                <line x1="480" y1="60" x2="470" y2="60"/>
+                                <line x1="495" y1="35" x2="488" y2="28"/>
+                            </g>
+                            
+                            <!-- 地面 -->
+                            <rect x="0" y="180" width="600" height="120" fill="url(#grassGradient)"/>
+                            
+                            <!-- 道路 -->
+                            <path d="M 0 250 Q 150 240 300 250 Q 450 260 600 250" stroke="#8B4513" stroke-width="20" fill="none"/>
+                            <path d="M 0 255 Q 150 245 300 255 Q 450 265 600 255" stroke="#D2B48C" stroke-width="12" fill="none"/>
+                            
+                            <!-- 村公所 -->
+                            <rect x="80" y="150" width="80" height="60" fill="#B8860B"/>
+                            <polygon points="80,150 120,120 160,150" fill="#8B4513"/>
+                            <rect x="95" y="170" width="15" height="25" fill="#654321"/>
+                            <rect x="125" y="165" width="12" height="12" fill="#87CEEB"/>
+                            <rect x="145" y="165" width="12" height="12" fill="#87CEEB"/>
+                            <text x="120" y="225" text-anchor="middle" font-size="10" fill="#333">村公所</text>
+                            
+                            <!-- 商店 -->
+                            <rect x="200" y="155" width="70" height="55" fill="#FF6347"/>
+                            <polygon points="200,155 235,130 270,155" fill="#8B0000"/>
+                            <rect x="210" y="175" width="12" height="20" fill="#8B4513"/>
+                            <rect x="235" y="170" width="25" height="15" fill="#87CEEB"/>
+                            <text x="235" y="225" text-anchor="middle" font-size="10" fill="#333">商店</text>
+                            
+                            <!-- 鐵匠鋪 -->
+                            <rect x="320" y="160" width="75" height="50" fill="#696969"/>
+                            <polygon points="320,160 357.5,140 395,160" fill="#2F4F4F"/>
+                            <rect x="330" y="180" width="12" height="18" fill="#654321"/>
+                            <rect x="350" y="175" width="15" height="15" fill="#FF4500"/>
+                            <text x="357" y="225" text-anchor="middle" font-size="10" fill="#333">鐵匠</text>
+                            
+                            <!-- 診所 -->
+                            <rect x="450" y="155" width="70" height="55" fill="#FFF8DC"/>
+                            <polygon points="450,155 485,135 520,155" fill="#DC143C"/>
+                            <rect x="460" y="175" width="12" height="20" fill="#8B4513"/>
+                            <rect x="480" y="170" width="15" height="15" fill="#87CEEB"/>
+                            <rect x="485" y="162" width="8" height="8" fill="#DC143C"/>
+                            <rect x="487" y="160" width="4" height="12" fill="white"/>
+                            <rect x="485" y="164" width="8" height="4" fill="white"/>
+                            <text x="485" y="225" text-anchor="middle" font-size="10" fill="#333">診所</text>
+                            
+                            <!-- 樹木 -->
+                            <circle cx="50" cy="195" r="15" fill="#228B22"/>
+                            <rect x="47" y="200" width="6" height="20" fill="#8B4513"/>
+                            <circle cx="550" cy="190" r="18" fill="#32CD32"/>
+                            <rect x="547" y="195" width="6" height="25" fill="#8B4513"/>
+                            
+                            <!-- 花朵 -->
+                            <circle cx="150" cy="270" r="3" fill="#FF69B4"/>
+                            <circle cx="250" cy="275" r="3" fill="#FFA500"/>
+                            <circle cx="350" cy="270" r="3" fill="#9370DB"/>
+                            <circle cx="450" cy="275" r="3" fill="#FF1493"/>
+                        </svg>
                     </div>
                     
                     <div class="scene-content">
@@ -787,23 +858,82 @@ function initFarmStoryGame() {
         } else if (gameState.currentScene === 'farm') {
             content = `
                 <div class="farm-scene">
-                    <!-- 農場視覺場景 -->
+                    <!-- 農場真實視覺場景 -->
                     <div class="scene-visual mb-3">
-                        <div class="farm-landscape">
-                            <div class="farm-sky">☀️ ☁️ 🦅 ☁️</div>
-                            <div class="farm-background">
-                                <div class="barn">🏚️<br><small>穀倉</small></div>
-                                <div class="farmhouse">🏡<br><small>農舍</small></div>
-                                <div class="well">🪣<br><small>水井</small></div>
-                            </div>
-                            <div class="farm-fields">
-                                <div class="field-border">🌾🌾🌾🌾🌾🌾🌾</div>
-                                <div class="main-farmland">
-                                    <h6>🚜 我的農場</h6>
-                                    <p>青翠的田野在你面前展開，微風吹過作物，帶來清新的泥土芬芳。</p>
-                                </div>
-                            </div>
-                        </div>
+                        <svg viewBox="0 0 600 300" class="farm-svg">
+                            <!-- 農場天空 -->
+                            <rect width="600" height="160" fill="url(#farmSkyGradient)"/>
+                            <defs>
+                                <linearGradient id="farmSkyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#87CEEB;stop-opacity:1" />
+                                </linearGradient>
+                                <linearGradient id="fieldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#98FB98;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#6B8E23;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            
+                            <!-- 雲朵 -->
+                            <ellipse cx="150" cy="40" rx="20" ry="12" fill="white" opacity="0.9"/>
+                            <ellipse cx="400" cy="50" rx="25" ry="15" fill="white" opacity="0.8"/>
+                            
+                            <!-- 太陽 -->
+                            <circle cx="500" cy="50" r="20" fill="#FFD700"/>
+                            
+                            <!-- 遠山 -->
+                            <polygon points="0,120 100,80 200,100 300,70 400,90 500,75 600,85 600,160 0,160" fill="#8FBC8F"/>
+                            
+                            <!-- 農場地面 -->
+                            <rect x="0" y="160" width="600" height="140" fill="url(#fieldGradient)"/>
+                            
+                            <!-- 農舍 -->
+                            <rect x="450" y="120" width="60" height="50" fill="#D2691E"/>
+                            <polygon points="450,120 480,95 510,120" fill="#8B4513"/>
+                            <rect x="465" y="140" width="10" height="20" fill="#654321"/>
+                            <rect x="485" y="135" width="12" height="12" fill="#87CEEB"/>
+                            <text x="480" y="185" text-anchor="middle" font-size="9" fill="white">農舍</text>
+                            
+                            <!-- 穀倉 -->
+                            <rect x="50" y="130" width="70" height="60" fill="#8B0000"/>
+                            <polygon points="50,130 85,110 120,130" fill="#654321"/>
+                            <rect x="65" y="155" width="40" height="25" fill="#654321"/>
+                            <rect x="75" y="165" width="20" height="15" fill="#2F4F4F"/>
+                            <text x="85" y="205" text-anchor="middle" font-size="9" fill="white">穀倉</text>
+                            
+                            <!-- 水井 -->
+                            <circle cx="200" cy="180" r="15" fill="#708090"/>
+                            <rect x="195" y="165" width="10" height="10" fill="#8B4513"/>
+                            <rect x="190" y="160" width="20" height="5" fill="#654321"/>
+                            <line x1="195" y1="165" x2="195" y2="155" stroke="#654321" stroke-width="2"/>
+                            <text x="200" y="210" text-anchor="middle" font-size="9" fill="white">水井</text>
+                            
+                            <!-- 農田區域 -->
+                            <rect x="250" y="200" width="300" height="80" fill="#8B4513" opacity="0.3"/>
+                            
+                            <!-- 作物行 -->
+                            <g stroke="#228B22" stroke-width="3" opacity="0.8">
+                                <line x1="270" y1="210" x2="530" y2="210"/>
+                                <line x1="270" y1="230" x2="530" y2="230"/>
+                                <line x1="270" y1="250" x2="530" y2="250"/>
+                                <line x1="270" y1="270" x2="530" y2="270"/>
+                            </g>
+                            
+                            <!-- 小樹 -->
+                            <circle cx="350" cy="180" r="8" fill="#228B22"/>
+                            <rect x="347" y="180" width="6" height="15" fill="#8B4513"/>
+                            
+                            <!-- 柵欄 -->
+                            <g stroke="#8B4513" stroke-width="2">
+                                <line x1="140" y1="170" x2="140" y2="190"/>
+                                <line x1="150" y1="170" x2="150" y2="190"/>
+                                <line x1="160" y1="170" x2="160" y2="190"/>
+                                <line x1="135" y1="175" x2="165" y2="175"/>
+                                <line x1="135" y1="185" x2="165" y2="185"/>
+                            </g>
+                            
+                            <text x="300" y="20" text-anchor="middle" font-size="14" fill="#2F4F4F" font-weight="bold">🚜 我的農場</text>
+                        </svg>
                     </div>
                     
                     <div class="farm-grid mb-3">
@@ -833,14 +963,77 @@ function initFarmStoryGame() {
             content = `
                 <div class="forest-scene">
                     <div class="scene-visual mb-3">
-                        <div class="forest-landscape">
-                            <div class="forest-sky">🌅 ☁️ 🦋 ☁️</div>
-                            <div class="forest-canopy">🌳🌲🌳🌲🌳🌲🌳</div>
-                            <div class="forest-ground">
-                                <div class="forest-path">🍄 🌿 🦔 🌿 🍄</div>
-                                <div class="forest-items">🌰 🍓 🌸 🌿 🌰</div>
-                            </div>
-                        </div>
+                        <svg viewBox="0 0 600 300" class="forest-svg">
+                            <defs>
+                                <linearGradient id="forestSkyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#98FB98;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#228B22;stop-opacity:1" />
+                                </linearGradient>
+                                <radialGradient id="treeGradient" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" style="stop-color:#32CD32;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#006400;stop-opacity:1" />
+                                </radialGradient>
+                            </defs>
+                            
+                            <!-- 森林背景 -->
+                            <rect width="600" height="300" fill="url(#forestSkyGradient)"/>
+                            
+                            <!-- 遠景樹林 -->
+                            <polygon points="0,150 50,100 100,120 150,90 200,110 250,95 300,105 350,85 400,100 450,80 500,95 550,85 600,90 600,300 0,300" fill="#2F4F4F" opacity="0.7"/>
+                            
+                            <!-- 大樹群 -->
+                            <!-- 樹1 -->
+                            <rect x="80" y="180" width="12" height="60" fill="#8B4513"/>
+                            <circle cx="86" cy="160" r="35" fill="url(#treeGradient)"/>
+                            
+                            <!-- 樹2 -->
+                            <rect x="200" y="170" width="15" height="70" fill="#654321"/>
+                            <circle cx="207" cy="145" r="40" fill="#228B22"/>
+                            
+                            <!-- 樹3 -->
+                            <rect x="350" y="185" width="10" height="55" fill="#8B4513"/>
+                            <circle cx="355" cy="165" r="30" fill="#32CD32"/>
+                            
+                            <!-- 樹4 -->
+                            <rect x="480" y="175" width="14" height="65" fill="#654321"/>
+                            <circle cx="487" cy="150" r="38" fill="#228B22"/>
+                            
+                            <!-- 樹5 (前景) -->
+                            <rect x="120" y="200" width="18" height="80" fill="#8B4513"/>
+                            <circle cx="129" cy="175" r="45" fill="#006400"/>
+                            
+                            <!-- 小徑 -->
+                            <path d="M 0 260 Q 150 250 300 260 Q 450 270 600 260" stroke="#D2B48C" stroke-width="25" fill="none" opacity="0.8"/>
+                            <path d="M 0 265 Q 150 255 300 265 Q 450 275 600 265" stroke="#F4A460" stroke-width="15" fill="none" opacity="0.6"/>
+                            
+                            <!-- 灌木叢 -->
+                            <ellipse cx="50" cy="240" rx="20" ry="12" fill="#228B22"/>
+                            <ellipse cx="280" cy="235" rx="25" ry="15" fill="#32CD32"/>
+                            <ellipse cx="520" cy="245" rx="18" ry="10" fill="#228B22"/>
+                            
+                            <!-- 蘑菇 -->
+                            <ellipse cx="160" cy="280" rx="6" ry="3" fill="#8B4513"/>
+                            <path d="M 160 277 Q 154 270 148 275 Q 154 265 160 270 Q 166 265 172 275 Q 166 270 160 277" fill="#DC143C"/>
+                            
+                            <ellipse cx="400" cy="285" rx="4" ry="2" fill="#8B4513"/>
+                            <path d="M 400 283 Q 396 278 392 281 Q 396 275 400 278 Q 404 275 408 281 Q 404 278 400 283" fill="#FF6347"/>
+                            
+                            <!-- 漿果 -->
+                            <circle cx="90" cy="275" r="3" fill="#DC143C"/>
+                            <circle cx="95" cy="278" r="2" fill="#8B0000"/>
+                            <circle cx="340" cy="270" r="3" fill="#9370DB"/>
+                            <circle cx="345" cy="273" r="2" fill="#4B0082"/>
+                            
+                            <!-- 蝴蝶 -->
+                            <g transform="translate(250,120)">
+                                <ellipse cx="0" cy="0" rx="3" ry="2" fill="#FFD700"/>
+                                <ellipse cx="0" cy="3" rx="3" ry="2" fill="#FFA500"/>
+                                <line x1="0" y1="-2" x2="0" y2="5" stroke="#000" stroke-width="0.5"/>
+                            </g>
+                            
+                            <text x="300" y="25" text-anchor="middle" font-size="14" fill="white" font-weight="bold">🌲 神秘森林</text>
+                        </svg>
                     </div>
                     
                     <div class="scene-content">
@@ -864,14 +1057,105 @@ function initFarmStoryGame() {
             content = `
                 <div class="mine-scene">
                     <div class="scene-visual mb-3">
-                        <div class="mine-landscape">
-                            <div class="mine-entrance">⛰️ 🕳️ ⛰️</div>
-                            <div class="mine-interior">
-                                <div class="mine-walls">🪨💎🪨⚱️🪨💎🪨</div>
-                                <div class="mine-floor">⛏️ 🔦 💰 🔦 ⛏️</div>
-                                <div class="mine-tracks">🛤️🛤️🛤️🛤️🛤️</div>
-                            </div>
-                        </div>
+                        <svg viewBox="0 0 600 300" class="mine-svg">
+                            <defs>
+                                <linearGradient id="mineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#2F2F2F;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#1C1C1C;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+                                </linearGradient>
+                                <radialGradient id="gemGradient" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" style="stop-color:#FF69B4;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#8B008B;stop-opacity:1" />
+                                </radialGradient>
+                                <radialGradient id="goldGradient" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+                                </radialGradient>
+                            </defs>
+                            
+                            <!-- 礦坑背景 -->
+                            <rect width="600" height="300" fill="url(#mineGradient)"/>
+                            
+                            <!-- 礦坑入口 -->
+                            <path d="M 200 50 Q 300 20 400 50 L 450 150 L 150 150 Z" fill="#696969"/>
+                            <path d="M 220 60 Q 300 35 380 60 L 420 140 L 180 140 Z" fill="#000000"/>
+                            
+                            <!-- 礦坑隧道 -->
+                            <rect x="0" y="150" width="600" height="150" fill="#1C1C1C"/>
+                            
+                            <!-- 支撐木柱 -->
+                            <rect x="100" y="150" width="8" height="120" fill="#8B4513"/>
+                            <rect x="95" y="150" width="18" height="8" fill="#654321"/>
+                            
+                            <rect x="250" y="150" width="8" height="130" fill="#8B4513"/>
+                            <rect x="245" y="150" width="18" height="8" fill="#654321"/>
+                            
+                            <rect x="400" y="150" width="8" height="125" fill="#8B4513"/>
+                            <rect x="395" y="150" width="18" height="8" fill="#654321"/>
+                            
+                            <!-- 岩石牆面 -->
+                            <polygon points="0,150 50,160 100,155 150,165 200,150 250,160 300,155 350,165 400,150 450,160 500,155 550,165 600,150 600,200 0,200" fill="#696969"/>
+                            <polygon points="0,200 80,210 160,205 240,215 320,200 400,210 480,205 560,215 600,200 600,250 0,250" fill="#808080"/>
+                            
+                            <!-- 礦車軌道 -->
+                            <g stroke="#8B4513" stroke-width="4">
+                                <line x1="0" y1="270" x2="600" y2="270"/>
+                                <line x1="0" y1="275" x2="600" y2="275"/>
+                            </g>
+                            
+                            <!-- 軌道枕木 -->
+                            <g fill="#654321">
+                                <rect x="50" y="268" width="20" height="9"/>
+                                <rect x="100" y="268" width="20" height="9"/>
+                                <rect x="150" y="268" width="20" height="9"/>
+                                <rect x="200" y="268" width="20" height="9"/>
+                                <rect x="250" y="268" width="20" height="9"/>
+                                <rect x="300" y="268" width="20" height="9"/>
+                                <rect x="350" y="268" width="20" height="9"/>
+                                <rect x="400" y="268" width="20" height="9"/>
+                                <rect x="450" y="268" width="20" height="9"/>
+                                <rect x="500" y="268" width="20" height="9"/>
+                            </g>
+                            
+                            <!-- 礦車 -->
+                            <g transform="translate(350,250)">
+                                <rect x="0" y="0" width="40" height="15" fill="#2F4F4F"/>
+                                <rect x="5" y="5" width="30" height="8" fill="#1C1C1C"/>
+                                <circle cx="8" cy="18" r="4" fill="#696969"/>
+                                <circle cx="32" cy="18" r="4" fill="#696969"/>
+                            </g>
+                            
+                            <!-- 寶石和礦石 -->
+                            <!-- 鑽石 -->
+                            <polygon points="120,180 115,190 125,190" fill="url(#gemGradient)"/>
+                            <polygon points="320,200 315,210 325,210" fill="#00CED1"/>
+                            <polygon points="480,185 475,195 485,195" fill="url(#gemGradient)"/>
+                            
+                            <!-- 金礦 -->
+                            <circle cx="180" cy="220" r="4" fill="url(#goldGradient)"/>
+                            <circle cx="420" cy="235" r="3" fill="url(#goldGradient)"/>
+                            <circle cx="80" cy="240" r="3" fill="url(#goldGradient)"/>
+                            
+                            <!-- 礦工工具 -->
+                            <!-- 鶴嘴鋤 -->
+                            <g transform="translate(200,220)">
+                                <line x1="0" y1="0" x2="25" y2="20" stroke="#8B4513" stroke-width="3"/>
+                                <path d="M 20 15 L 30 20 L 32 18 L 22 13 Z" fill="#C0C0C0"/>
+                            </g>
+                            
+                            <!-- 手電筒光束 -->
+                            <polygon points="150,180 180,160 200,180 180,200" fill="#FFFF00" opacity="0.3"/>
+                            <polygon points="450,200 480,180 500,200 480,220" fill="#FFFF00" opacity="0.2"/>
+                            
+                            <!-- 礦工頭盔 -->
+                            <g transform="translate(70,200)">
+                                <ellipse cx="0" cy="0" rx="8" ry="6" fill="#FFD700"/>
+                                <circle cx="0" cy="-3" r="2" fill="#FFFF00"/>
+                            </g>
+                            
+                            <text x="300" y="25" text-anchor="middle" font-size="14" fill="#C0C0C0" font-weight="bold">⛏️ 古老礦坑</text>
+                        </svg>
                     </div>
                     
                     <div class="scene-content">
