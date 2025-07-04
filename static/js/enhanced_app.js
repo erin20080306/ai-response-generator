@@ -495,6 +495,8 @@ class EnhancedAIAssistant {
 
         if (!message) return;
 
+        console.log('發送訊息:', message);
+
         try {
             // 顯示用戶訊息
             this.addMessage(message, 'user');
@@ -512,6 +514,8 @@ class EnhancedAIAssistant {
             // 顯示載入狀態
             this.showLoading();
 
+            console.log('準備發送到後端...');
+
             // 發送到後端
             const response = await fetch('/chat', {
                 method: 'POST',
@@ -519,36 +523,26 @@ class EnhancedAIAssistant {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    message: message,
-                    conversation_id: this.currentConversationId,
-                    tone: this.settings.aiTone,
-                    context: this.getContextData()
+                    message: message
                 })
             });
+
+            console.log('收到後端回應，狀態:', response.status);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('解析後端數據:', data);
 
             if (data.success) {
                 // 顯示 AI 回應
+                console.log('顯示AI回應:', data.response);
                 const useTypewriter = this.settings.typewriterEffect;
                 this.addMessage(data.response, 'ai', useTypewriter);
                 
-                // 更新對話 ID
-                if (data.conversation_id) {
-                    this.currentConversationId = data.conversation_id;
-                }
-
-                // 語音輸出
-                if (this.settings.voiceOutput && this.voiceHandler) {
-                    this.voiceHandler.speak(data.response);
-                }
-
-                // 自動儲存對話
-                this.autoSaveConversation();
+                this.showNotification('AI回應成功', 'success');
 
             } else {
                 throw new Error(data.error || '發送訊息失敗');
@@ -557,7 +551,7 @@ class EnhancedAIAssistant {
         } catch (error) {
             console.error('發送訊息錯誤:', error);
             this.addMessage('抱歉，發生錯誤。請稍後再試。', 'system');
-            this.showNotification('發送訊息失敗', 'error');
+            this.showNotification('發送訊息失敗: ' + error.message, 'error');
         } finally {
             this.hideLoading();
         }
@@ -829,16 +823,36 @@ class EnhancedAIAssistant {
     }
 
     showLoading() {
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) {
-            loadingOverlay.style.display = 'flex';
+        // 創建或顯示載入指示器
+        let loadingElement = document.getElementById('chatLoading');
+        if (!loadingElement) {
+            loadingElement = document.createElement('div');
+            loadingElement.id = 'chatLoading';
+            loadingElement.className = 'message-item ai-message loading';
+            loadingElement.innerHTML = `
+                <div class="message-content">
+                    <i class="fas fa-robot me-2"></i>
+                    <span class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                    正在思考中...
+                </div>
+            `;
+            
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                chatMessages.appendChild(loadingElement);
+                this.scrollToBottom();
+            }
         }
     }
 
     hideLoading() {
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) {
-            loadingOverlay.style.display = 'none';
+        const loadingElement = document.getElementById('chatLoading');
+        if (loadingElement) {
+            loadingElement.remove();
         }
     }
 
