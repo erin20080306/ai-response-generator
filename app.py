@@ -5,10 +5,12 @@ import requests
 import tempfile
 import json
 import qrcode
+import barcode
+from barcode.writer import ImageWriter
 from datetime import datetime
 from io import BytesIO
 from PIL import Image
-from flask import Flask, render_template, request, jsonify, session, send_file
+from flask import Flask, render_template, request, jsonify, session, send_file, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -500,13 +502,24 @@ def create_spreadsheet(structure, file_type, language):
             except Exception as e:
                 logging.warning(f"Google Sheets 上傳失敗，改為下載檔案: {e}")
         
-        # 返回下載連結
-        return send_file(
-            temp_file.name,
-            as_attachment=True,
-            download_name=filename,
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
+        # 將檔案保存到靜態目錄以便下載
+        import uuid
+        file_id = str(uuid.uuid4())
+        static_path = f'static/downloads/{file_id}_{filename}'
+        os.makedirs('static/downloads', exist_ok=True)
+        
+        import shutil
+        shutil.copy2(temp_file.name, static_path)
+        
+        # 返回下載資訊
+        return jsonify({
+            'success': True,
+            'download_url': f'/download/{file_id}_{filename}',
+            'filename': filename,
+            'title': structure.get('title', 'Document'),
+            'type': file_type,
+            'description': structure.get('description', '')
+        })
         
     except Exception as e:
         logging.error(f"試算表創建錯誤: {e}")
@@ -585,12 +598,24 @@ def create_word_document(structure, language):
         
         filename = f"{structure.get('title', 'document')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
         
-        return send_file(
-            temp_file.name,
-            as_attachment=True,
-            download_name=filename,
-            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        )
+        # 將檔案保存到靜態目錄以便下載
+        import uuid
+        file_id = str(uuid.uuid4())
+        static_path = f'static/downloads/{file_id}_{filename}'
+        os.makedirs('static/downloads', exist_ok=True)
+        
+        import shutil
+        shutil.copy2(temp_file.name, static_path)
+        
+        # 返回下載資訊
+        return jsonify({
+            'success': True,
+            'download_url': f'/download/{file_id}_{filename}',
+            'filename': filename,
+            'title': structure.get('title', 'Document'),
+            'type': 'word',
+            'description': structure.get('description', '')
+        })
         
     except Exception as e:
         logging.error(f"Word 文件創建錯誤: {e}")
@@ -836,6 +861,66 @@ def generate_qr():
     except Exception as e:
         logging.error(f"Error generating QR code: {str(e)}")
         return jsonify({'error': 'Failed to generate QR code'}), 500
+
+@app.route('/generate_barcode', methods=['POST'])
+def generate_barcode():
+    """Generate barcode"""
+    try:
+        data = request.json
+        text = data.get('text', '')
+        barcode_type = data.get('type', 'code128')
+        
+        if not text:
+            return jsonify({'error': 'Text is required'}), 400
+        
+        # 支援的條碼類型
+        barcode_types = {
+            'code128': barcode.Code128,
+            'code39': barcode.Code39,
+            'ean13': barcode.EAN13,
+            'ean8': barcode.EAN8,
+            'upc': barcode.UPCA,
+            'isbn13': barcode.ISBN13,
+            'isbn10': barcode.ISBN10,
+            'issn': barcode.ISSN
+        }
+        
+        if barcode_type not in barcode_types:
+            return jsonify({'error': 'Invalid barcode type'}), 400
+        
+        # 生成條碼
+        barcode_class = barcode_types[barcode_type]
+        code = barcode_class(text, writer=ImageWriter())
+        
+        buffer = BytesIO()
+        code.write(buffer)
+        buffer.seek(0)
+        
+        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+        
+        return jsonify({
+            'success': True,
+            'image': f'data:image/png;base64,{img_base64}',
+            'download_data': img_base64,
+            'type': barcode_type
+        })
+        
+    except Exception as e:
+        logging.error(f"Error generating barcode: {str(e)}")
+        return jsonify({'error': f'Failed to generate barcode: {str(e)}'}), 500
+
+@app.route('/download/<filename>')
+def download_file(filename):
+    """通用文件下載端點"""
+    try:
+        file_path = f'static/downloads/{filename}'
+        if os.path.exists(file_path):
+            return send_file(file_path, as_attachment=True)
+        else:
+            return jsonify({'error': 'File not found'}), 404
+    except Exception as e:
+        logging.error(f"Download error: {str(e)}")
+        return jsonify({'error': 'Download failed'}), 500
 
 @app.route('/health')
 def health():

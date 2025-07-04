@@ -270,6 +270,12 @@ class EnhancedAIAssistant {
         if (qrCodeBtn) {
             qrCodeBtn.addEventListener('click', () => this.openQRCodeGenerator());
         }
+        
+        // 條碼生成器
+        const barcodeBtn = document.getElementById('barcodeBtn');
+        if (barcodeBtn) {
+            barcodeBtn.addEventListener('click', () => this.openBarcodeGenerator());
+        }
 
         // 密碼生成器
         const passwordGenBtn = document.getElementById('passwordGenBtn');
@@ -1277,6 +1283,186 @@ class EnhancedAIAssistant {
         });
         
         qrModal.show();
+    }
+
+    // 條碼生成器
+    openBarcodeGenerator() {
+        const modalContent = `
+            <div class="modal fade" id="barcodeModal" tabindex="-1" aria-labelledby="barcodeModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="barcodeModalLabel">
+                                <i class="fas fa-barcode me-2"></i>條碼生成器
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control" id="barcodeText" placeholder="輸入要生成條碼的文字或數字">
+                                        <label for="barcodeText">條碼內容</label>
+                                    </div>
+                                    
+                                    <div class="form-floating mb-3">
+                                        <select class="form-select" id="barcodeType">
+                                            <option value="code128" selected>Code 128 (萬用型)</option>
+                                            <option value="code39">Code 39 (字母數字)</option>
+                                            <option value="ean13">EAN-13 (商品條碼)</option>
+                                            <option value="ean8">EAN-8 (短版商品碼)</option>
+                                            <option value="upc">UPC-A (美國商品碼)</option>
+                                            <option value="isbn13">ISBN-13 (書籍)</option>
+                                            <option value="isbn10">ISBN-10 (舊版書籍)</option>
+                                            <option value="issn">ISSN (期刊雜誌)</option>
+                                        </select>
+                                        <label for="barcodeType">條碼類型</label>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-primary" id="generateBarcodeBtn">
+                                            <i class="fas fa-magic me-2"></i>生成條碼
+                                        </button>
+                                        <button type="button" class="btn btn-success" id="downloadBarcodeBtn" style="display: none;">
+                                            <i class="fas fa-download me-2"></i>下載條碼
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="barcode-preview-area">
+                                        <div id="barcodePreview" class="text-center p-4 border rounded bg-light">
+                                            <i class="fas fa-barcode fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted">條碼將在這裡顯示</p>
+                                        </div>
+                                        <div id="barcodeInfo" class="mt-3" style="display: none;">
+                                            <h6>條碼資訊</h6>
+                                            <small class="text-muted">
+                                                <div><strong>類型：</strong><span id="barcodeTypeInfo"></span></div>
+                                                <div><strong>內容：</strong><span id="barcodeContentInfo"></span></div>
+                                                <div><strong>長度：</strong><span id="barcodeLengthInfo"></span></div>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                            <button type="button" class="btn btn-outline-primary" id="clearBarcodeBtn">清除</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalContent);
+        const barcodeModal = new bootstrap.Modal(document.getElementById('barcodeModal'));
+        
+        // 事件處理
+        let currentBarcodeData = null;
+        
+        document.getElementById('generateBarcodeBtn').addEventListener('click', async () => {
+            const text = document.getElementById('barcodeText').value.trim();
+            const type = document.getElementById('barcodeType').value;
+            
+            if (!text) {
+                this.showNotification('請輸入要轉換的內容', 'warning');
+                return;
+            }
+            
+            try {
+                const generateBtn = document.getElementById('generateBarcodeBtn');
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>生成中...';
+                
+                const response = await fetch('/generate_barcode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, type })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 顯示條碼
+                    const preview = document.getElementById('barcodePreview');
+                    preview.innerHTML = `<img src="${data.image}" class="img-fluid" alt="Barcode" style="max-width: 100%; border-radius: 8px;">`;
+                    
+                    // 顯示資訊
+                    const typeLabels = {
+                        'code128': 'Code 128',
+                        'code39': 'Code 39',
+                        'ean13': 'EAN-13',
+                        'ean8': 'EAN-8',
+                        'upc': 'UPC-A',
+                        'isbn13': 'ISBN-13',
+                        'isbn10': 'ISBN-10',
+                        'issn': 'ISSN'
+                    };
+                    
+                    document.getElementById('barcodeTypeInfo').textContent = typeLabels[type] || type;
+                    document.getElementById('barcodeContentInfo').textContent = text.length > 30 ? text.substring(0, 30) + '...' : text;
+                    document.getElementById('barcodeLengthInfo').textContent = text.length + ' 字元';
+                    document.getElementById('barcodeInfo').style.display = 'block';
+                    
+                    // 啟用下載按鈕
+                    const downloadBtn = document.getElementById('downloadBarcodeBtn');
+                    downloadBtn.style.display = 'block';
+                    currentBarcodeData = data.download_data;
+                    
+                    this.showNotification('條碼生成成功！', 'success');
+                } else {
+                    this.showNotification('生成失敗：' + (data.error || '未知錯誤'), 'error');
+                }
+                
+            } catch (error) {
+                console.error('條碼生成錯誤:', error);
+                this.showNotification('生成失敗，請檢查網路連接', 'error');
+            } finally {
+                const generateBtn = document.getElementById('generateBarcodeBtn');
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-magic me-2"></i>生成條碼';
+            }
+        });
+        
+        // 下載功能
+        document.getElementById('downloadBarcodeBtn').addEventListener('click', () => {
+            if (currentBarcodeData) {
+                const text = document.getElementById('barcodeText').value.trim();
+                const type = document.getElementById('barcodeType').value;
+                const filename = `barcode_${type}_${Date.now()}.png`;
+                
+                const link = document.createElement('a');
+                link.href = `data:image/png;base64,${currentBarcodeData}`;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                this.showNotification('條碼已下載！', 'success');
+            }
+        });
+        
+        // 清除功能
+        document.getElementById('clearBarcodeBtn').addEventListener('click', () => {
+            document.getElementById('barcodeText').value = '';
+            document.getElementById('barcodeType').value = 'code128';
+            document.getElementById('barcodePreview').innerHTML = `
+                <i class="fas fa-barcode fa-3x text-muted mb-3"></i>
+                <p class="text-muted">條碼將在這裡顯示</p>
+            `;
+            document.getElementById('barcodeInfo').style.display = 'none';
+            document.getElementById('downloadBarcodeBtn').style.display = 'none';
+            currentBarcodeData = null;
+        });
+        
+        // 清理函數
+        document.getElementById('barcodeModal').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('barcodeModal').remove();
+        });
+        
+        barcodeModal.show();
     }
 }
 
