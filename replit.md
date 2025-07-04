@@ -82,6 +82,7 @@ This is a Flask-based web application that provides a conversational AI interfac
 ## Changelog
 
 - July 04, 2025. Initial setup
+- July 04, 2025. Fixed typewriter effect text duplication issue by optimizing JavaScript logic
 
 ## User Preferences
 

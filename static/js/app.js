@@ -118,13 +118,9 @@ class AIAssistant {
     }
 
     typewriterEffect(element, text, icon) {
-        const formattedText = this.formatMessage(text);
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = formattedText;
-        
-        // If the message contains code blocks, handle them specially
-        if (tempDiv.querySelector('pre')) {
-            this.typewriterWithCodeBlocks(element, tempDiv, icon);
+        // Check if text contains code blocks
+        if (text.includes('```')) {
+            this.typewriterWithCodeBlocks(element, text, icon);
         } else {
             this.simpleTypewriter(element, text, icon);
         }
@@ -137,7 +133,9 @@ class AIAssistant {
         const typeInterval = setInterval(() => {
             if (index < text.length) {
                 const currentText = text.substring(0, index + 1);
-                element.innerHTML = icon + this.escapeHtml(currentText) + cursor;
+                // Format the text properly for display
+                const formattedText = this.formatMessage(currentText);
+                element.innerHTML = icon + formattedText + cursor;
                 index++;
                 this.scrollToBottom();
             } else {
@@ -149,28 +147,35 @@ class AIAssistant {
         }, 30);
     }
 
-    typewriterWithCodeBlocks(element, tempDiv, icon) {
-        const children = Array.from(tempDiv.childNodes);
+    typewriterWithCodeBlocks(element, text, icon) {
+        // Split text by code blocks
+        const parts = text.split(/(```[\s\S]*?```)/);
         let currentIndex = 0;
         
         const processNext = () => {
-            if (currentIndex >= children.length) {
+            if (currentIndex >= parts.length) {
                 this.highlightCode(element);
                 return;
             }
             
-            const child = children[currentIndex];
+            const part = parts[currentIndex];
             
-            if (child.nodeType === Node.TEXT_NODE) {
-                // Handle text nodes with typewriter effect
-                const text = child.textContent;
+            if (part.startsWith('```') && part.endsWith('```')) {
+                // This is a code block - show it instantly
+                const currentContent = element.innerHTML;
+                element.innerHTML = currentContent + this.formatMessage(part);
+                currentIndex++;
+                this.scrollToBottom();
+                setTimeout(processNext, 200);
+            } else {
+                // This is regular text - use typewriter effect
                 let charIndex = 0;
                 const cursor = '<span class="typewriter-cursor">|</span>';
                 
                 const typeInterval = setInterval(() => {
-                    if (charIndex < text.length) {
+                    if (charIndex < part.length) {
                         const currentContent = element.innerHTML.replace(cursor, '');
-                        const currentText = text.substring(0, charIndex + 1);
+                        const currentText = part.substring(0, charIndex + 1);
                         element.innerHTML = currentContent + this.escapeHtml(currentText) + cursor;
                         charIndex++;
                         this.scrollToBottom();
@@ -181,13 +186,6 @@ class AIAssistant {
                         setTimeout(processNext, 100);
                     }
                 }, 30);
-            } else {
-                // Handle element nodes (like code blocks) - show them instantly
-                const currentContent = element.innerHTML;
-                element.innerHTML = currentContent + child.outerHTML;
-                currentIndex++;
-                this.scrollToBottom();
-                setTimeout(processNext, 200);
             }
         };
         
