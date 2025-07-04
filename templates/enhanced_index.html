@@ -819,52 +819,9 @@
     <script src="{{ url_for('static', filename='js/tools.js') }}"></script>
     <script src="{{ url_for('static', filename='js/voice.js') }}"></script>
     <script src="{{ url_for('static', filename='js/collaboration.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/games_clean.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/games_standalone.js') }}"></script>
     <script src="{{ url_for('static', filename='js/document_generator.js') }}"></script>
-    
-    <!-- 全域遊戲載入函數 -->
-    <script>
-        function loadGame(gameType) {
-            const gameContainer = document.getElementById('gameContainer');
-            const gameInfo = document.getElementById('gameInfo');
-            const gameControls = document.getElementById('gameControls');
-            
-            // 清除目前內容
-            gameContainer.innerHTML = '';
-            gameInfo.innerHTML = '';
-            gameControls.innerHTML = '';
-            
-            // 根據遊戲類型載入不同的遊戲
-            switch(gameType) {
-                case 'tetris':
-                    loadTetrisGame();
-                    break;
-                case 'mahjong':
-                    loadMahjongGame();
-                    break;
-                case 'farm':
-                    loadFarmStoryGame();
-                    break;
-                default:
-                    gameContainer.innerHTML = '<div class="text-center text-muted"><p>遊戲載入失敗</p></div>';
-                    break;
-            }
-        }
-        
-        function loadTetrisGame() {
-            const gameContainer = document.getElementById('gameContainer');
-            const gameInfo = document.getElementById('gameInfo');
-            const gameControls = document.getElementById('gameControls');
-            
-            gameContainer.innerHTML = '<div id="tetrisGame"><canvas id="tetrisCanvas" width="300" height="600"></canvas></div>';
-            gameInfo.innerHTML = '<h6>俄羅斯方塊</h6><p>使用方向鍵移動方塊，空白鍵旋轉</p>';
-            gameControls.innerHTML = '<button class="btn btn-primary" onclick="startTetrisInPanel()">開始遊戲</button>';
-            
-            // 直接載入俄羅斯方塊遊戲
-            startTetrisInPanel();
-        }
-        
-        function loadMahjongGame() {
+
             const gameContainer = document.getElementById('gameContainer');
             const gameInfo = document.getElementById('gameInfo');
             const gameControls = document.getElementById('gameControls');
