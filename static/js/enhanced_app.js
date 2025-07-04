@@ -3,6 +3,66 @@
  * 支援所有新功能的增強版 AI 助手
  */
 
+// 統一的模態框管理工具
+class ModalManager {
+    static showModal(modalElement, modalInstance = null) {
+        if (modalInstance && typeof modalInstance.show === 'function') {
+            modalInstance.show();
+        } else if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            try {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            } catch (error) {
+                console.warn('Bootstrap modal failed, using fallback:', error);
+                ModalManager.showModalFallback(modalElement);
+            }
+        } else {
+            ModalManager.showModalFallback(modalElement);
+        }
+    }
+    
+    static showModalFallback(modalElement) {
+        if (modalElement) {
+            modalElement.style.display = 'block';
+            modalElement.classList.add('show');
+            modalElement.setAttribute('aria-hidden', 'false');
+            
+            // 添加背景遮罩
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            backdrop.id = 'modal-backdrop-' + modalElement.id;
+            document.body.appendChild(backdrop);
+            
+            // 關閉按鈕事件
+            const closeButtons = modalElement.querySelectorAll('[data-bs-dismiss="modal"]');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    ModalManager.hideModal(modalElement);
+                });
+            });
+            
+            // 點擊背景關閉
+            backdrop.addEventListener('click', () => {
+                ModalManager.hideModal(modalElement);
+            });
+        }
+    }
+    
+    static hideModal(modalElement) {
+        if (modalElement) {
+            modalElement.style.display = 'none';
+            modalElement.classList.remove('show');
+            modalElement.setAttribute('aria-hidden', 'true');
+            
+            // 移除背景遮罩
+            const backdrop = document.getElementById('modal-backdrop-' + modalElement.id);
+            if (backdrop) {
+                backdrop.remove();
+            }
+        }
+    }
+}
+
 class EnhancedAIAssistant {
     constructor() {
         this.settings = {
@@ -1195,7 +1255,11 @@ class EnhancedAIAssistant {
         `;
         
         document.body.insertAdjacentHTML('beforeend', modalContent);
-        const qrModal = new bootstrap.Modal(document.getElementById('qrCodeModal'));
+        // 初始化模態框
+        let qrModal;
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            qrModal = new bootstrap.Modal(document.getElementById('qrCodeModal'));
+        }
         
         // 事件處理
         let currentQRData = null;
@@ -1288,7 +1352,7 @@ class EnhancedAIAssistant {
             document.getElementById('qrCodeModal').remove();
         });
         
-        qrModal.show();
+        ModalManager.showModal(document.getElementById('qrCodeModal'), qrModal);
     }
 
     // 條碼生成器
@@ -1363,7 +1427,11 @@ class EnhancedAIAssistant {
         `;
         
         document.body.insertAdjacentHTML('beforeend', modalContent);
-        const barcodeModal = new bootstrap.Modal(document.getElementById('barcodeModal'));
+        // 初始化模態框
+        let barcodeModal;
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            barcodeModal = new bootstrap.Modal(document.getElementById('barcodeModal'));
+        }
         
         // 事件處理
         let currentBarcodeData = null;
@@ -1468,7 +1536,7 @@ class EnhancedAIAssistant {
             document.getElementById('barcodeModal').remove();
         });
         
-        barcodeModal.show();
+        ModalManager.showModal(document.getElementById('barcodeModal'), barcodeModal);
     }
 
     openDesignGenerator() {
@@ -1595,7 +1663,11 @@ class EnhancedAIAssistant {
         `;
         
         document.body.insertAdjacentHTML('beforeend', modalContent);
-        const designModal = new bootstrap.Modal(document.getElementById('designModal'));
+        // 初始化模態框
+        let designModal;
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            designModal = new bootstrap.Modal(document.getElementById('designModal'));
+        }
         
         // 事件處理
         let currentDesignData = null;
@@ -1725,7 +1797,7 @@ class EnhancedAIAssistant {
             document.getElementById('designModal').remove();
         });
         
-        designModal.show();
+        ModalManager.showModal(document.getElementById('designModal'), designModal);
     }
 }
 

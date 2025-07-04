@@ -207,14 +207,24 @@ class GameCenter {
 
         document.body.appendChild(modal);
         
-        // 確保Bootstrap已經加載
-        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-            const bsModal = new bootstrap.Modal(modal);
-            bsModal.show();
+        // 使用統一的模態框管理工具
+        if (typeof ModalManager !== 'undefined') {
+            ModalManager.showModal(modal);
         } else {
-            // 使用原生方式顯示模態框
-            modal.style.display = 'block';
-            modal.classList.add('show');
+            // 備用方案
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                try {
+                    const bsModal = new bootstrap.Modal(modal);
+                    bsModal.show();
+                } catch (error) {
+                    console.warn('Bootstrap modal failed:', error);
+                    modal.style.display = 'block';
+                    modal.classList.add('show');
+                }
+            } else {
+                modal.style.display = 'block';
+                modal.classList.add('show');
+            }
         }
 
         return modal;
