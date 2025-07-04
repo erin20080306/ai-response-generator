@@ -248,6 +248,199 @@
     font-size: 16px;
 }
 
+/* 麻將桌子佈局 */
+.mahjong-table-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #2c3e50;
+    border-radius: 15px;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.mahjong-table {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    background: radial-gradient(circle at center, #27ae60, #2ecc71);
+    border-radius: 15px;
+    display: grid;
+    grid-template-columns: 120px 1fr 120px;
+    grid-template-rows: 100px 1fr 100px;
+    grid-template-areas: 
+        "top-left player-top top-right"
+        "player-left center-area player-right"
+        "bottom-left player-bottom bottom-right";
+    gap: 10px;
+    padding: 15px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+}
+
+/* 玩家區域 */
+.player-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px;
+    backdrop-filter: blur(5px);
+}
+
+.player-top {
+    grid-area: player-top;
+    flex-direction: column;
+}
+
+.player-bottom {
+    grid-area: player-bottom;
+    flex-direction: column;
+}
+
+.player-left {
+    grid-area: player-left;
+    flex-direction: column;
+}
+
+.player-right {
+    grid-area: player-right;
+    flex-direction: column;
+}
+
+/* 玩家信息 */
+.player-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10px;
+    color: white;
+    font-weight: bold;
+}
+
+.player-name {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.player-score {
+    font-size: 12px;
+    color: #f39c12;
+}
+
+/* 牌背面 */
+.tile-back, .tile-back-vertical {
+    background: linear-gradient(145deg, #34495e, #2c3e50);
+    border: 2px solid #1a252f;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #7f8c8d;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+.tile-back {
+    width: 25px;
+    height: 35px;
+}
+
+.tile-back-vertical {
+    width: 35px;
+    height: 25px;
+}
+
+.tile-back:hover, .tile-back-vertical:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+/* 牌組排列 */
+.tiles-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    justify-content: center;
+}
+
+.tiles-column {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: center;
+}
+
+/* 中央區域 */
+.center-area {
+    grid-area: center-area;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+    padding: 20px;
+    backdrop-filter: blur(5px);
+}
+
+.discard-area {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 20px;
+}
+
+.discard-info {
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.discard-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    min-height: 50px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.game-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    font-weight: bold;
+}
+
+.current-turn, .remaining-tiles {
+    background: rgba(0,0,0,0.3);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+/* 玩家手牌 */
+.player-hand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.hand-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
 .mahjong-tiles {
     display: flex;
     flex-wrap: wrap;
