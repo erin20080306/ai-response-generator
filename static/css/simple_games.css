@@ -483,6 +483,13 @@
     transform: translateY(-5px);
 }
 
+.no-tiles {
+    color: #999;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
 .discard-tiles {
     display: flex;
     flex-wrap: wrap;

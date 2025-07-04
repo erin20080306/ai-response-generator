@@ -506,12 +506,52 @@ function restartTetris() {
 
 // 麻將遊戲初始化
 function initMahjongGame() {
+    console.log('開始初始化麻將遊戲');
+    
+    // 確保gameData.mahjong存在
+    if (!gameData.mahjong) {
+        gameData.mahjong = {
+            players: [
+                { name: '玩家', hand: [], score: 25600 },
+                { name: '電腦A', hand: [], score: 25600 },
+                { name: '電腦B', hand: [], score: 25600 },
+                { name: '電腦C', hand: [], score: 25600 }
+            ],
+            currentPlayer: 0,
+            discardPile: [],
+            selectedTile: null,
+            gameStarted: false,
+            remainingTiles: 144,
+            tilePool: [],
+            fullTileSet: [
+                // 萬子
+                '一萬', '二萬', '三萬', '四萬', '五萬', '六萬', '七萬', '八萬', '九萬',
+                '一萬', '二萬', '三萬', '四萬', '五萬', '六萬', '七萬', '八萬', '九萬',
+                '一萬', '二萬', '三萬', '四萬', '五萬', '六萬', '七萬', '八萬', '九萬',
+                '一萬', '二萬', '三萬', '四萬', '五萬', '六萬', '七萬', '八萬', '九萬',
+                // 筒子
+                '一筒', '二筒', '三筒', '四筒', '五筒', '六筒', '七筒', '八筒', '九筒',
+                '一筒', '二筒', '三筒', '四筒', '五筒', '六筒', '七筒', '八筒', '九筒',
+                '一筒', '二筒', '三筒', '四筒', '五筒', '六筒', '七筒', '八筒', '九筒',
+                '一筒', '二筒', '三筒', '四筒', '五筒', '六筒', '七筒', '八筒', '九筒',
+                // 條子
+                '一條', '二條', '三條', '四條', '五條', '六條', '七條', '八條', '九條',
+                '一條', '二條', '三條', '四條', '五條', '六條', '七條', '八條', '九條',
+                '一條', '二條', '三條', '四條', '五條', '六條', '七條', '八條', '九條',
+                '一條', '二條', '三條', '四條', '五條', '六條', '七條', '八條', '九條',
+                // 字牌
+                '東', '南', '西', '北', '東', '南', '西', '北', '東', '南', '西', '北', '東', '南', '西', '北',
+                '中', '發', '白', '中', '發', '白', '中', '發', '白', '中', '發', '白'
+            ]
+        };
+    }
+    
     // 重置遊戲狀態
     gameData.mahjong.currentPlayer = 0;
     gameData.mahjong.discardPile = [];
     gameData.mahjong.selectedTile = null;
     gameData.mahjong.gameStarted = true;
-    gameData.mahjong.remainingTiles = 70;
+    gameData.mahjong.remainingTiles = 144;
     
     // 重置所有玩家手牌
     gameData.mahjong.players.forEach(player => {
@@ -537,6 +577,9 @@ function initMahjongGame() {
         gameData.mahjong.remainingTiles--;
     }
     
+    console.log('玩家手牌數量:', gameData.mahjong.players[0].hand.length);
+    console.log('玩家手牌:', gameData.mahjong.players[0].hand);
+    
     renderMahjongBoard();
     updateMahjongDisplay();
 }
@@ -556,16 +599,22 @@ function renderMahjongBoard() {
     const discardPile = document.getElementById('discardPile');
     
     // 渲染玩家手牌
-    if (playerTiles) {
+    if (playerTiles && gameData.mahjong && gameData.mahjong.players && gameData.mahjong.players[0]) {
         const playerHand = gameData.mahjong.players[0].hand;
-        playerTiles.innerHTML = playerHand.map((tile, index) => 
-            `<div class="mahjong-tile ${gameData.mahjong.selectedTile === tile ? 'selected' : ''}" 
-                  onclick="selectTile('${tile}', ${index})">${tile}</div>`
-        ).join('');
+        console.log('玩家手牌:', playerHand);
+        
+        if (playerHand && playerHand.length > 0) {
+            playerTiles.innerHTML = playerHand.map((tile, index) => 
+                `<div class="mahjong-tile ${gameData.mahjong.selectedTile === tile ? 'selected' : ''}" 
+                      onclick="selectTile('${tile}', ${index})">${tile}</div>`
+            ).join('');
+        } else {
+            playerTiles.innerHTML = '<div class="no-tiles">暫無手牌</div>';
+        }
     }
     
     // 渲染牌河
-    if (discardPile) {
+    if (discardPile && gameData.mahjong && gameData.mahjong.discardPile) {
         discardPile.innerHTML = gameData.mahjong.discardPile.map(tile => 
             `<span class="discarded-tile">${tile}</span>`
         ).join('');
