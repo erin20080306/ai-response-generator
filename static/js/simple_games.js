@@ -115,93 +115,58 @@ function loadMahjongGame() {
             </div>
             
             <div class="mahjong-table-wrapper">
-                <div class="mahjong-table">
-                    <!-- 上方玩家 -->
-                    <div class="player-area player-top">
-                        <div class="player-info">
-                            <span class="player-name">電腦A</span>
-                            <span class="player-score">25600</span>
+                <div class="mahjong-table horizontal-layout">
+                    <!-- 左側：電腦玩家 -->
+                    <div class="opponents-section">
+                        <div class="opponent">
+                            <div class="opponent-name">電腦A</div>
+                            <div class="opponent-tiles">
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div>
+                            </div>
                         </div>
-                        <div class="tiles-row">
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
-                            <div class="tile-back"></div>
+                        <div class="opponent">
+                            <div class="opponent-name">電腦B</div>
+                            <div class="opponent-tiles">
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- 左側玩家 -->
-                    <div class="player-area player-left">
-                        <div class="player-info">
-                            <span class="player-name">電腦B</span>
-                            <span class="player-score">25600</span>
-                        </div>
-                        <div class="tiles-column">
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
+                        <div class="opponent">
+                            <div class="opponent-name">電腦C</div>
+                            <div class="opponent-tiles">
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div><div class="mini-tile"></div><div class="mini-tile"></div>
+                                <div class="mini-tile"></div>
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- 右側玩家 -->
-                    <div class="player-area player-right">
-                        <div class="player-info">
-                            <span class="player-name">電腦C</span>
-                            <span class="player-score">25600</span>
+                    <!-- 中央：遊戲信息和牌河 -->
+                    <div class="game-center">
+                        <div class="game-info">
+                            <div class="current-player">輪到: <span id="currentPlayer">玩家</span></div>
+                            <div class="tiles-remaining">剩餘: <span id="remainingTiles">144</span>張</div>
                         </div>
-                        <div class="tiles-column">
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                            <div class="tile-back-vertical"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- 中央牌河 -->
-                    <div class="center-area">
                         <div class="discard-area">
-                            <div class="discard-info">牌河</div>
+                            <div class="discard-label">牌河</div>
                             <div class="discard-tiles" id="discardPile"></div>
                         </div>
-                        <div class="game-status">
-                            <div class="current-turn">輪到: <span id="currentPlayer">玩家</span></div>
-                            <div class="remaining-tiles">剩餘: <span id="remainingTiles">70</span>張</div>
-                        </div>
                     </div>
                     
-                    <!-- 玩家手牌 -->
-                    <div class="player-area player-bottom">
+                    <!-- 右側：玩家手牌 -->
+                    <div class="player-section">
                         <div class="player-info">
-                            <span class="player-name">玩家</span>
-                            <span class="player-score">25600</span>
+                            <div class="player-name">玩家</div>
+                            <div class="player-score">25600</div>
                         </div>
                         <div class="player-hand">
                             <div class="hand-tiles" id="playerTiles"></div>
