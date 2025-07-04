@@ -1102,6 +1102,182 @@ class EnhancedAIAssistant {
             elements.fileStorageBar.style.width = `${data.file_storage_percent || 0}%`;
         }
     }
+
+    // QR碼生成器
+    openQRCodeGenerator() {
+        const modal = new bootstrap.Modal(document.createElement('div'));
+        
+        const modalContent = `
+            <div class="modal fade" id="qrCodeModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fas fa-qrcode me-2"></i>QR碼生成器
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="qrText" class="form-label">輸入內容</label>
+                                        <textarea class="form-control" id="qrText" rows="6" placeholder="輸入要轉換為QR碼的文字、網址或其他內容..."></textarea>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="qrSize" class="form-label">大小</label>
+                                            <select class="form-select" id="qrSize">
+                                                <option value="5">小 (5)</option>
+                                                <option value="10" selected>中 (10)</option>
+                                                <option value="15">大 (15)</option>
+                                                <option value="20">特大 (20)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="qrBorder" class="form-label">邊框</label>
+                                            <select class="form-select" id="qrBorder">
+                                                <option value="2">小邊框 (2)</option>
+                                                <option value="4" selected>標準邊框 (4)</option>
+                                                <option value="6">大邊框 (6)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-primary" id="generateQRBtn">
+                                            <i class="fas fa-magic me-2"></i>生成QR碼
+                                        </button>
+                                        <button type="button" class="btn btn-success" id="downloadQRBtn" style="display: none;">
+                                            <i class="fas fa-download me-2"></i>下載QR碼
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="qr-preview-area">
+                                        <div id="qrPreview" class="text-center p-4 border rounded bg-light">
+                                            <i class="fas fa-qrcode fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted">QR碼將在這裡顯示</p>
+                                        </div>
+                                        <div id="qrInfo" class="mt-3" style="display: none;">
+                                            <h6>QR碼資訊</h6>
+                                            <small class="text-muted">
+                                                <div><strong>內容：</strong><span id="qrContentInfo"></span></div>
+                                                <div><strong>字元數：</strong><span id="qrLengthInfo"></span></div>
+                                                <div><strong>尺寸：</strong><span id="qrSizeInfo"></span></div>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                            <button type="button" class="btn btn-outline-primary" id="clearQRBtn">清除</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalContent);
+        const qrModal = new bootstrap.Modal(document.getElementById('qrCodeModal'));
+        
+        // 事件處理
+        let currentQRData = null;
+        
+        document.getElementById('generateQRBtn').addEventListener('click', async () => {
+            const text = document.getElementById('qrText').value.trim();
+            const size = parseInt(document.getElementById('qrSize').value);
+            const border = parseInt(document.getElementById('qrBorder').value);
+            
+            if (!text) {
+                this.showNotification('請輸入要轉換的內容', 'warning');
+                return;
+            }
+            
+            try {
+                const generateBtn = document.getElementById('generateQRBtn');
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>生成中...';
+                
+                const response = await fetch('/generate_qr', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, size, border })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 顯示QR碼
+                    const preview = document.getElementById('qrPreview');
+                    preview.innerHTML = `<img src="${data.image}" class="img-fluid" alt="QR Code" style="max-width: 100%; border-radius: 8px;">`;
+                    
+                    // 顯示資訊
+                    document.getElementById('qrContentInfo').textContent = text.length > 50 ? text.substring(0, 50) + '...' : text;
+                    document.getElementById('qrLengthInfo').textContent = text.length;
+                    document.getElementById('qrSizeInfo').textContent = `${size}x${size} 像素`;
+                    document.getElementById('qrInfo').style.display = 'block';
+                    
+                    // 啟用下載按鈕
+                    const downloadBtn = document.getElementById('downloadQRBtn');
+                    downloadBtn.style.display = 'block';
+                    currentQRData = data.download_data;
+                    
+                    this.showNotification('QR碼生成成功！', 'success');
+                } else {
+                    this.showNotification('生成失敗：' + (data.error || '未知錯誤'), 'error');
+                }
+                
+            } catch (error) {
+                console.error('QR碼生成錯誤:', error);
+                this.showNotification('生成失敗，請檢查網路連接', 'error');
+            } finally {
+                const generateBtn = document.getElementById('generateQRBtn');
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-magic me-2"></i>生成QR碼';
+            }
+        });
+        
+        // 下載功能
+        document.getElementById('downloadQRBtn').addEventListener('click', () => {
+            if (currentQRData) {
+                const text = document.getElementById('qrText').value.trim();
+                const filename = `qrcode_${Date.now()}.png`;
+                
+                const link = document.createElement('a');
+                link.href = `data:image/png;base64,${currentQRData}`;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                this.showNotification('QR碼已下載！', 'success');
+            }
+        });
+        
+        // 清除功能
+        document.getElementById('clearQRBtn').addEventListener('click', () => {
+            document.getElementById('qrText').value = '';
+            document.getElementById('qrPreview').innerHTML = `
+                <i class="fas fa-qrcode fa-3x text-muted mb-3"></i>
+                <p class="text-muted">QR碼將在這裡顯示</p>
+            `;
+            document.getElementById('qrInfo').style.display = 'none';
+            document.getElementById('downloadQRBtn').style.display = 'none';
+            currentQRData = null;
+        });
+        
+        // 清理函數
+        document.getElementById('qrCodeModal').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('qrCodeModal').remove();
+        });
+        
+        qrModal.show();
+    }
 }
 
 // 初始化應用程式

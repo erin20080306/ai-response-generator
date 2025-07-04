@@ -4,6 +4,7 @@ import base64
 import requests
 import tempfile
 import json
+import qrcode
 from datetime import datetime
 from io import BytesIO
 from PIL import Image
@@ -793,6 +794,48 @@ def clear_history():
     except Exception as e:
         logging.error(f"Error clearing history: {str(e)}")
         return jsonify({'error': 'Failed to clear history', 'success': False}), 500
+
+@app.route('/generate_qr', methods=['POST'])
+def generate_qr():
+    """Generate QR code"""
+    try:
+        data = request.json
+        text = data.get('text', '')
+        size = data.get('size', 10)
+        border = data.get('border', 4)
+        
+        if not text:
+            return jsonify({'error': 'Text is required'}), 400
+        
+        # 創建QR碼
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=size,
+            border=border,
+        )
+        qr.add_data(text)
+        qr.make(fit=True)
+        
+        # 生成圖片
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # 轉換為base64
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        
+        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+        
+        return jsonify({
+            'success': True,
+            'image': f'data:image/png;base64,{img_base64}',
+            'download_data': img_base64
+        })
+        
+    except Exception as e:
+        logging.error(f"Error generating QR code: {str(e)}")
+        return jsonify({'error': 'Failed to generate QR code'}), 500
 
 @app.route('/health')
 def health():
