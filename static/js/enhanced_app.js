@@ -372,6 +372,11 @@ class EnhancedAIAssistant {
             this.gameCenter = new GameCenter(this);
         }
 
+        // 初始化文件生成器
+        if (typeof DocumentGenerator !== 'undefined') {
+            this.documentGenerator = new DocumentGenerator(this);
+        }
+
         // 初始化 Socket.IO
         this.initializeSocket();
     }

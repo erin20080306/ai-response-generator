@@ -47,6 +47,11 @@ dependencies = [
     "sendgrid>=6.12.4",
     "wtforms>=3.2.1",
     "marshmallow>=4.0.0",
+    "gspread>=6.2.1",
+    "google-auth-oauthlib>=1.2.2",
+    "google-auth-httplib2>=0.2.0",
+    "openpyxl>=3.1.5",
+    "xlsxwriter>=3.2.5",
 ]
 
 [[tool.uv.index]]
