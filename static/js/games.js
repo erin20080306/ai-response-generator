@@ -1740,12 +1740,19 @@ class GameCenter {
             gameState.aiInteractions--;
             updateUI();
             
+            // 檢查是否要求金手指
+            const cheatRequest = detectCheatRequest(question);
+            if (cheatRequest) {
+                handleCheatCode(cheatRequest);
+                return;
+            }
+            
             try {
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        message: `作為農場助手，回答這個問題（簡短回答）：${question}。當前農場狀態：等級${gameState.level}，金錢${gameState.money}` 
+                        message: `作為農場助手，回答這個問題（簡短回答）：${question}。當前農場狀態：等級${gameState.level}，金錢${gameState.money}。提示：如果用戶要求金手指或作弊碼，你可以提供以下選項：加錢、快速成長、最高等級、滿農場。` 
                     })
                 });
                 
@@ -1754,6 +1761,94 @@ class GameCenter {
             } catch (error) {
                 addAIMessage('AI助手', '連接失敗，請稍後再試。');
             }
+        }
+        
+        function detectCheatRequest(question) {
+            const lowerQuestion = question.toLowerCase();
+            const cheatKeywords = ['金手指', '作弊', '外掛', '金錢', '加錢', '錢', '升級', '等級', '快速', '成長', '滿農場', '全收穫'];
+            
+            for (let keyword of cheatKeywords) {
+                if (lowerQuestion.includes(keyword)) {
+                    if (lowerQuestion.includes('金錢') || lowerQuestion.includes('加錢') || lowerQuestion.includes('錢')) {
+                        return 'money';
+                    } else if (lowerQuestion.includes('等級') || lowerQuestion.includes('升級')) {
+                        return 'level';
+                    } else if (lowerQuestion.includes('快速') || lowerQuestion.includes('成長')) {
+                        return 'growth';
+                    } else if (lowerQuestion.includes('滿農場') || lowerQuestion.includes('全收穫')) {
+                        return 'harvest_all';
+                    } else {
+                        return 'general';
+                    }
+                }
+            }
+            return null;
+        }
+        
+        function handleCheatCode(cheatType) {
+            switch(cheatType) {
+                case 'money':
+                    gameState.money += 500;
+                    addAIMessage('AI助手', '🎉 金手指啟動！獲得 500 金幣！現在你有足夠的資金來擴展農場了！');
+                    logAction('使用金手指獲得 500 金幣');
+                    break;
+                    
+                case 'level':
+                    gameState.level += 2;
+                    gameState.exp = 0;
+                    addAIMessage('AI助手', '⭐ 等級提升金手指！提升 2 個等級！你現在是更有經驗的農夫了！');
+                    logAction('使用金手指提升等級');
+                    break;
+                    
+                case 'growth':
+                    let grownCrops = 0;
+                    gameState.farmPlots.forEach((plot, index) => {
+                        if (plot.state === 'planted' && plot.growthStage < 3) {
+                            plot.growthStage = 3;
+                            plot.state = 'ready';
+                            grownCrops++;
+                            const plotElement = document.querySelector(`[data-index="${index}"]`);
+                            updatePlotDisplay(plotElement, index);
+                        }
+                    });
+                    if (grownCrops > 0) {
+                        addAIMessage('AI助手', `🌱 成長加速金手指！${grownCrops} 株作物瞬間成熟！趕快收穫吧！`);
+                        logAction(`使用金手指加速 ${grownCrops} 株作物成長`);
+                    } else {
+                        addAIMessage('AI助手', '🌱 成長加速金手指準備就緒，但農場裡沒有可加速的作物！先種植一些種子吧！');
+                    }
+                    break;
+                    
+                case 'harvest_all':
+                    let harvested = 0;
+                    let totalEarnings = 0;
+                    gameState.farmPlots.forEach((plot, index) => {
+                        if (plot.state === 'ready') {
+                            plot.state = 'empty';
+                            plot.growthStage = 0;
+                            plot.watered = false;
+                            const earnings = 25 + Math.floor(Math.random() * 15);
+                            totalEarnings += earnings;
+                            harvested++;
+                            const plotElement = document.querySelector(`[data-index="${index}"]`);
+                            updatePlotDisplay(plotElement, index);
+                        }
+                    });
+                    if (harvested > 0) {
+                        gameState.money += totalEarnings;
+                        addExp(harvested * 15);
+                        addAIMessage('AI助手', `🌾 全收穫金手指！自動收穫 ${harvested} 株作物，獲得 ${totalEarnings} 金幣！`);
+                        logAction(`使用金手指全收穫，獲得 ${totalEarnings} 金幣`);
+                    } else {
+                        addAIMessage('AI助手', '🌾 全收穫金手指準備就緒，但沒有成熟的作物可收穫！');
+                    }
+                    break;
+                    
+                case 'general':
+                    addAIMessage('AI助手', '🎮 金手指選單：\n1️⃣ 說「加錢」- 獲得 500 金幣\n2️⃣ 說「升級」- 提升 2 個等級\n3️⃣ 說「快速成長」- 所有作物瞬間成熟\n4️⃣ 說「全收穫」- 自動收穫所有成熟作物\n\n選擇你想要的金手指吧！');
+                    break;
+            }
+            updateUI();
         }
         
         function addAIMessage(sender, message) {

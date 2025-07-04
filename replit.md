@@ -94,6 +94,7 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 04, 2025. Integrated PostgreSQL database for persistent storage and collaboration features
 - July 04, 2025. Added comprehensive document generation capabilities with AI-powered Excel, Word, and Google Sheets creation
 - July 04, 2025. Expanded gaming suite with Tetris, Mahjong, and Farm Story games including AI interaction limits
+- July 04, 2025. Added cheat code system to Farm Story game, allowing mid-game AI assistant cheat activation
 
 ## Enhanced Features Added
 
