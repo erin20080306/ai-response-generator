@@ -48,6 +48,12 @@ document.addEventListener('DOMContentLoaded', function() {
             gamesPanel.classList.add('show', 'active');
             gamesTab.classList.add('active');
             console.log('遊戲面板已強制顯示');
+            
+            // 如果遊戲面板內容為空，直接注入內容
+            if (gamesPanel.innerHTML.trim().length < 100) {
+                console.log('遊戲面板內容為空，注入內容');
+                injectGameContent();
+            }
         }
     }, 500);
     
@@ -60,6 +66,132 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('遊戲容器未找到');
     }
 });
+
+// 注入遊戲內容函數
+function injectGameContent() {
+    console.log('注入遊戲內容');
+    const gamesPanel = document.getElementById('games-panel');
+    
+    if (gamesPanel) {
+        gamesPanel.innerHTML = `
+            <div class="panel-container">
+                <h4 class="mb-4">遊戲中心</h4>
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                        <!-- Game Selection -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-gamepad me-2"></i>遊戲選擇</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card text-center game-card" onclick="loadGameSelection('tetris')" style="cursor: pointer; transition: transform 0.2s;">
+                                            <div class="card-body">
+                                                <i class="fas fa-th-large fa-2x mb-2 text-primary"></i>
+                                                <h5 class="card-title">俄羅斯方塊</h5>
+                                                <p class="card-text">經典的俄羅斯方塊遊戲</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card text-center game-card" onclick="loadGameSelection('mahjong')" style="cursor: pointer; transition: transform 0.2s;">
+                                            <div class="card-body">
+                                                <i class="fas fa-square fa-2x mb-2 text-success"></i>
+                                                <h5 class="card-title">麻將</h5>
+                                                <p class="card-text">4人麻將遊戲</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Game Container -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-play me-2"></i>遊戲畫面</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="gameContainer" class="game-container">
+                                    <div class="text-center text-muted" id="gameWelcome">
+                                        <i class="fas fa-gamepad fa-3x mb-3"></i>
+                                        <h5>請選擇一個遊戲開始</h5>
+                                        <p>點擊上方的遊戲卡片來載入遊戲</p>
+                                        <button class="btn btn-primary mt-3" onclick="ensureGamesTabVisible()">啟動遊戲介面</button>
+                                        <button class="btn btn-secondary mt-2 ms-2" onclick="loadGameSelection('tetris')">直接載入俄羅斯方塊</button>
+                                        <button class="btn btn-secondary mt-2 ms-2" onclick="loadGameSelection('mahjong')">直接載入麻將</button>
+                                    </div>
+                                    
+                                    <!-- Tetris Game Container -->
+                                    <div id="tetrisGame" style="display: none;">
+                                        <div class="tetris-container">
+                                            <h5 class="text-center mb-3">🎮 俄羅斯方塊</h5>
+                                            <canvas id="tetrisCanvas" width="300" height="600"></canvas>
+                                            <div class="text-center mt-3">
+                                                <small class="text-muted">
+                                                    方向鍵控制 | 空白鍵旋轉 | 下鍵加速
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Mahjong Game Container -->
+                                    <div id="mahjongGame" style="display: none;">
+                                        <div class="mahjong-container">
+                                            <h5 class="text-center mb-3">🀄 麻將遊戲</h5>
+                                            <div id="mahjongBoard" class="mahjong-board"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <!-- Game Info -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>遊戲資訊</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="gameInfo">
+                                    <p>選擇遊戲後將顯示相關資訊</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Game Controls -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>遊戲控制</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="gameControls">
+                                    <p>遊戲載入後將顯示控制選項</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        console.log('遊戲內容已注入');
+        
+        // 添加 hover 效果
+        const gameCards = gamesPanel.querySelectorAll('.game-card');
+        gameCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    }
+}
 
 // 遊戲選擇函數
 function loadGameSelection(gameType) {
