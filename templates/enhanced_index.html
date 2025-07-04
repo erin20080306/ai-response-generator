@@ -817,19 +817,54 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Custom JavaScript -->
-    <script src="{{ url_for('static', filename='js/enhanced_app.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/file_handler.js') }}"></script>
+    <!-- Core JavaScript Files -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script src="{{ url_for('static', filename='js/tools.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/voice.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/collaboration.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/canvas-effects.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/multiplayer-client.js') }}"></script>
     <script src="{{ url_for('static', filename='js/simple_games.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/farm_story_2d.js') }}"></script>
     <script src="{{ url_for('static', filename='js/document_generator.js') }}"></script>
     
     <!-- Socket.IO for Node.js support -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
+    <!-- Initialize Application -->
+    <script>
+        // Initialize the app when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded');
+            
+            // Initialize AI Assistant
+            if (typeof AIAssistant !== 'undefined') {
+                window.aiAssistant = new AIAssistant();
+                console.log('AI Assistant initialized');
+            } else {
+                console.error('AIAssistant class not found');
+            }
+            
+            // Initialize Tools
+            if (typeof Tools !== 'undefined') {
+                window.tools = new Tools();
+                console.log('Tools initialized');
+            } else {
+                console.error('Tools class not found');
+            }
+            
+            // Initialize Games
+            if (typeof SimpleGames !== 'undefined') {
+                window.simpleGames = new SimpleGames();
+                console.log('Simple Games initialized');
+            } else {
+                console.error('SimpleGames class not found');
+            }
+            
+            // Initialize Document Generator
+            if (typeof DocumentGenerator !== 'undefined') {
+                window.documentGenerator = new DocumentGenerator(window.aiAssistant);
+                console.log('Document Generator initialized');
+            } else {
+                console.error('DocumentGenerator class not found');
+            }
+        });
+    </script>
 
 </body>
 </html>
