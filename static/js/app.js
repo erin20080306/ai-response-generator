@@ -133,15 +133,18 @@ class AIAssistant {
         const typeInterval = setInterval(() => {
             if (index < text.length) {
                 const currentText = text.substring(0, index + 1);
-                // Use escapeHtml for typewriter effect to avoid formatting issues
-                element.innerHTML = icon + this.escapeHtml(currentText).replace(/\n/g, '<br>') + cursor;
+                // Simply display the text character by character
+                const displayText = currentText.replace(/&/g, '&amp;')
+                                              .replace(/</g, '&lt;')
+                                              .replace(/>/g, '&gt;')
+                                              .replace(/\n/g, '<br>');
+                element.innerHTML = icon + displayText + cursor;
                 index++;
                 this.scrollToBottom();
             } else {
-                // Only format the message once at the end
+                // Format the complete message at the end
                 element.innerHTML = icon + this.formatMessage(text);
                 clearInterval(typeInterval);
-                // Highlight code after typewriter effect
                 this.highlightCode(element);
             }
         }, 30);
@@ -176,7 +179,11 @@ class AIAssistant {
                     if (charIndex < part.length) {
                         const currentContent = element.innerHTML.replace(cursor, '');
                         const currentText = part.substring(0, charIndex + 1);
-                        element.innerHTML = currentContent + this.escapeHtml(currentText).replace(/\n/g, '<br>') + cursor;
+                        const displayText = currentText.replace(/&/g, '&amp;')
+                                                    .replace(/</g, '&lt;')
+                                                    .replace(/>/g, '&gt;')
+                                                    .replace(/\n/g, '<br>');
+                        element.innerHTML = currentContent + displayText + cursor;
                         charIndex++;
                         this.scrollToBottom();
                     } else {
