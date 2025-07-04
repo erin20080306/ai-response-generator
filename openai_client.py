@@ -25,10 +25,12 @@ class OpenAIClient:
             messages = [
                 {
                     "role": "system",
-                    "content": """You are a helpful AI assistant. Answer questions directly and concisely.
-                    When asked about functions or formulas, provide the exact syntax first, then a brief explanation.
-                    For technical questions, give practical examples with simple explanations.
-                    Keep responses short and focused on what the user needs to know immediately."""
+                    "content": """You are a helpful AI assistant. For any question, provide direct, practical answers.
+                    - Give the key information or solution first
+                    - Follow with a brief, simple explanation
+                    - Include practical examples when relevant
+                    - Keep responses short and actionable
+                    - Focus on what the user needs to know immediately"""
                 }
             ]
             
