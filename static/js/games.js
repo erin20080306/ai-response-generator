@@ -110,6 +110,48 @@ class GameCenter {
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- 俄羅斯方塊 -->
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card tool-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-cubes fa-2x mb-3"></i>
+                                        <h5>俄羅斯方塊</h5>
+                                        <p class="text-muted">經典俄羅斯方塊遊戲</p>
+                                        <button type="button" class="btn btn-primary" id="tetrisBtn">
+                                            開始遊戲
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 麻將 -->
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card tool-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-chess-board fa-2x mb-3"></i>
+                                        <h5>麻將</h5>
+                                        <p class="text-muted">經典麻將配對遊戲</p>
+                                        <button type="button" class="btn btn-primary" id="mahjongBtn">
+                                            開始遊戲
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 牧場物語 -->
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card tool-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-seedling fa-2x mb-3"></i>
+                                        <h5>牧場物語</h5>
+                                        <p class="text-muted">種植作物、餵養動物 (可與AI互動10次)</p>
+                                        <button type="button" class="btn btn-primary" id="farmGameBtn">
+                                            開始遊戲
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -129,6 +171,9 @@ class GameCenter {
         document.getElementById('ticTacToeBtn')?.addEventListener('click', () => this.startTicTacToe());
         document.getElementById('game2048Btn')?.addEventListener('click', () => this.start2048());
         document.getElementById('typingGameBtn')?.addEventListener('click', () => this.startTypingGame());
+        document.getElementById('tetrisBtn')?.addEventListener('click', () => this.startTetris());
+        document.getElementById('mahjongBtn')?.addEventListener('click', () => this.startMahjong());
+        document.getElementById('farmGameBtn')?.addEventListener('click', () => this.startFarmGame());
     }
 
     createGameModal(title, content) {
@@ -982,6 +1027,878 @@ class GameCenter {
             .tile-512 { background: #edc850; color: #f9f6f2; font-size: 1.2rem; }
             .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 1rem; }
             .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 1rem; }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 俄羅斯方塊遊戲
+    startTetris() {
+        this.addTetrisStyles();
+        
+        const gameContent = `
+            <div class="tetris-game">
+                <div class="row">
+                    <div class="col-md-8">
+                        <canvas id="tetrisCanvas" width="300" height="600" style="border: 2px solid #fff; background: #000;"></canvas>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="game-info">
+                            <h5>遊戲資訊</h5>
+                            <div class="mb-3">
+                                <strong>分數：</strong><span id="tetrisScore">0</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>等級：</strong><span id="tetrisLevel">1</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>消除行數：</strong><span id="tetrisLines">0</span>
+                            </div>
+                            <div class="mt-4">
+                                <h6>操作說明：</h6>
+                                <p class="small">
+                                    ← → 移動<br>
+                                    ↓ 加速下落<br>
+                                    ↑ 旋轉<br>
+                                    空白鍵 暫停
+                                </p>
+                            </div>
+                            <button class="btn btn-warning" id="tetrisPause">暫停</button>
+                            <button class="btn btn-secondary" id="tetrisRestart">重新開始</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const modal = this.createGameModal('俄羅斯方塊', gameContent);
+        modal.show();
+
+        setTimeout(() => {
+            this.initTetrisGame();
+        }, 100);
+    }
+
+    initTetrisGame() {
+        const canvas = document.getElementById('tetrisCanvas');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        const ROWS = 20;
+        const COLS = 10;
+        const BLOCK_SIZE = 30;
+        
+        let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+        let score = 0;
+        let level = 1;
+        let lines = 0;
+        let currentPiece = null;
+        let gameRunning = true;
+        let isPaused = false;
+        
+        // 方塊形狀
+        const SHAPES = [
+            [[1,1,1,1]], // I
+            [[1,1],[1,1]], // O
+            [[0,1,0],[1,1,1]], // T
+            [[0,1,1],[1,1,0]], // S
+            [[1,1,0],[0,1,1]], // Z
+            [[1,0,0],[1,1,1]], // J
+            [[0,0,1],[1,1,1]]  // L
+        ];
+        
+        const COLORS = ['#00f', '#ff0', '#f0f', '#0f0', '#f00', '#00f', '#f80'];
+        
+        class Piece {
+            constructor() {
+                this.shapeIndex = Math.floor(Math.random() * SHAPES.length);
+                this.shape = SHAPES[this.shapeIndex];
+                this.color = COLORS[this.shapeIndex];
+                this.x = Math.floor(COLS / 2) - Math.floor(this.shape[0].length / 2);
+                this.y = 0;
+            }
+            
+            rotate() {
+                const rotated = this.shape[0].map((_, i) => 
+                    this.shape.map(row => row[i]).reverse()
+                );
+                return rotated;
+            }
+        }
+        
+        function isValidMove(piece, dx, dy, newShape = null) {
+            const shape = newShape || piece.shape;
+            for (let y = 0; y < shape.length; y++) {
+                for (let x = 0; x < shape[y].length; x++) {
+                    if (shape[y][x]) {
+                        const newX = piece.x + x + dx;
+                        const newY = piece.y + y + dy;
+                        if (newX < 0 || newX >= COLS || newY >= ROWS || 
+                            (newY >= 0 && board[newY][newX])) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+        
+        function placePiece(piece) {
+            for (let y = 0; y < piece.shape.length; y++) {
+                for (let x = 0; x < piece.shape[y].length; x++) {
+                    if (piece.shape[y][x]) {
+                        board[piece.y + y][piece.x + x] = piece.shapeIndex + 1;
+                    }
+                }
+            }
+        }
+        
+        function clearLines() {
+            let linesCleared = 0;
+            for (let y = ROWS - 1; y >= 0; y--) {
+                if (board[y].every(cell => cell !== 0)) {
+                    board.splice(y, 1);
+                    board.unshift(Array(COLS).fill(0));
+                    linesCleared++;
+                    y++;
+                }
+            }
+            
+            if (linesCleared > 0) {
+                lines += linesCleared;
+                score += linesCleared * 100 * level;
+                level = Math.floor(lines / 10) + 1;
+                updateDisplay();
+            }
+        }
+        
+        function updateDisplay() {
+            document.getElementById('tetrisScore').textContent = score;
+            document.getElementById('tetrisLevel').textContent = level;
+            document.getElementById('tetrisLines').textContent = lines;
+        }
+        
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    if (board[y][x]) {
+                        ctx.fillStyle = COLORS[board[y][x] - 1];
+                        ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                        ctx.strokeStyle = '#fff';
+                        ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                }
+            }
+            
+            if (currentPiece) {
+                ctx.fillStyle = currentPiece.color;
+                for (let y = 0; y < currentPiece.shape.length; y++) {
+                    for (let x = 0; x < currentPiece.shape[y].length; x++) {
+                        if (currentPiece.shape[y][x]) {
+                            const drawX = (currentPiece.x + x) * BLOCK_SIZE;
+                            const drawY = (currentPiece.y + y) * BLOCK_SIZE;
+                            ctx.fillRect(drawX, drawY, BLOCK_SIZE, BLOCK_SIZE);
+                            ctx.strokeStyle = '#fff';
+                            ctx.strokeRect(drawX, drawY, BLOCK_SIZE, BLOCK_SIZE);
+                        }
+                    }
+                }
+            }
+        }
+        
+        function gameLoop() {
+            if (!gameRunning || isPaused) return;
+            
+            if (!currentPiece) {
+                currentPiece = new Piece();
+                if (!isValidMove(currentPiece, 0, 0)) {
+                    gameRunning = false;
+                    alert('遊戲結束！最終分數：' + score);
+                    return;
+                }
+            }
+            
+            if (isValidMove(currentPiece, 0, 1)) {
+                currentPiece.y++;
+            } else {
+                placePiece(currentPiece);
+                clearLines();
+                currentPiece = null;
+            }
+            
+            draw();
+            setTimeout(gameLoop, Math.max(50, 500 - level * 30));
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning || isPaused || !currentPiece) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    if (isValidMove(currentPiece, -1, 0)) currentPiece.x--;
+                    break;
+                case 'ArrowRight':
+                    if (isValidMove(currentPiece, 1, 0)) currentPiece.x++;
+                    break;
+                case 'ArrowDown':
+                    if (isValidMove(currentPiece, 0, 1)) currentPiece.y++;
+                    break;
+                case 'ArrowUp':
+                    const rotated = currentPiece.rotate();
+                    if (isValidMove(currentPiece, 0, 0, rotated)) {
+                        currentPiece.shape = rotated;
+                    }
+                    break;
+                case ' ':
+                    isPaused = !isPaused;
+                    if (!isPaused) gameLoop();
+                    break;
+            }
+            draw();
+        });
+        
+        document.getElementById('tetrisPause')?.addEventListener('click', () => {
+            isPaused = !isPaused;
+            document.getElementById('tetrisPause').textContent = isPaused ? '繼續' : '暫停';
+            if (!isPaused) gameLoop();
+        });
+        
+        document.getElementById('tetrisRestart')?.addEventListener('click', () => {
+            board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+            score = 0;
+            level = 1;
+            lines = 0;
+            currentPiece = null;
+            gameRunning = true;
+            isPaused = false;
+            updateDisplay();
+            gameLoop();
+        });
+        
+        updateDisplay();
+        gameLoop();
+    }
+
+    addTetrisStyles() {
+        if (document.getElementById('tetris-styles')) return;
+        
+        const style = document.createElement('style');
+        style.id = 'tetris-styles';
+        style.textContent = `
+            .tetris-game {
+                padding: 20px;
+            }
+            .game-info {
+                background: var(--bs-dark);
+                padding: 15px;
+                border-radius: 8px;
+                color: white;
+            }
+            #tetrisCanvas {
+                border-radius: 8px;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 麻將遊戲
+    startMahjong() {
+        this.addMahjongStyles();
+        
+        const gameContent = `
+            <div class="mahjong-game">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="game-header d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <strong>分數：</strong><span id="mahjongScore">0</span>
+                                <strong class="ms-3">時間：</strong><span id="mahjongTime">00:00</span>
+                            </div>
+                            <div>
+                                <button class="btn btn-warning btn-sm" id="mahjongHint">提示</button>
+                                <button class="btn btn-secondary btn-sm" id="mahjongShuffle">重新洗牌</button>
+                                <button class="btn btn-primary btn-sm" id="mahjongRestart">重新開始</button>
+                            </div>
+                        </div>
+                        <div id="mahjongBoard" class="mahjong-board"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const modal = this.createGameModal('麻將', gameContent);
+        modal.show();
+
+        setTimeout(() => {
+            this.initMahjongGame();
+        }, 100);
+    }
+
+    initMahjongGame() {
+        const board = document.getElementById('mahjongBoard');
+        if (!board) return;
+        
+        let score = 0;
+        let startTime = Date.now();
+        let gameTimer;
+        let selectedTiles = [];
+        let tiles = [];
+        
+        const TILE_TYPES = [
+            '🀇', '🀈', '🀉', '🀊', '🀋', '🀌', '🀍', '🀎', '🀏',
+            '🀐', '🀑', '🀒', '🀓', '🀔', '🀕', '🀖', '🀗', '🀘',
+            '🀙', '🀚', '🀛', '🀜', '🀝', '🀞', '🀟', '🀠', '🀡',
+            '🀀', '🀁', '🀂', '🀃', '🀄', '🀅', '🀆'
+        ];
+        
+        function initBoard() {
+            tiles = [];
+            board.innerHTML = '';
+            
+            const pairs = [];
+            for (let i = 0; i < 18; i++) {
+                const tileType = TILE_TYPES[i % TILE_TYPES.length];
+                pairs.push(tileType, tileType);
+            }
+            
+            for (let i = pairs.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+            }
+            
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 6; col++) {
+                    const index = row * 6 + col;
+                    if (index < pairs.length) {
+                        const tile = document.createElement('div');
+                        tile.className = 'mahjong-tile';
+                        tile.textContent = pairs[index];
+                        tile.dataset.type = pairs[index];
+                        tile.dataset.index = index;
+                        tile.style.gridColumn = col + 1;
+                        tile.style.gridRow = row + 1;
+                        
+                        tile.addEventListener('click', () => selectTile(tile));
+                        board.appendChild(tile);
+                        tiles.push(tile);
+                    }
+                }
+            }
+        }
+        
+        function selectTile(tile) {
+            if (tile.classList.contains('matched') || tile.classList.contains('selected')) return;
+            
+            if (selectedTiles.length < 2) {
+                tile.classList.add('selected');
+                selectedTiles.push(tile);
+                
+                if (selectedTiles.length === 2) {
+                    setTimeout(checkMatch, 300);
+                }
+            }
+        }
+        
+        function checkMatch() {
+            const [tile1, tile2] = selectedTiles;
+            
+            if (tile1.dataset.type === tile2.dataset.type) {
+                tile1.classList.add('matched');
+                tile2.classList.add('matched');
+                score += 10;
+                document.getElementById('mahjongScore').textContent = score;
+                
+                if (tiles.every(tile => tile.classList.contains('matched'))) {
+                    clearInterval(gameTimer);
+                    setTimeout(() => {
+                        alert('恭喜完成！分數：' + score);
+                    }, 500);
+                }
+            } else {
+                tile1.classList.add('shake');
+                tile2.classList.add('shake');
+                setTimeout(() => {
+                    tile1.classList.remove('shake');
+                    tile2.classList.remove('shake');
+                }, 500);
+            }
+            
+            tile1.classList.remove('selected');
+            tile2.classList.remove('selected');
+            selectedTiles = [];
+        }
+        
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('mahjongTime').textContent = `${minutes}:${seconds}`;
+        }
+        
+        function showHint() {
+            const availableTiles = tiles.filter(tile => !tile.classList.contains('matched'));
+            const types = {};
+            
+            availableTiles.forEach(tile => {
+                const type = tile.dataset.type;
+                if (!types[type]) types[type] = [];
+                types[type].push(tile);
+            });
+            
+            for (let type in types) {
+                if (types[type].length >= 2) {
+                    types[type].slice(0, 2).forEach(tile => {
+                        tile.classList.add('hint');
+                        setTimeout(() => tile.classList.remove('hint'), 2000);
+                    });
+                    return;
+                }
+            }
+        }
+        
+        document.getElementById('mahjongHint')?.addEventListener('click', showHint);
+        document.getElementById('mahjongShuffle')?.addEventListener('click', initBoard);
+        document.getElementById('mahjongRestart')?.addEventListener('click', () => {
+            score = 0;
+            startTime = Date.now();
+            document.getElementById('mahjongScore').textContent = score;
+            selectedTiles = [];
+            initBoard();
+        });
+        
+        initBoard();
+        gameTimer = setInterval(updateTimer, 1000);
+    }
+
+    addMahjongStyles() {
+        if (document.getElementById('mahjong-styles')) return;
+        
+        const style = document.createElement('style');
+        style.id = 'mahjong-styles';
+        style.textContent = `
+            .mahjong-game {
+                padding: 20px;
+            }
+            .mahjong-board {
+                display: grid;
+                grid-template-columns: repeat(6, 1fr);
+                grid-template-rows: repeat(6, 1fr);
+                gap: 5px;
+                max-width: 360px;
+                margin: 0 auto;
+            }
+            .mahjong-tile {
+                width: 50px;
+                height: 60px;
+                background: linear-gradient(145deg, #f0f0f0, #d0d0d0);
+                border: 2px solid #999;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                user-select: none;
+            }
+            .mahjong-tile:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            }
+            .mahjong-tile.selected {
+                background: linear-gradient(145deg, #ffd700, #ffed4e);
+                border-color: #ff6b6b;
+                transform: translateY(-3px);
+            }
+            .mahjong-tile.matched {
+                background: linear-gradient(145deg, #c8e6c9, #a5d6a7);
+                opacity: 0.5;
+                pointer-events: none;
+            }
+            .mahjong-tile.hint {
+                animation: hint-pulse 1s ease-in-out;
+                border-color: #4ecdc4;
+            }
+            .mahjong-tile.shake {
+                animation: shake 0.5s ease-in-out;
+            }
+            @keyframes hint-pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-3px); }
+                75% { transform: translateX(3px); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 牧場物語遊戲（可與AI互動10次）
+    startFarmGame() {
+        this.addFarmGameStyles();
+        
+        const gameContent = `
+            <div class="farm-game">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="farm-area">
+                            <div id="farmGrid" class="farm-grid"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="farm-panel">
+                            <h5>農場狀態</h5>
+                            <div class="mb-3">
+                                <strong>金錢：</strong><span id="farmMoney">100</span> 金
+                            </div>
+                            <div class="mb-3">
+                                <strong>等級：</strong><span id="farmLevel">1</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>經驗：</strong><span id="farmExp">0</span>/100
+                            </div>
+                            
+                            <h6>工具</h6>
+                            <div class="btn-group-vertical w-100 mb-3">
+                                <button class="btn btn-outline-primary tool-btn active" data-tool="hoe">
+                                    🍯 鋤頭
+                                </button>
+                                <button class="btn btn-outline-primary tool-btn" data-tool="seed">
+                                    🌱 種子 (10金)
+                                </button>
+                                <button class="btn btn-outline-primary tool-btn" data-tool="water">
+                                    💧 澆水
+                                </button>
+                                <button class="btn btn-outline-primary tool-btn" data-tool="harvest">
+                                    🌾 收穫
+                                </button>
+                            </div>
+                            
+                            <h6>AI 農場助手 <span class="badge bg-warning" id="aiCount">10</span></h6>
+                            <div class="ai-chat mb-3">
+                                <div id="aiMessages" class="ai-messages"></div>
+                                <div class="input-group">
+                                    <input type="text" id="aiInput" class="form-control" placeholder="詢問農場助手..." maxlength="100">
+                                    <button class="btn btn-primary" id="aiSend">送出</button>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <h6>農場日誌</h6>
+                                <div id="farmLog" class="farm-log"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const modal = this.createGameModal('牧場物語', gameContent);
+        modal.show();
+
+        setTimeout(() => {
+            this.initFarmGame();
+        }, 100);
+    }
+
+    initFarmGame() {
+        const grid = document.getElementById('farmGrid');
+        if (!grid) return;
+        
+        let gameState = {
+            money: 100,
+            level: 1,
+            exp: 0,
+            currentTool: 'hoe',
+            aiInteractions: 10,
+            farmPlots: Array(36).fill().map(() => ({ state: 'empty', growthStage: 0, watered: false }))
+        };
+        
+        let gameTimer;
+        
+        function initGrid() {
+            grid.innerHTML = '';
+            for (let i = 0; i < 36; i++) {
+                const plot = document.createElement('div');
+                plot.className = 'farm-plot';
+                plot.dataset.index = i;
+                plot.addEventListener('click', () => useTool(i));
+                updatePlotDisplay(plot, i);
+                grid.appendChild(plot);
+            }
+        }
+        
+        function updatePlotDisplay(plot, index) {
+            const plotData = gameState.farmPlots[index];
+            plot.className = 'farm-plot';
+            
+            switch(plotData.state) {
+                case 'empty':
+                    plot.textContent = '🟫';
+                    break;
+                case 'tilled':
+                    plot.textContent = plotData.watered ? '💧' : '🟤';
+                    break;
+                case 'planted':
+                    const stages = ['🌱', '🌿', '🌾', '🌽'];
+                    plot.textContent = stages[plotData.growthStage] || '🌱';
+                    if (plotData.watered) plot.classList.add('watered');
+                    break;
+                case 'ready':
+                    plot.textContent = '🌽';
+                    plot.classList.add('ready');
+                    break;
+            }
+        }
+        
+        function useTool(plotIndex) {
+            const plot = gameState.farmPlots[plotIndex];
+            const plotElement = document.querySelector(`[data-index="${plotIndex}"]`);
+            
+            switch(gameState.currentTool) {
+                case 'hoe':
+                    if (plot.state === 'empty') {
+                        plot.state = 'tilled';
+                        addExp(2);
+                        logAction('翻土完成');
+                    }
+                    break;
+                    
+                case 'seed':
+                    if (plot.state === 'tilled' && gameState.money >= 10) {
+                        plot.state = 'planted';
+                        plot.growthStage = 0;
+                        gameState.money -= 10;
+                        addExp(5);
+                        logAction('種子已種植');
+                    }
+                    break;
+                    
+                case 'water':
+                    if (plot.state === 'planted' && !plot.watered) {
+                        plot.watered = true;
+                        addExp(3);
+                        logAction('作物已澆水');
+                    }
+                    break;
+                    
+                case 'harvest':
+                    if (plot.state === 'ready') {
+                        plot.state = 'empty';
+                        plot.growthStage = 0;
+                        plot.watered = false;
+                        const earnings = 20 + Math.floor(Math.random() * 10);
+                        gameState.money += earnings;
+                        addExp(10);
+                        logAction(`收穫作物，獲得 ${earnings} 金`);
+                    }
+                    break;
+            }
+            
+            updatePlotDisplay(plotElement, plotIndex);
+            updateUI();
+        }
+        
+        function addExp(amount) {
+            gameState.exp += amount;
+            if (gameState.exp >= gameState.level * 100) {
+                gameState.level++;
+                gameState.exp = 0;
+                logAction(`等級提升到 ${gameState.level}！`);
+            }
+        }
+        
+        function updateUI() {
+            document.getElementById('farmMoney').textContent = gameState.money;
+            document.getElementById('farmLevel').textContent = gameState.level;
+            document.getElementById('farmExp').textContent = gameState.exp;
+            document.getElementById('aiCount').textContent = gameState.aiInteractions;
+        }
+        
+        function logAction(message) {
+            const log = document.getElementById('farmLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            log.insertBefore(entry, log.firstChild);
+            
+            if (log.children.length > 5) {
+                log.removeChild(log.lastChild);
+            }
+        }
+        
+        async function askAI(question) {
+            if (gameState.aiInteractions <= 0) {
+                addAIMessage('AI助手', '對不起，今日AI互動次數已用完！');
+                return;
+            }
+            
+            gameState.aiInteractions--;
+            updateUI();
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: `作為農場助手，回答這個問題（簡短回答）：${question}。當前農場狀態：等級${gameState.level}，金錢${gameState.money}` 
+                    })
+                });
+                
+                const data = await response.json();
+                addAIMessage('AI助手', data.response || '抱歉，我無法回答這個問題。');
+            } catch (error) {
+                addAIMessage('AI助手', '連接失敗，請稍後再試。');
+            }
+        }
+        
+        function addAIMessage(sender, message) {
+            const messages = document.getElementById('aiMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'ai-message';
+            messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        function growCrops() {
+            let hasChanges = false;
+            gameState.farmPlots.forEach((plot, index) => {
+                if (plot.state === 'planted' && plot.watered) {
+                    plot.growthStage++;
+                    plot.watered = false;
+                    
+                    if (plot.growthStage >= 3) {
+                        plot.state = 'ready';
+                    }
+                    
+                    const plotElement = document.querySelector(`[data-index="${index}"]`);
+                    updatePlotDisplay(plotElement, index);
+                    hasChanges = true;
+                }
+            });
+            
+            if (hasChanges) {
+                logAction('作物生長了！');
+            }
+        }
+        
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                gameState.currentTool = btn.dataset.tool;
+            });
+        });
+        
+        document.getElementById('aiSend')?.addEventListener('click', () => {
+            const input = document.getElementById('aiInput');
+            const question = input.value.trim();
+            if (question && gameState.aiInteractions > 0) {
+                addAIMessage('你', question);
+                askAI(question);
+                input.value = '';
+            }
+        });
+        
+        document.getElementById('aiInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('aiSend').click();
+            }
+        });
+        
+        initGrid();
+        updateUI();
+        logAction('歡迎來到你的農場！');
+        addAIMessage('AI助手', '歡迎！我是你的農場助手，有任何農場問題都可以問我喔！(可互動10次)');
+        
+        gameTimer = setInterval(growCrops, 30000);
+    }
+
+    addFarmGameStyles() {
+        if (document.getElementById('farm-styles')) return;
+        
+        const style = document.createElement('style');
+        style.id = 'farm-styles';
+        style.textContent = `
+            .farm-game {
+                padding: 20px;
+            }
+            .farm-grid {
+                display: grid;
+                grid-template-columns: repeat(6, 1fr);
+                gap: 5px;
+                max-width: 480px;
+                background: #8BC34A;
+                padding: 15px;
+                border-radius: 10px;
+                border: 3px solid #689F38;
+            }
+            .farm-plot {
+                width: 60px;
+                height: 60px;
+                background: #A1887F;
+                border: 2px solid #6D4C41;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                user-select: none;
+            }
+            .farm-plot:hover {
+                transform: scale(1.1);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            }
+            .farm-plot.watered {
+                background: #4FC3F7;
+            }
+            .farm-plot.ready {
+                animation: ready-glow 2s ease-in-out infinite;
+            }
+            .farm-panel {
+                background: var(--bs-dark);
+                padding: 15px;
+                border-radius: 10px;
+                color: white;
+                max-height: 600px;
+                overflow-y: auto;
+            }
+            .ai-messages {
+                max-height: 120px;
+                overflow-y: auto;
+                background: #2c2c2c;
+                padding: 10px;
+                border-radius: 5px;
+                margin-bottom: 10px;
+            }
+            .ai-message {
+                margin-bottom: 8px;
+                font-size: 0.9em;
+                line-height: 1.3;
+            }
+            .farm-log {
+                max-height: 100px;
+                overflow-y: auto;
+                background: #2c2c2c;
+                padding: 10px;
+                border-radius: 5px;
+                font-size: 0.85em;
+            }
+            .log-entry {
+                margin-bottom: 5px;
+                color: #ccc;
+            }
+            @keyframes ready-glow {
+                0%, 100% { box-shadow: 0 0 5px #FFD700; }
+                50% { box-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700; }
+            }
         `;
         document.head.appendChild(style);
     }

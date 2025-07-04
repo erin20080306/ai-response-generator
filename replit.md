@@ -92,6 +92,8 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 04, 2025. Added automatic image generation using DALL-E 3 triggered by keywords like "畫", "繪", "生成圖片"
 - July 04, 2025. Enhanced UI with sidebar navigation, multi-panel interface, and responsive design
 - July 04, 2025. Integrated PostgreSQL database for persistent storage and collaboration features
+- July 04, 2025. Added comprehensive document generation capabilities with AI-powered Excel, Word, and Google Sheets creation
+- July 04, 2025. Expanded gaming suite with Tetris, Mahjong, and Farm Story games including AI interaction limits
 
 ## Enhanced Features Added
 
