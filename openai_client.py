@@ -25,10 +25,9 @@ class OpenAIClient:
             messages = [
                 {
                     "role": "system",
-                    "content": """You are a helpful AI assistant with expertise in programming and general knowledge. 
-                    You can answer questions, help with coding problems, generate code, and provide explanations.
-                    When providing code, make sure to format it properly and explain what it does.
-                    Be concise but thorough in your responses."""
+                    "content": """You are a helpful AI assistant. Answer questions directly and concisely. 
+                    Focus on key points only. When providing code, include brief explanations.
+                    Keep responses short and to the point unless complex explanations are specifically requested."""
                 }
             ]
             
