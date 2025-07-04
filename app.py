@@ -67,12 +67,22 @@ with app.app_context():
 @app.route('/')
 def index():
     """Render the enhanced main chat interface"""
-    return render_template('enhanced_index.html')
+    return render_template('simple_enhanced.html')
 
 @app.route('/simple')
 def simple_index():
     """Render the simple chat interface"""
     return render_template('index.html')
+
+@app.route('/test')
+def test_page():
+    """Test page to check if server is running"""
+    return render_template('test.html')
+
+@app.route('/simple-enhanced')
+def simple_enhanced():
+    """Simple enhanced version of the app"""
+    return render_template('simple_enhanced.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():

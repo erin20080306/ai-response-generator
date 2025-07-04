@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: white;
+        }
+        .test-box {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success {
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>應用程式測試頁面</h1>
+        <p>如果你看到這個頁面，表示Flask伺服器正在運行。</p>
+        <div class="success">✓ 伺服器運行正常</div>
+        
+        <h2>測試功能</h2>
+        <button onclick="testFunction()">測試JavaScript</button>
+        <div id="testResult"></div>
+    </div>
+
+    <script>
+        function testFunction() {
+            document.getElementById('testResult').innerHTML = 
+                '<div class="success">✓ JavaScript正常運行</div>';
+        }
+        
+        // 測試基本功能
+        console.log('測試頁面載入完成');
+    </script>
+</body>
+</html>
