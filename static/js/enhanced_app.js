@@ -85,7 +85,6 @@ class EnhancedAIAssistant {
         this.socket = null;
         this.currentUser = null;
         this.quickReplies = [];
-        this.fileClickHandler = null;
         
         this.init();
     }
@@ -200,93 +199,31 @@ class EnhancedAIAssistant {
     }
 
     setupFileEvents() {
-        // 延遲綁定確保DOM完全加載
-        setTimeout(() => {
-            const fileUploadBtn = document.getElementById('fileUploadBtn');
-            const fileInput = document.getElementById('fileInput');
-            const selectFilesBtn = document.getElementById('selectFilesBtn');
-            const fileInputPanel = document.getElementById('fileInputPanel');
-            const uploadArea = document.getElementById('uploadArea');
+        const fileUploadBtn = document.getElementById('fileUploadBtn');
+        const fileInput = document.getElementById('fileInput');
+        const selectFilesBtn = document.getElementById('selectFilesBtn');
+        const uploadArea = document.getElementById('uploadArea');
 
-            console.log('設置檔案事件監聽器:', { fileUploadBtn, fileInput, selectFilesBtn, fileInputPanel, uploadArea });
+        // 檔案上傳按鈕
+        if (fileUploadBtn && fileInput) {
+            fileUploadBtn.addEventListener('click', () => fileInput.click());
+        }
 
-            // 檔案上傳按鈕 (聊天區域)
-            if (fileUploadBtn && fileInput) {
-                fileUploadBtn.addEventListener('click', () => fileInput.click());
-            }
+        if (selectFilesBtn && fileInput) {
+            selectFilesBtn.addEventListener('click', () => fileInput.click());
+        }
 
-            // 檔案選擇按鈕 (檔案面板) - 多種綁定方式
-            if (selectFilesBtn && fileInputPanel) {
-                // 移除所有現有事件監聽器並重新綁定
-                selectFilesBtn.removeEventListener('click', this.fileClickHandler);
-                
-                // 創建新的事件處理器
-                this.fileClickHandler = (e) => {
-                    console.log('點擊選擇檔案按鈕 - 事件觸發');
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // 使用setTimeout確保事件處理完成
-                    setTimeout(() => {
-                        console.log('觸發檔案輸入框點擊');
-                        fileInputPanel.click();
-                    }, 10);
-                };
-                
-                selectFilesBtn.addEventListener('click', this.fileClickHandler);
-                
-                // 也嘗試使用onclick直接設置
-                selectFilesBtn.onclick = (e) => {
-                    console.log('直接onclick事件觸發');
-                    e.preventDefault();
-                    fileInputPanel.click();
-                };
-                
-                // 添加鼠標事件監聽器
-                selectFilesBtn.addEventListener('mousedown', (e) => {
-                    console.log('鼠標按下事件');
-                });
-                
-                selectFilesBtn.addEventListener('mouseup', (e) => {
-                    console.log('鼠標釋放事件');
-                });
-                
-                // 確保按鈕可點擊
-                selectFilesBtn.style.pointerEvents = 'auto';
-                selectFilesBtn.style.cursor = 'pointer';
-                
-            } else {
-                console.log('選擇檔案按鈕或輸入框未找到:', { selectFilesBtn, fileInputPanel });
-            }
-            // 檔案選擇事件 (聊天區域)
-            if (fileInput) {
-                fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
-            }
+        // 檔案選擇
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        }
 
-            // 檔案選擇事件 (檔案面板)
-            if (fileInputPanel) {
-                fileInputPanel.addEventListener('change', (e) => {
-                    console.log('檔案面板change事件觸發');
-                    this.handleFileSelect(e);
-                });
-                
-                // 添加其他事件監聽器來調試
-                fileInputPanel.addEventListener('input', (e) => {
-                    console.log('檔案面板input事件觸發');
-                });
-                
-                fileInputPanel.addEventListener('click', (e) => {
-                    console.log('檔案輸入框被點擊');
-                });
-            }
-
-            // 拖拽上傳
-            if (uploadArea) {
-                uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
-                uploadArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
-                uploadArea.addEventListener('drop', (e) => this.handleFileDrop(e));
-            }
-        }, 100);
+        // 拖拽上傳
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
+            uploadArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+            uploadArea.addEventListener('drop', (e) => this.handleFileDrop(e));
+        }
     }
 
     setupSettingsEvents() {
@@ -946,39 +883,6 @@ class EnhancedAIAssistant {
     }
 
     // 設定相關方法
-    exportSettings() {
-        try {
-            const settings = {
-                theme: document.getElementById('themeSelect').value,
-                fontSize: document.getElementById('fontSizeSelect').value,
-                typingSpeed: document.getElementById('typingSpeedRange').value,
-                typewriterEffect: document.getElementById('typewriterEffect').checked,
-                voiceInput: document.getElementById('voiceInput').checked,
-                voiceOutput: document.getElementById('voiceOutput').checked,
-                voiceLanguage: document.getElementById('voiceLanguage').value,
-                aiTone: document.getElementById('aiToneSelect').value,
-                exportDate: new Date().toISOString()
-            };
-            
-            const dataStr = JSON.stringify(settings, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `ai_assistant_settings_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            URL.revokeObjectURL(url);
-            this.showNotification('設定已匯出！', 'success');
-        } catch (error) {
-            console.error('匯出設定失敗:', error);
-            this.showNotification('匯出設定失敗', 'error');
-        }
-    }
-
     async loadSettings() {
         try {
             const saved = localStorage.getItem('aiAssistantSettings');
@@ -2617,188 +2521,8 @@ class EnhancedAIAssistant {
     }
 
     handleFileSelect(event) {
-        console.log('檔案選擇事件觸發');
+        // 檔案選擇處理函數
         const files = event.target.files;
-        console.log('選擇的檔案數量:', files ? files.length : 0);
-        
-        if (files && files.length > 0) {
-            for (let file of files) {
-                console.log('開始處理檔案:', file.name, file.size, file.type);
-                this.processFile(file);
-            }
-        } else {
-            console.log('沒有選擇檔案');
-        }
-        
-        // 重置輸入框值，確保重複選擇同一檔案時也能觸發事件
-        event.target.value = '';
-    }
-
-    async processFile(file) {
-        try {
-            console.log('處理檔案:', file.name);
-            
-            // 驗證檔案大小 (50MB 限制)
-            if (file.size > 50 * 1024 * 1024) {
-                this.showNotification('檔案過大，請選擇小於50MB的檔案', 'error');
-                return;
-            }
-
-            // 顯示上傳進度
-            this.showNotification('正在上傳檔案...', 'info');
-            
-            // 創建FormData
-            const formData = new FormData();
-            formData.append('file', file);
-
-            // 上傳檔案
-            const response = await fetch('/analyze_image', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error(`上傳失敗: ${response.status}`);
-            }
-
-            const result = await response.json();
-            
-            if (result.success) {
-                // 更新檔案列表
-                this.addFileToList(file, result);
-                
-                // 顯示分析結果
-                this.showAnalysisResult(file, result);
-                
-                this.showNotification('檔案上傳並分析成功！', 'success');
-            } else {
-                throw new Error(result.error || '分析失敗');
-            }
-
-        } catch (error) {
-            console.error('檔案處理錯誤:', error);
-            this.showNotification(`檔案處理失敗: ${error.message}`, 'error');
-        }
-    }
-
-    addFileToList(file, result) {
-        const filesList = document.getElementById('filesList');
-        if (!filesList) return;
-
-        // 清除空狀態
-        const emptyState = filesList.querySelector('.text-center.text-muted');
-        if (emptyState) {
-            emptyState.remove();
-        }
-
-        // 創建檔案項目
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item d-flex align-items-center justify-content-between p-3 border rounded mb-2';
-        fileItem.innerHTML = `
-            <div class="d-flex align-items-center">
-                <i class="fas ${this.getFileIcon(file.type)} fa-2x me-3"></i>
-                <div>
-                    <h6 class="mb-1">${file.name}</h6>
-                    <small class="text-muted">${this.formatFileSize(file.size)} • ${file.type || '未知類型'}</small>
-                </div>
-            </div>
-            <div class="btn-group">
-                <button class="btn btn-sm btn-outline-primary" onclick="window.aiAssistant.viewFileAnalysis('${file.name}')">
-                    <i class="fas fa-eye me-1"></i>查看
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="window.aiAssistant.removeFile('${file.name}')">
-                    <i class="fas fa-trash me-1"></i>刪除
-                </button>
-            </div>
-        `;
-
-        filesList.appendChild(fileItem);
-    }
-
-    showAnalysisResult(file, result) {
-        const analysisResults = document.getElementById('analysisResults');
-        if (!analysisResults) return;
-
-        // 清除空狀態
-        const emptyState = analysisResults.querySelector('.text-center.text-muted');
-        if (emptyState) {
-            emptyState.remove();
-        }
-
-        // 創建分析結果
-        const resultItem = document.createElement('div');
-        resultItem.className = 'analysis-item border rounded p-3 mb-3';
-        resultItem.innerHTML = `
-            <div class="d-flex align-items-center mb-2">
-                <i class="fas ${this.getFileIcon(file.type)} me-2"></i>
-                <h6 class="mb-0">${file.name}</h6>
-            </div>
-            <div class="analysis-content">
-                <h6>AI 分析結果：</h6>
-                <div class="bg-light p-3 rounded">
-                    <p class="mb-0">${result.analysis || '無法分析此檔案'}</p>
-                </div>
-            </div>
-            <div class="mt-2">
-                <small class="text-muted">分析時間: ${new Date().toLocaleString()}</small>
-            </div>
-        `;
-
-        analysisResults.appendChild(resultItem);
-    }
-
-    getFileIcon(fileType) {
-        if (!fileType) return 'fa-file';
-        
-        if (fileType.startsWith('image/')) return 'fa-image';
-        if (fileType.startsWith('video/')) return 'fa-video';
-        if (fileType.startsWith('audio/')) return 'fa-music';
-        if (fileType.includes('pdf')) return 'fa-file-pdf';
-        if (fileType.includes('word') || fileType.includes('document')) return 'fa-file-word';
-        if (fileType.includes('excel') || fileType.includes('spreadsheet')) return 'fa-file-excel';
-        if (fileType.includes('powerpoint') || fileType.includes('presentation')) return 'fa-file-powerpoint';
-        if (fileType.includes('text')) return 'fa-file-alt';
-        if (fileType.includes('zip') || fileType.includes('archive')) return 'fa-file-archive';
-        
-        return 'fa-file';
-    }
-
-    formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    handleDragOver(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const uploadArea = document.getElementById('uploadArea');
-        if (uploadArea) {
-            uploadArea.classList.add('drag-over');
-        }
-    }
-
-    handleDragLeave(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const uploadArea = document.getElementById('uploadArea');
-        if (uploadArea) {
-            uploadArea.classList.remove('drag-over');
-        }
-    }
-
-    handleFileDrop(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const uploadArea = document.getElementById('uploadArea');
-        if (uploadArea) {
-            uploadArea.classList.remove('drag-over');
-        }
-
-        const files = e.dataTransfer.files;
         if (files && files.length > 0) {
             for (let file of files) {
                 this.processFile(file);
@@ -2806,32 +2530,10 @@ class EnhancedAIAssistant {
         }
     }
 
-    viewFileAnalysis(fileName) {
-        // 顯示特定檔案的分析結果
-        this.showNotification(`查看 ${fileName} 的分析結果`, 'info');
-    }
-
-    removeFile(fileName) {
-        // 移除檔案
-        if (confirm(`確定要刪除檔案 "${fileName}" 嗎？`)) {
-            // 從檔案列表移除
-            const fileItems = document.querySelectorAll('.file-item');
-            fileItems.forEach(item => {
-                if (item.textContent.includes(fileName)) {
-                    item.remove();
-                }
-            });
-            
-            // 從分析結果移除
-            const analysisItems = document.querySelectorAll('.analysis-item');
-            analysisItems.forEach(item => {
-                if (item.textContent.includes(fileName)) {
-                    item.remove();
-                }
-            });
-            
-            this.showNotification(`已刪除檔案 "${fileName}"`, 'success');
-        }
+    processFile(file) {
+        // 處理上傳的檔案
+        console.log('Processing file:', file.name);
+        // 這裡可以添加檔案處理邏輯
     }
 }
 

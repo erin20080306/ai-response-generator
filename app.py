@@ -172,122 +172,47 @@ def generate_image():
 def analyze_image():
     """Analyze uploaded image using AI"""
     try:
-        # 檢查是否是檔案上傳
-        if 'file' in request.files:
-            file = request.files['file']
-            if file.filename == '':
-                return jsonify({'success': False, 'error': '請選擇檔案'})
-            
-            # 讀取檔案內容
-            file_content = file.read()
-            
-            # 檢查檔案類型
-            if file.content_type and file.content_type.startswith('image/'):
-                # 圖片檔案 - 轉換為base64
-                import base64
-                image_base64 = base64.b64encode(file_content).decode('utf-8')
-                
-                if not openai_client.is_configured():
-                    return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
-                
-                # 使用 OpenAI Vision 分析圖片
-                response = openai_client.client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
+        data = request.get_json()
+        image_base64 = data.get('image', '').strip()
+        
+        if not image_base64:
+            return jsonify({'success': False, 'error': '請提供圖片'})
+        
+        if not openai_client.is_configured():
+            return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
+        
+        # 使用 OpenAI GPT-4o 分析圖片
+        response = openai_client.client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
                         {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": "請詳細分析這張圖片，描述其內容、風格、顏色、構圖等元素。"
-                                },
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:{file.content_type};base64,{image_base64}"
-                                    }
-                                }
-                            ]
-                        }
-                    ],
-                    max_tokens=500
-                )
-                
-                analysis = response.choices[0].message.content
-                
-            else:
-                # 非圖片檔案 - 基本檔案資訊分析
-                file_info = {
-                    'name': file.filename,
-                    'size': len(file_content),
-                    'type': file.content_type or '未知',
-                }
-                
-                analysis = f"檔案名稱: {file_info['name']}\n"
-                analysis += f"檔案大小: {file_info['size']:,} bytes\n"
-                analysis += f"檔案類型: {file_info['type']}\n"
-                
-                # 如果是文字檔案，嘗試讀取內容
-                if file.content_type and (file.content_type.startswith('text/') or 
-                                        file.content_type == 'application/json'):
-                    try:
-                        text_content = file_content.decode('utf-8')
-                        analysis += f"檔案內容預覽:\n{text_content[:200]}..."
-                        if len(text_content) > 200:
-                            analysis += f"\n(顯示前200字符，總共{len(text_content)}字符)"
-                    except:
-                        analysis += "無法讀取檔案內容"
-                else:
-                    analysis += "這是一個二進制檔案，無法預覽內容"
-            
-            return jsonify({
-                'success': True,
-                'analysis': analysis
-            })
-            
-        else:
-            # JSON 格式的圖片分析（舊版相容性）
-            data = request.get_json()
-            image_base64 = data.get('image', '').strip()
-            
-            if not image_base64:
-                return jsonify({'success': False, 'error': '請提供圖片'})
-            
-            if not openai_client.is_configured():
-                return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
-            
-            # 使用 OpenAI GPT-4o 分析圖片
-            response = openai_client.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": "請詳細分析這張圖片，描述其內容、風格、顏色、構圖等元素。"
-                            },
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/jpeg;base64,{image_base64}"
-                                }
+                            "type": "text",
+                            "text": "請詳細分析這張圖片，描述其內容、風格、顏色、構圖等元素。"
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
                             }
-                        ]
-                    }
-                ],
-                max_tokens=500
-            )
-            
-            analysis = response.choices[0].message.content
-            
-            return jsonify({
-                'success': True,
-                'analysis': analysis
-            })
+                        }
+                    ]
+                }
+            ],
+            max_tokens=500
+        )
+        
+        analysis = response.choices[0].message.content
+        
+        return jsonify({
+            'success': True,
+            'analysis': analysis
+        })
         
     except Exception as e:
-        logging.error(f"檔案分析錯誤: {e}")
+        logging.error(f"圖片分析錯誤: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/voice_to_text', methods=['POST'])
@@ -865,76 +790,6 @@ def get_document_templates(language='zh-TW'):
                         ['', '', '', '', '', '', ''],
                         ['', '', '', '', '', '', '']
                     ]
-                },
-                'hr_attendance': {
-                    'title': '員工出勤記錄',
-                    'description': '員工每日出勤時間記錄表',
-                    'headers': ['姓名', '日期', '上班時間', '下班時間', '工作時數', '遲到時間', '早退時間', '加班時間'],
-                    'rows': [
-                        ['', '', '09:00', '18:00', '8', '', '', ''],
-                        ['', '', '09:00', '18:00', '8', '', '', ''],
-                        ['', '', '09:00', '18:00', '8', '', '', '']
-                    ]
-                },
-                'hr_salary': {
-                    'title': '薪資計算表',
-                    'description': '員工薪資詳細計算表',
-                    'headers': ['姓名', '基本薪資', '績效獎金', '津貼', '加班費', '扣除項目', '實發薪資'],
-                    'rows': [
-                        ['', '40000', '', '', '', '', ''],
-                        ['', '45000', '', '', '', '', ''],
-                        ['', '42000', '', '', '', '', '']
-                    ]
-                },
-                'hr_performance': {
-                    'title': '員工績效評估',
-                    'description': '員工績效評估表',
-                    'headers': ['姓名', '工作品質', '工作效率', '團隊合作', '創新能力', '總分', '等級'],
-                    'rows': [
-                        ['', '', '', '', '', '', ''],
-                        ['', '', '', '', '', '', ''],
-                        ['', '', '', '', '', '', '']
-                    ]
-                },
-                'inventory': {
-                    'title': '庫存管理',
-                    'description': '庫存管理表',
-                    'headers': ['品項', '期初庫存', '進貨', '出貨', '期末庫存', '安全庫存', '狀態'],
-                    'rows': [
-                        ['', '', '', '', '', '', ''],
-                        ['', '', '', '', '', '', ''],
-                        ['', '', '', '', '', '', '']
-                    ]
-                },
-                'customer': {
-                    'title': '客戶資料',
-                    'description': '客戶基本資訊管理表',
-                    'headers': ['客戶名稱', '聯絡人', '電話', '地址', '最近交易日', '交易金額', '狀態'],
-                    'rows': [
-                        ['', '', '', '', '', '', ''],
-                        ['', '', '', '', '', '', ''],
-                        ['', '', '', '', '', '', '']
-                    ]
-                },
-                'budget': {
-                    'title': '預算規劃',
-                    'description': '年度預算規劃表',
-                    'headers': ['部門', '人事費用', '營運費用', '設備費用', '其他費用', '總預算', '核准狀態'],
-                    'rows': [
-                        ['', '', '', '', '', '', ''],
-                        ['', '', '', '', '', '', ''],
-                        ['', '', '', '', '', '', '']
-                    ]
-                },
-                'grades': {
-                    'title': '學生成績',
-                    'description': '學生成績統計表',
-                    'headers': ['學號', '姓名', '國文', '英文', '數學', '總分', '平均', '排名'],
-                    'rows': [
-                        ['', '', '', '', '', '', '', ''],
-                        ['', '', '', '', '', '', '', ''],
-                        ['', '', '', '', '', '', '', '']
-                    ]
                 }
             },
             'document': {
@@ -1006,190 +861,6 @@ def get_document_templates(language='zh-TW'):
 |      |      |        |
 
 ## 六、結論'''
-                },
-                'technical': {
-                    'title': '技術文檔',
-                    'description': '技術文檔範本',
-                    'content': '''技術文檔
-
-專案名稱：
-版本：
-建立日期：
-
-## 一、系統概述
-### 1.1 系統架構
-
-### 1.2 技術堆疊
-
-## 二、功能規格
-### 2.1 核心功能
-
-### 2.2 API 規格
-
-## 三、資料庫設計
-### 3.1 資料表結構
-
-### 3.2 關聯圖
-
-## 四、部署指南
-### 4.1 環境需求
-
-### 4.2 部署步驟
-
-## 五、維護手冊
-### 5.1 常見問題
-
-### 5.2 故障排除'''
-                },
-                'contract': {
-                    'title': '合約範本',
-                    'description': '標準合約範本',
-                    'content': '''合約書
-
-合約編號：
-簽約日期：
-
-## 甲方資訊
-名稱：
-代表人：
-地址：
-聯絡方式：
-
-## 乙方資訊
-名稱：
-代表人：
-地址：
-聯絡方式：
-
-## 合約條款
-### 第一條 合約目的
-
-### 第二條 權利義務
-
-### 第三條 付款條件
-
-### 第四條 履行期限
-
-### 第五條 違約責任
-
-### 第六條 爭議解決
-
-## 附件
-1. 
-2. 
-
-甲方簽章：                     乙方簽章：
-
-簽約日期：                     簽約日期：'''
-                },
-                'report': {
-                    'title': '報告書',
-                    'description': '標準報告書範本',
-                    'content': '''報告書
-
-報告標題：
-報告人：
-報告日期：
-
-## 執行摘要
-
-## 一、背景說明
-
-## 二、研究方法
-
-## 三、分析結果
-### 3.1 數據分析
-
-### 3.2 趨勢觀察
-
-## 四、結論與建議
-### 4.1 主要結論
-
-### 4.2 改善建議
-
-## 五、附錄
-### 5.1 參考資料
-
-### 5.2 相關數據'''
-                },
-                'resume': {
-                    'title': '履歷表',
-                    'description': '標準履歷表範本',
-                    'content': '''履歷表
-
-## 個人資料
-姓名：
-性別：
-出生日期：
-聯絡電話：
-電子郵件：
-地址：
-
-## 學歷
-| 期間 | 學校 | 科系 | 學位 |
-|------|------|------|------|
-|      |      |      |      |
-
-## 工作經歷
-| 期間 | 公司 | 職位 | 主要職責 |
-|------|------|------|----------|
-|      |      |      |          |
-
-## 專業技能
-- 
-- 
-- 
-
-## 證照與資格
-- 
-- 
-
-## 語言能力
-| 語言 | 聽 | 說 | 讀 | 寫 |
-|------|----|----|----|----|
-|      |    |    |    |    |
-
-## 自傳'''
-                },
-                'business_plan': {
-                    'title': '商業計劃',
-                    'description': '商業計劃書範本',
-                    'content': '''商業計劃書
-
-公司名稱：
-計劃期間：
-編制日期：
-
-## 一、執行摘要
-
-## 二、公司概述
-### 2.1 公司簡介
-
-### 2.2 使命願景
-
-## 三、市場分析
-### 3.1 市場規模
-
-### 3.2 競爭分析
-
-## 四、產品服務
-### 4.1 產品介紹
-
-### 4.2 服務內容
-
-## 五、營運計劃
-### 5.1 營運模式
-
-### 5.2 組織架構
-
-## 六、財務預測
-### 6.1 收入預測
-
-### 6.2 成本分析
-
-## 七、風險評估
-
-## 八、融資需求'''
                 }
             }
         }

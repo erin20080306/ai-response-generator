@@ -18,8 +18,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link href="{{ url_for('static', filename='css/enhanced_style.css') }}?v=2.0" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/simple_games.css') }}?v=2.0" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/enhanced_style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/simple_games.css') }}" rel="stylesheet">
 </head>
 <body>
     <div class="container-fluid h-100">
@@ -186,10 +186,9 @@
                                             <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
                                             <h5>拖拽檔案到此處或點擊上傳</h5>
                                             <p class="text-muted">支援文件、圖片、音頻、視頻等多種格式</p>
-                                            <label for="fileInputPanel" id="selectFilesBtn" class="btn btn-primary" style="cursor: pointer; margin: 0;">
+                                            <button type="button" class="btn btn-primary" id="selectFilesBtn">
                                                 <i class="fas fa-folder-open me-2"></i>選擇檔案
-                                            </label>
-                                            <input type="file" id="fileInputPanel" multiple accept=".txt,.doc,.docx,.pdf,.png,.jpg,.jpeg,.gif,.csv,.xlsx,.xls,.ppt,.pptx,.mp3,.mp4,.avi,.mov" style="display: none;">
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -842,60 +841,6 @@
     
     <!-- Socket.IO for Node.js support -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    
-    <script>
-        // 全域檔案選擇函數
-        function triggerFileSelect() {
-            console.log('全域函數：觸發檔案選擇');
-            const fileInput = document.getElementById('fileInputPanel');
-            if (fileInput) {
-                console.log('找到檔案輸入框，觸發點擊');
-                
-                // 嘗試多種方法觸發檔案選擇
-                try {
-                    // 方法1: 直接點擊
-                    fileInput.click();
-                    console.log('方法1: 直接點擊已執行');
-                    
-                    // 方法2: 創建點擊事件
-                    setTimeout(() => {
-                        const clickEvent = new MouseEvent('click', {
-                            view: window,
-                            bubbles: true,
-                            cancelable: true,
-                        });
-                        fileInput.dispatchEvent(clickEvent);
-                        console.log('方法2: 事件分發已執行');
-                    }, 50);
-                    
-                    // 方法3: 聚焦然後觸發
-                    setTimeout(() => {
-                        fileInput.focus();
-                        fileInput.click();
-                        console.log('方法3: 聚焦後點擊已執行');
-                    }, 100);
-                    
-                } catch (error) {
-                    console.error('觸發檔案選擇時發生錯誤:', error);
-                }
-            } else {
-                console.log('未找到檔案輸入框');
-            }
-        }
-        
-        // 初始化應用
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('實用工具已載入完成');
-            console.log('載入簡化版遊戲系統...');
-            
-            // 初始化增強版AI助手
-            if (typeof EnhancedAIAssistant !== 'undefined') {
-                window.aiAssistant = new EnhancedAIAssistant();
-            }
-            
-            console.log('簡化版遊戲系統已載入');
-        });
-    </script>
 
 </body>
 </html>
