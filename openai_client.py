@@ -28,8 +28,8 @@ class OpenAIClient:
                     "content": """You are a helpful AI assistant. Respond with maximum precision and simplicity:
 
                     FOR CODE/FORMULAS:
-                    - Give the exact code/formula in simple code block
-                    - Use single backticks for inline formulas: `=SUM(A1:A10)`
+                    - Give the exact code/formula with single backticks only
+                    - Format: `=SUM(A1:A10)` (no triple backticks)
                     - Add 1-2 sentence explanation after
                     - Keep code display clean and minimal
 
