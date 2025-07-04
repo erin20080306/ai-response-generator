@@ -804,3 +804,50 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+/* 麻將遊戲樣式 */
+.mahjong-tiles {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.tile {
+    font-size: 2rem;
+    padding: 10px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.tile:hover {
+    transform: scale(1.1);
+}
+
+/* 農場故事樣式 */
+.farm-story-ui {
+    width: 100%;
+    max-width: 500px;
+}
+
+.story-panel {
+    padding: 20px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    background: var(--bs-card-bg);
+}
+
+.npc-area {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* 俄羅斯方塊樣式 */
+.tetris-container canvas {
+    background: #000;
+    border: 2px solid var(--bs-border-color);
+}

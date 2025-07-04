@@ -858,11 +858,11 @@
             
             gameContainer.innerHTML = '<div id="tetrisGame"><canvas id="tetrisCanvas" width="300" height="600"></canvas></div>';
             gameInfo.innerHTML = '<h6>俄羅斯方塊</h6><p>使用方向鍵移動方塊，空白鍵旋轉</p>';
-            gameControls.innerHTML = '<button class="btn btn-primary" onclick="startTetris()">開始遊戲</button>';
+            gameControls.innerHTML = '<button class="btn btn-primary" onclick="startTetrisInPanel()">開始遊戲</button>';
             
-            // 初始化俄羅斯方塊
-            if (typeof initializeTetris === 'function') {
-                initializeTetris();
+            // 載入俄羅斯方塊遊戲
+            if (window.aiAssistant && window.aiAssistant.gameCenter) {
+                window.aiAssistant.gameCenter.loadTetrisGame(gameContainer);
             }
         }
         
@@ -873,11 +873,11 @@
             
             gameContainer.innerHTML = '<div id="mahjongGame"></div>';
             gameInfo.innerHTML = '<h6>麻將</h6><p>4人麻將遊戲，點擊牌張進行遊戲</p>';
-            gameControls.innerHTML = '<button class="btn btn-primary" onclick="startMahjong()">開始遊戲</button>';
+            gameControls.innerHTML = '<button class="btn btn-primary" onclick="startMahjongInPanel()">開始遊戲</button>';
             
-            // 初始化麻將
-            if (typeof initializeMahjong === 'function') {
-                initializeMahjong();
+            // 載入麻將遊戲
+            if (window.aiAssistant && window.aiAssistant.gameCenter) {
+                window.aiAssistant.gameCenter.loadMahjongGame(gameContainer);
             }
         }
         
@@ -888,12 +888,99 @@
             
             gameContainer.innerHTML = '<div id="farmStoryGame"></div>';
             gameInfo.innerHTML = '<h6>農場物語</h6><p>農場RPG遊戲，與NPC對話並管理農場</p>';
-            gameControls.innerHTML = '<button class="btn btn-primary" onclick="startFarmStory()">開始遊戲</button>';
+            gameControls.innerHTML = '<button class="btn btn-primary" onclick="startFarmStoryInPanel()">開始遊戲</button>';
             
-            // 初始化農場故事
-            if (typeof initializeFarmStory === 'function') {
-                initializeFarmStory();
+            // 載入農場故事遊戲
+            if (window.aiAssistant && window.aiAssistant.gameCenter) {
+                window.aiAssistant.gameCenter.loadFarmStoryGame(gameContainer);
             }
+        }
+        
+        // 全域遊戲啟動函數
+        function startTetrisInPanel() {
+            const gameContainer = document.getElementById('gameContainer');
+            gameContainer.innerHTML = `
+                <div class="tetris-container text-center">
+                    <h5>俄羅斯方塊</h5>
+                    <canvas id="tetrisCanvas" width="300" height="600" style="border: 1px solid #ccc;"></canvas>
+                    <div class="mt-3">
+                        <p>使用方向鍵控制：← → ↓ 移動，↑ 旋轉</p>
+                        <button class="btn btn-success" onclick="initTetrisGame()">重新開始</button>
+                    </div>
+                </div>
+            `;
+            initTetrisGame();
+        }
+        
+        function startMahjongInPanel() {
+            const gameContainer = document.getElementById('gameContainer');
+            gameContainer.innerHTML = `
+                <div class="mahjong-container">
+                    <h5 class="text-center mb-3">麻將遊戲</h5>
+                    <div id="mahjongBoard" class="mahjong-board"></div>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-success" onclick="initMahjongGame()">開始新局</button>
+                    </div>
+                </div>
+            `;
+            initMahjongGame();
+        }
+        
+        function startFarmStoryInPanel() {
+            const gameContainer = document.getElementById('gameContainer');
+            gameContainer.innerHTML = `
+                <div class="farm-story-container">
+                    <h5 class="text-center mb-3">農場物語</h5>
+                    <div id="farmStoryBoard" class="farm-story-board"></div>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-success" onclick="initFarmStoryGame()">開始遊戲</button>
+                    </div>
+                </div>
+            `;
+            initFarmStoryGame();
+        }
+        
+        // 簡化的遊戲初始化函數
+        function initTetrisGame() {
+            console.log('初始化俄羅斯方塊遊戲');
+            // 這裡可以添加實際的俄羅斯方塊遊戲邏輯
+        }
+        
+        function initMahjongGame() {
+            const board = document.getElementById('mahjongBoard');
+            board.innerHTML = `
+                <div class="text-center">
+                    <p>4人麻將遊戲準備中...</p>
+                    <div class="mahjong-tiles">
+                        <div class="tile">🀄</div>
+                        <div class="tile">🀅</div>
+                        <div class="tile">🀆</div>
+                        <div class="tile">🀇</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function initFarmStoryGame() {
+            const board = document.getElementById('farmStoryBoard');
+            board.innerHTML = `
+                <div class="farm-story-ui">
+                    <div class="story-panel">
+                        <h6>歡迎來到農場物語！</h6>
+                        <p>你繼承了祖父的農場，開始你的農場生活吧！</p>
+                        <div class="npc-area">
+                            <button class="btn btn-sm btn-outline-primary me-2" onclick="talkToNPC('村長湯姆')">村長湯姆</button>
+                            <button class="btn btn-sm btn-outline-success me-2" onclick="talkToNPC('商店老闆瑪麗')">商店瑪麗</button>
+                            <button class="btn btn-sm btn-outline-warning me-2" onclick="talkToNPC('鐵匠傑克')">鐵匠傑克</button>
+                            <button class="btn btn-sm btn-outline-info" onclick="talkToNPC('醫生莉莉')">醫生莉莉</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function talkToNPC(npcName) {
+            alert('與 ' + npcName + ' 對話中...');
         }
     </script>
 </body>
