@@ -1738,6 +1738,11 @@ class GameCenter {
         function checkPlayerActions() {
             if (gameState.currentPlayer === 0 || !gameState.lastDiscarded) return;
             
+            if (!gameState.players || !gameState.players[0] || !gameState.players[0].hand) {
+                console.error('玩家手牌不存在');
+                return;
+            }
+            
             const playerHand = gameState.players[0].hand;
             const lastTile = gameState.lastDiscarded;
             
@@ -2438,56 +2443,329 @@ class GameCenter {
         const style = document.createElement('style');
         style.id = 'mahjong-styles';
         style.textContent = `
+            /* 橫向麻將桌面設計 */
             .mahjong-game {
+                padding: 20px;
+                background: linear-gradient(135deg, #1a5f3f 0%, #2d4a3e 100%);
+                border-radius: 12px;
+                min-height: 700px;
+                color: white;
+            }
+            
+            .mahjong-table-horizontal {
+                display: flex;
+                flex-direction: column;
+                height: 600px;
+                background: radial-gradient(ellipse at center, #2d5a42 0%, #1a4a32 100%);
+                border-radius: 15px;
                 padding: 15px;
-                max-width: 100%;
-                overflow-x: auto;
+                border: 3px solid #8B4513;
+                box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
             }
             
-            .player-control-area {
-                gap: 20px;
-                align-items: flex-start;
-            }
-            
-            .game-control-panel {
-                background: #2d2d2d;
+            /* 上家區域 */
+            .opponent-top-area {
+                height: 120px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background: rgba(255,255,255,0.1);
                 border-radius: 8px;
-                padding: 15px;
-                border: 1px solid #3d3d3d;
-                min-width: 180px;
-            }
-            
-            .game-prompt {
-                border-radius: 6px;
-                padding: 10px;
                 margin-bottom: 10px;
-                text-align: center;
-                animation: fadeIn 0.3s ease-in-out;
+                border: 1px solid rgba(255,255,255,0.2);
             }
             
-            .operation-tips {
+            .player-info-top {
+                font-size: 14px;
+                font-weight: bold;
+                margin-bottom: 8px;
+                color: #fff;
+            }
+            
+            .opponent-tiles-horizontal {
+                display: flex;
+                gap: 2px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            /* 中間區域 - 左家、桌面、右家 */
+            .middle-table-area {
+                flex: 1;
+                display: flex;
+                gap: 15px;
+            }
+            
+            .opponent-left-area,
+            .opponent-right-area {
+                width: 120px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background: rgba(255,255,255,0.1);
+                border-radius: 8px;
                 padding: 10px;
-                background: #333;
+                border: 1px solid rgba(255,255,255,0.2);
+            }
+            
+            .player-info-vertical {
+                height: 80px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+            
+            .text-rotate {
+                writing-mode: vertical-lr;
+                text-orientation: mixed;
+                font-size: 12px;
+                font-weight: bold;
+                text-align: center;
+                line-height: 1.2;
+            }
+            
+            .opponent-tiles-vertical {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                align-items: center;
+                flex: 1;
+                overflow-y: auto;
+            }
+            
+            /* 中央桌面 */
+            .center-table {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                background: rgba(255,255,255,0.05);
+                border-radius: 10px;
+                padding: 15px;
+                border: 2px dashed rgba(255,255,255,0.3);
+            }
+            
+            .table-info {
+                text-align: center;
+                margin-bottom: 15px;
+            }
+            
+            .game-status {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                background: rgba(255,255,255,0.1);
+                padding: 8px;
                 border-radius: 6px;
-                border-left: 3px solid #007bff;
                 font-size: 12px;
             }
             
-            .action-buttons .btn {
-                transition: all 0.2s ease;
+            .center-discard-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 200px;
+            }
+            
+            .discard-label {
                 font-size: 14px;
-                padding: 8px 12px;
+                margin-bottom: 10px;
+                color: rgba(255,255,255,0.7);
+            }
+            
+            .center-tiles-grid {
+                display: grid;
+                grid-template-columns: repeat(8, 1fr);
+                gap: 3px;
+                max-width: 300px;
+            }
+            
+            /* 下方玩家區域 */
+            .player-bottom-area {
+                height: 150px;
+                display: flex;
+                gap: 15px;
+                margin-top: 10px;
+            }
+            
+            .player-hand-section {
+                flex: 1;
+                background: rgba(255,255,255,0.15);
+                border-radius: 8px;
+                padding: 12px;
+                border: 1px solid rgba(255,255,255,0.3);
+            }
+            
+            .player-info-bottom {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            
+            .player-tiles-container {
+                display: flex;
+                gap: 3px;
+                overflow-x: auto;
+                padding: 5px 0;
+            }
+            
+            .control-panel-right {
+                width: 180px;
+            }
+            
+            .game-control-panel {
+                background: rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px;
+                border: 1px solid rgba(255,255,255,0.2);
+                height: 100%;
+            }
+            
+            .action-buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                margin-bottom: 15px;
+            }
+            
+            .action-buttons .btn {
+                font-size: 12px;
+                padding: 6px 10px;
+                transition: all 0.2s ease;
             }
             
             .action-buttons .btn:hover {
                 transform: translateY(-1px);
-                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            }
+            
+            .operation-tips {
+                background: rgba(255,255,255,0.1);
+                border-radius: 6px;
+                padding: 8px;
+                font-size: 11px;
+            }
+            
+            .tip-title {
+                font-weight: bold;
+                margin-bottom: 5px;
+                color: #fff;
+            }
+            
+            .tip-content {
+                line-height: 1.4;
+                color: rgba(255,255,255,0.8);
+            }
+            
+            /* 麻將牌樣式 */
+            .mahjong-tile {
+                width: 28px;
+                height: 38px;
+                background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+                border: 2px solid #6c757d;
+                border-radius: 4px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                font-weight: bold;
+                color: #333;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            .mahjong-tile:hover {
+                background: linear-gradient(145deg, #e9ecef 0%, #dee2e6 100%);
+                border-color: #495057;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            }
+            
+            .mahjong-tile.selected {
+                background: linear-gradient(145deg, #007bff 0%, #0056b3 100%);
+                color: white;
+                border-color: #004085;
+                transform: translateY(-3px);
+            }
+            
+            .mahjong-tile.opponent-back {
+                background: linear-gradient(145deg, #6c757d 0%, #495057 100%);
+                color: #fff;
+                font-size: 12px;
+            }
+            
+            .mahjong-tile.discarded {
+                opacity: 0.7;
+                transform: scale(0.9);
+                background: linear-gradient(145deg, #dc3545 0%, #c82333 100%);
+                color: white;
+                border-color: #bd2130;
+            }
+            
+            /* 副露區域 */
+            .exposed-discarded-area,
+            .side-exposed-discarded {
+                margin-top: 8px;
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+            }
+            
+            .mini-exposed,
+            .mini-discarded {
+                display: flex;
+                gap: 1px;
+                flex-wrap: wrap;
+                justify-content: center;
+                min-height: 20px;
+                background: rgba(255,255,255,0.05);
+                border-radius: 3px;
+                padding: 2px;
+                font-size: 9px;
+            }
+            
+            /* 響應式設計 */
+            @media (max-width: 1200px) {
+                .mahjong-game {
+                    padding: 10px;
+                }
+                
+                .mahjong-table-horizontal {
+                    min-height: 500px;
+                }
+                
+                .opponent-left-area,
+                .opponent-right-area {
+                    width: 100px;
+                }
+                
+                .control-panel-right {
+                    width: 150px;
+                }
+                
+                .mahjong-tile {
+                    width: 24px;
+                    height: 32px;
+                    font-size: 9px;
+                }
             }
             
             @keyframes fadeIn {
                 from { opacity: 0; transform: translateY(-10px); }
                 to { opacity: 1; transform: translateY(0); }
             }
+            
+            .game-prompt {
+                animation: fadeIn 0.3s ease-in-out;
+            }
+        `;
             .mahjong-tile {
                 display: inline-block;
                 width: 30px;
