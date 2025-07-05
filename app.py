@@ -24,13 +24,33 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from openai_client import OpenAIClient
 
 # 文件生成相關導入
-import openpyxl
-from openpyxl.styles import Font, Alignment, PatternFill
-import xlsxwriter
-from docx import Document
-from docx.shared import Inches
-import gspread
-from google.auth.exceptions import GoogleAuthError
+try:
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, PatternFill
+    HAS_OPENPYXL = True
+except ImportError:
+    HAS_OPENPYXL = False
+
+try:
+    import xlsxwriter
+    HAS_XLSXWRITER = True
+except ImportError:
+    HAS_XLSXWRITER = False
+
+try:
+    from docx import Document
+    from docx.shared import Inches as DocxInches
+    from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+    HAS_DOCX = True
+except ImportError:
+    HAS_DOCX = False
+
+try:
+    import gspread
+    from google.auth.exceptions import GoogleAuthError
+    HAS_GSPREAD = True
+except ImportError:
+    HAS_GSPREAD = False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -544,6 +564,9 @@ def generate_template_document(data):
 def create_spreadsheet(structure, file_type, language):
     """創建試算表"""
     try:
+        if not HAS_OPENPYXL:
+            return jsonify({'success': False, 'error': '系統未安裝 openpyxl 套件'})
+        
         # 創建臨時檔案
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx')
         
@@ -558,15 +581,16 @@ def create_spreadsheet(structure, file_type, language):
         header_fill = PatternFill(start_color="DDDDDD", end_color="DDDDDD", fill_type="solid")
         
         # 添加標題
-        if 'title' in structure:
-            ws['A1'] = structure['title']
+        title = structure.get('title')
+        if title:
+            ws['A1'] = title
             ws['A1'].font = title_font
             ws.merge_cells('A1:F1')
         
         # 添加標題行
         headers = structure.get('headers', structure.get('columns', []))
         if headers:
-            start_row = 3 if 'title' in structure else 1
+            start_row = 3 if title else 1
             for col, header in enumerate(headers, 1):
                 cell = ws.cell(row=start_row, column=col, value=header)
                 cell.font = header_font
@@ -576,7 +600,7 @@ def create_spreadsheet(structure, file_type, language):
         # 添加數據行
         rows = structure.get('rows', structure.get('data', []))
         if rows:
-            start_row = 4 if 'title' in structure else 2
+            start_row = 4 if title else 2
             for row_idx, row in enumerate(rows, start_row):
                 for col_idx, value in enumerate(row, 1):
                     ws.cell(row=row_idx, column=col_idx, value=value)
@@ -643,6 +667,9 @@ def create_spreadsheet(structure, file_type, language):
 def create_word_document(structure, language):
     """創建 Word 文件"""
     try:
+        if not HAS_DOCX:
+            return jsonify({'success': False, 'error': '系統未安裝 python-docx 套件'})
+        
         # 創建臨時檔案
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.docx')
         
@@ -652,7 +679,7 @@ def create_word_document(structure, language):
         # 添加標題
         if 'title' in structure:
             title = doc.add_heading(structure['title'], 0)
-            title.alignment = 1  # 置中
+            title.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER  # 置中
         
         # 添加描述
         if 'description' in structure:
@@ -896,6 +923,52 @@ def get_document_templates(language='zh-TW'):
                         ['', '', '', '', '', '', ''],
                         ['', '', '', '', '', '', '']
                     ]
+                },
+                'inventory': {
+                    'title': '庫存管理',
+                    'description': '商品庫存追蹤表',
+                    'headers': ['商品編號', '商品名稱', '類別', '庫存數量', '安全庫存', '供應商', '最後更新'],
+                    'rows': [
+                        ['P001', '產品A', '電子產品', '100', '20', '供應商A', '2025-01-01'],
+                        ['P002', '產品B', '服飾', '50', '10', '供應商B', '2025-01-01'],
+                        ['P003', '產品C', '食品', '200', '30', '供應商C', '2025-01-01']
+                    ]
+                },
+                'schedule': {
+                    'title': '工作排程',
+                    'description': '每週工作時程安排表',
+                    'headers': ['時間', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'],
+                    'rows': [
+                        ['09:00-10:00', '', '', '', '', '', '', ''],
+                        ['10:00-11:00', '', '', '', '', '', '', ''],
+                        ['11:00-12:00', '', '', '', '', '', '', ''],
+                        ['13:00-14:00', '', '', '', '', '', '', ''],
+                        ['14:00-15:00', '', '', '', '', '', '', ''],
+                        ['15:00-16:00', '', '', '', '', '', '', ''],
+                        ['16:00-17:00', '', '', '', '', '', '', '']
+                    ]
+                },
+                'budget': {
+                    'title': '年度預算',
+                    'description': '年度預算規劃與執行表',
+                    'headers': ['項目', 'Q1預算', 'Q1實際', 'Q2預算', 'Q2實際', 'Q3預算', 'Q3實際', 'Q4預算', 'Q4實際', '年度總計'],
+                    'rows': [
+                        ['營收', '250000', '', '280000', '', '300000', '', '320000', '', ''],
+                        ['人事成本', '100000', '', '105000', '', '110000', '', '115000', '', ''],
+                        ['營運成本', '80000', '', '85000', '', '90000', '', '95000', '', ''],
+                        ['行銷費用', '30000', '', '35000', '', '40000', '', '45000', '', ''],
+                        ['淨利潤', '40000', '', '55000', '', '60000', '', '65000', '', '']
+                    ]
+                },
+                'attendance': {
+                    'title': '出勤記錄',
+                    'description': '員工出勤統計表',
+                    'headers': ['員工姓名', '部門', '工號', '出勤天數', '遲到次數', '早退次數', '請假天數', '加班時數', '備註'],
+                    'rows': [
+                        ['', '', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', '', '']
+                    ]
                 }
             },
             'document': {
@@ -967,6 +1040,241 @@ def get_document_templates(language='zh-TW'):
 |      |      |        |
 
 ## 六、結論'''
+                },
+                'contract': {
+                    'title': '合約範本',
+                    'description': '標準合約協議書範本',
+                    'content': '''合約協議書
+
+甲方：
+乙方：
+簽約日期：
+
+## 第一條 合約標的
+本合約內容為：
+
+## 第二條 權利義務
+### 甲方權利義務：
+1. 
+2. 
+3. 
+
+### 乙方權利義務：
+1. 
+2. 
+3. 
+
+## 第三條 付款條件
+付款方式：
+付款期限：
+付款金額：
+
+## 第四條 違約責任
+1. 
+2. 
+3. 
+
+## 第五條 爭議解決
+如有爭議，雙方應協商解決，協商不成時，提交仲裁委員會仲裁。
+
+## 第六條 其他條款
+1. 本合約一式兩份，甲乙雙方各執一份
+2. 本合約自雙方簽字蓋章之日起生效
+3. 未盡事宜，雙方可另行協商
+
+甲方簽名：_____________ 日期：_________
+乙方簽名：_____________ 日期：_________'''
+                },
+                'report': {
+                    'title': '工作報告',
+                    'description': '工作成果報告範本',
+                    'content': '''工作報告
+
+報告人：
+報告日期：
+報告期間：
+
+## 一、工作概況
+### 1.1 主要工作內容
+-
+-
+-
+
+### 1.2 完成情況
+-
+-
+-
+
+## 二、具體成果
+### 2.1 量化指標
+| 指標 | 目標值 | 實際值 | 達成率 |
+|------|--------|--------|--------|
+|      |        |        |        |
+
+### 2.2 質化成果
+-
+-
+-
+
+## 三、遇到的問題
+### 3.1 主要困難
+-
+-
+-
+
+### 3.2 解決方案
+-
+-
+-
+
+## 四、下期工作計劃
+### 4.1 工作重點
+-
+-
+-
+
+### 4.2 預期目標
+-
+-
+-
+
+## 五、建議與反思
+-
+-
+-'''
+                },
+                'policy': {
+                    'title': '公司政策',
+                    'description': '公司制度政策範本',
+                    'content': '''公司政策文件
+
+政策名稱：
+制定部門：
+生效日期：
+版本：1.0
+
+## 一、政策目的
+本政策旨在：
+
+## 二、適用範圍
+本政策適用於：
+
+## 三、定義
+-
+-
+-
+
+## 四、政策內容
+### 4.1 基本原則
+-
+-
+-
+
+### 4.2 具體規定
+-
+-
+-
+
+### 4.3 執行程序
+1. 
+2. 
+3. 
+
+## 五、責任分工
+| 職位 | 責任 |
+|------|------|
+|      |      |
+
+## 六、監督檢查
+-
+-
+-
+
+## 七、違規處理
+-
+-
+-
+
+## 八、附則
+1. 本政策解釋權歸人事部門
+2. 本政策自發布之日起執行
+3. 如有修訂，另行通知
+
+制定人：_____________ 日期：_________
+審核人：_____________ 日期：_________
+批准人：_____________ 日期：_________'''
+                },
+                'manual': {
+                    'title': '操作手冊',
+                    'description': '標準操作手冊範本',
+                    'content': '''操作手冊
+
+手冊名稱：
+版本：1.0
+制定日期：
+最後更新：
+
+## 一、概述
+### 1.1 目的
+本手冊旨在：
+
+### 1.2 適用範圍
+-
+-
+-
+
+## 二、準備工作
+### 2.1 所需工具
+-
+-
+-
+
+### 2.2 前置條件
+-
+-
+-
+
+## 三、操作步驟
+### 3.1 步驟一：
+1. 
+2. 
+3. 
+
+### 3.2 步驟二：
+1. 
+2. 
+3. 
+
+### 3.3 步驟三：
+1. 
+2. 
+3. 
+
+## 四、注意事項
+### 4.1 安全須知
+-
+-
+-
+
+### 4.2 重要提醒
+-
+-
+-
+
+## 五、常見問題
+### Q1: 
+A1: 
+
+### Q2: 
+A2: 
+
+### Q3: 
+A3: 
+
+## 六、聯絡資訊
+技術支援：
+緊急聯絡：
+更新維護：'''
                 }
             }
         }
