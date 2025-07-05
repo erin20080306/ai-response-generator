@@ -213,6 +213,392 @@ function copyMarkdownHTML() {
     alert('HTML已複製到剪貼簿');
 }
 
+// ====== CSV/Excel轉換器 ======
+function showCSVConverter() {
+    const modal = createToolModal('CSV/Excel轉換器', `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>輸入資料</h6>
+                <div class="mb-3">
+                    <label class="form-label">輸入方式</label>
+                    <select id="inputMethod" class="form-select" onchange="toggleInputMethod()">
+                        <option value="text">手動輸入CSV</option>
+                        <option value="file">上傳檔案</option>
+                    </select>
+                </div>
+                
+                <div id="textInputSection">
+                    <textarea id="csvInput" class="form-control" rows="8" placeholder="輸入CSV資料，例如：&#10;姓名,年齡,城市&#10;張三,25,台北&#10;李四,30,台中"></textarea>
+                </div>
+                
+                <div id="fileInputSection" style="display: none;">
+                    <input type="file" id="csvFileInput" class="form-control" accept=".csv,.xlsx,.xls" onchange="handleFileUpload()">
+                    <small class="text-muted">支援 CSV, Excel (.xlsx, .xls) 檔案</small>
+                </div>
+                
+                <div class="mt-3">
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label">分隔符號</label>
+                            <select id="delimiter" class="form-select">
+                                <option value=",">逗號 (,)</option>
+                                <option value=";">分號 (;)</option>
+                                <option value="|">豎線 (|)</option>
+                                <option value=" ">Tab</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">編碼</label>
+                            <select id="encoding" class="form-select">
+                                <option value="utf-8">UTF-8</option>
+                                <option value="big5">Big5</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <button class="btn btn-primary" onclick="convertCSV()">轉換</button>
+                    <button class="btn btn-secondary" onclick="clearCSVData()">清除</button>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <h6>輸出格式</h6>
+                <div class="mb-3">
+                    <select id="outputFormat" class="form-select">
+                        <option value="table">HTML表格</option>
+                        <option value="csv">CSV格式</option>
+                        <option value="json">JSON格式</option>
+                        <option value="excel">Excel格式</option>
+                    </select>
+                </div>
+                
+                <div id="csvOutput" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f8f9fa;">
+                    <p class="text-muted">請輸入CSV資料並點擊轉換</p>
+                </div>
+                
+                <div class="mt-3">
+                    <button class="btn btn-success" onclick="copyCSVResult()">複製結果</button>
+                    <button class="btn btn-info" onclick="downloadCSVResult()">下載檔案</button>
+                    <span id="csvStatus" class="ms-2"></span>
+                </div>
+            </div>
+        </div>
+    `);
+    
+    document.body.appendChild(modal);
+    modal.querySelector('.modal').addEventListener('hidden.bs.modal', () => modal.remove());
+    new bootstrap.Modal(modal.querySelector('.modal')).show();
+}
+
+function toggleInputMethod() {
+    const method = document.getElementById('inputMethod').value;
+    const textSection = document.getElementById('textInputSection');
+    const fileSection = document.getElementById('fileInputSection');
+    
+    if (method === 'text') {
+        textSection.style.display = 'block';
+        fileSection.style.display = 'none';
+    } else {
+        textSection.style.display = 'none';
+        fileSection.style.display = 'block';
+    }
+}
+
+function handleFileUpload() {
+    const fileInput = document.getElementById('csvFileInput');
+    const file = fileInput.files[0];
+    
+    if (!file) return;
+    
+    const fileName = file.name.toLowerCase();
+    
+    if (fileName.endsWith('.csv')) {
+        // 讀取CSV檔案
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('csvInput').value = e.target.result;
+            document.getElementById('csvStatus').innerHTML = '<span class="text-success">✓ CSV檔案載入成功</span>';
+        };
+        reader.readAsText(file);
+    } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        // Excel檔案需要特殊處理
+        document.getElementById('csvStatus').innerHTML = '<span class="text-warning">Excel檔案讀取功能開發中，請先轉存為CSV格式</span>';
+    } else {
+        document.getElementById('csvStatus').innerHTML = '<span class="text-danger">不支援的檔案格式</span>';
+    }
+}
+
+function convertCSV() {
+    const input = document.getElementById('csvInput').value.trim();
+    const delimiter = document.getElementById('delimiter').value;
+    const outputFormat = document.getElementById('outputFormat').value;
+    const output = document.getElementById('csvOutput');
+    const status = document.getElementById('csvStatus');
+    
+    if (!input) {
+        status.innerHTML = '<span class="text-warning">請輸入CSV資料</span>';
+        return;
+    }
+    
+    try {
+        // 解析CSV資料
+        const lines = input.split('\n').filter(line => line.trim());
+        const data = lines.map(line => parseCSVLine(line, delimiter));
+        
+        // 驗證資料
+        if (data.length === 0) {
+            throw new Error('沒有有效的資料行');
+        }
+        
+        // 根據輸出格式轉換
+        let result = '';
+        
+        switch (outputFormat) {
+            case 'table':
+                result = convertToHTMLTable(data);
+                output.innerHTML = result;
+                break;
+                
+            case 'csv':
+                result = convertToCSV(data, delimiter);
+                output.innerHTML = `<pre>${result}</pre>`;
+                break;
+                
+            case 'json':
+                result = convertToJSON(data);
+                output.innerHTML = `<pre>${JSON.stringify(JSON.parse(result), null, 2)}</pre>`;
+                break;
+                
+            case 'excel':
+                result = convertToExcelFormat(data);
+                output.innerHTML = result;
+                break;
+                
+            default:
+                throw new Error('不支援的輸出格式');
+        }
+        
+        // 儲存結果供下載使用
+        window.csvConvertResult = {
+            format: outputFormat,
+            data: result,
+            rawData: data
+        };
+        
+        status.innerHTML = '<span class="text-success">✓ 轉換完成</span>';
+        
+    } catch (error) {
+        output.innerHTML = `<p class="text-danger">轉換錯誤: ${error.message}</p>`;
+        status.innerHTML = '<span class="text-danger">✗ 轉換失敗</span>';
+    }
+}
+
+function parseCSVLine(line, delimiter) {
+    // 簡單的CSV解析器，處理引號包圍的欄位
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === delimiter && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    result.push(current.trim());
+    return result;
+}
+
+function convertToHTMLTable(data) {
+    if (data.length === 0) return '<p>沒有資料</p>';
+    
+    let html = '<table class="table table-bordered table-sm">';
+    
+    // 表頭
+    html += '<thead class="table-dark"><tr>';
+    data[0].forEach(header => {
+        html += `<th>${header}</th>`;
+    });
+    html += '</tr></thead>';
+    
+    // 資料行
+    html += '<tbody>';
+    for (let i = 1; i < data.length; i++) {
+        html += '<tr>';
+        data[i].forEach(cell => {
+            html += `<td>${cell}</td>`;
+        });
+        html += '</tr>';
+    }
+    html += '</tbody></table>';
+    
+    return html;
+}
+
+function convertToCSV(data, delimiter) {
+    return data.map(row => 
+        row.map(cell => {
+            // 如果欄位包含分隔符號或引號，需要用引號包圍
+            if (cell.includes(delimiter) || cell.includes('"') || cell.includes('\n')) {
+                return `"${cell.replace(/"/g, '""')}"`;
+            }
+            return cell;
+        }).join(delimiter)
+    ).join('\n');
+}
+
+function convertToJSON(data) {
+    if (data.length < 2) return '[]';
+    
+    const headers = data[0];
+    const rows = data.slice(1);
+    
+    const jsonData = rows.map(row => {
+        const obj = {};
+        headers.forEach((header, index) => {
+            obj[header] = row[index] || '';
+        });
+        return obj;
+    });
+    
+    return JSON.stringify(jsonData);
+}
+
+function convertToExcelFormat(data) {
+    // 生成Excel相容的HTML格式
+    let html = '<table border="1">';
+    
+    data.forEach((row, index) => {
+        html += '<tr>';
+        row.forEach(cell => {
+            const tag = index === 0 ? 'th' : 'td';
+            html += `<${tag}>${cell}</${tag}>`;
+        });
+        html += '</tr>';
+    });
+    
+    html += '</table>';
+    html += '<p class="text-info mt-2">此格式可以直接複製到Excel中</p>';
+    
+    return html;
+}
+
+function clearCSVData() {
+    document.getElementById('csvInput').value = '';
+    document.getElementById('csvOutput').innerHTML = '<p class="text-muted">請輸入CSV資料並點擊轉換</p>';
+    document.getElementById('csvStatus').innerHTML = '';
+    
+    const fileInput = document.getElementById('csvFileInput');
+    if (fileInput) fileInput.value = '';
+}
+
+function copyCSVResult() {
+    const outputFormat = document.getElementById('outputFormat').value;
+    let textToCopy = '';
+    
+    if (window.csvConvertResult) {
+        if (outputFormat === 'table' || outputFormat === 'excel') {
+            // 對於表格格式，複製純文字版本
+            const data = window.csvConvertResult.rawData;
+            textToCopy = convertToCSV(data, '\t'); // 使用Tab分隔便於貼到Excel
+        } else {
+            textToCopy = window.csvConvertResult.data;
+        }
+        
+        const textArea = document.createElement('textarea');
+        textArea.value = textToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        document.getElementById('csvStatus').innerHTML = '<span class="text-info">已複製到剪貼簿</span>';
+    } else {
+        document.getElementById('csvStatus').innerHTML = '<span class="text-warning">沒有資料可複製</span>';
+    }
+}
+
+function downloadCSVResult() {
+    if (!window.csvConvertResult) {
+        document.getElementById('csvStatus').innerHTML = '<span class="text-warning">沒有資料可下載</span>';
+        return;
+    }
+    
+    const format = window.csvConvertResult.format;
+    const data = window.csvConvertResult.rawData;
+    let content = '';
+    let filename = '';
+    let mimeType = '';
+    
+    switch (format) {
+        case 'csv':
+            content = convertToCSV(data, ',');
+            filename = 'converted_data.csv';
+            mimeType = 'text/csv';
+            break;
+            
+        case 'json':
+            content = convertToJSON(data);
+            filename = 'converted_data.json';
+            mimeType = 'application/json';
+            break;
+            
+        case 'table':
+        case 'excel':
+            content = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>轉換資料</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    ${convertToHTMLTable(data)}
+</body>
+</html>`;
+            filename = 'converted_data.html';
+            mimeType = 'text/html';
+            break;
+            
+        default:
+            content = convertToCSV(data, ',');
+            filename = 'converted_data.csv';
+            mimeType = 'text/csv';
+    }
+    
+    // 創建下載連結
+    const blob = new Blob([content], { type: mimeType + ';charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        document.getElementById('csvStatus').innerHTML = '<span class="text-success">檔案下載開始</span>';
+    } else {
+        document.getElementById('csvStatus').innerHTML = '<span class="text-danger">瀏覽器不支援檔案下載</span>';
+    }
+}
+
 // ====== 正則表達式測試器 ======
 function showRegexTester() {
     const modal = createToolModal('正則表達式測試器', `
@@ -808,6 +1194,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const ipLookupBtn = document.getElementById('ipLookupBtn');
     if (ipLookupBtn) {
         ipLookupBtn.addEventListener('click', showIPLookup);
+    }
+    
+    // CSV/Excel轉換器
+    const csvConverterBtn = document.getElementById('csvConverterBtn');
+    if (csvConverterBtn) {
+        csvConverterBtn.addEventListener('click', showCSVConverter);
     }
     
     console.log('實用工具集合載入完成');
