@@ -11,6 +11,15 @@ function loadGameSelection(gameType) {
         return;
     }
     
+    // 確保遊戲容器顯示
+    gameContainer.style.display = 'block';
+    
+    // 隱藏主要內容區域
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+        mainContent.style.display = 'none';
+    }
+    
     switch(gameType) {
         case 'tetris':
             loadTetrisGame();
