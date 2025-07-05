@@ -529,18 +529,20 @@ function loadMahjongGame() {
     
     const gameContainer = document.getElementById('gameContainer');
     gameContainer.innerHTML = `
-        <div class="mahjong-game-wrapper" style="display: flex; height: 100%; min-height: 600px;">
+        <div class="row h-100" style="min-height: 600px;">
             <!-- 左側遊戲控制面板 -->
-            <div class="mahjong-controls-panel" style="width: 280px; background: var(--bs-dark); color: white; padding: 20px; border-radius: 8px; margin-right: 15px;">
-                <div class="panel-header" style="border-bottom: 1px solid #495057; padding-bottom: 15px; margin-bottom: 20px;">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="mb-0" style="color: #fff;">🀄 麻將遊戲</h5>
-                        <button onclick="showGameSelection()" class="btn btn-outline-light btn-sm">
-                            <i class="fas fa-arrow-left me-1"></i>返回
-                        </button>
+            <div class="col-md-3 col-lg-3">
+                <div class="card h-100" style="background: var(--bs-dark); border: 1px solid #495057;">
+                    <div class="card-header border-bottom" style="border-color: #495057 !important;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 text-white">🀄 麻將遊戲</h5>
+                            <button onclick="showGameSelection()" class="btn btn-outline-light btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i>返回
+                            </button>
+                        </div>
+                        <small class="text-muted">四人對戰模式</small>
                     </div>
-                    <small class="text-muted">四人對戰模式</small>
-                </div>
+                    <div class="card-body p-3" style="overflow-y: auto;">`
                 
                 <!-- 遊戲控制 -->
                 <div class="game-controls-section mb-4">
@@ -621,9 +623,11 @@ function loadMahjongGame() {
             </div>
             
             <!-- 右側麻將桌面 -->
-            <div class="mahjong-table-wrapper" style="flex: 1; background: #0F5132; border-radius: 8px; position: relative; min-height: 600px;">
-                <!-- 麻將桌面 -->
-                <div class="mahjong-table" style="width: 100%; height: 100%; position: relative; background: #0F5132; border-radius: 8px; overflow: hidden;">
+            <div class="col-md-9 col-lg-9">
+                <div class="card h-100" style="background: #0F5132; border: 1px solid #495057;">
+                    <div class="card-body p-3" style="position: relative; min-height: 500px;">
+                        <!-- 麻將桌面 -->
+                        <div class="mahjong-table" style="width: 100%; height: 100%; position: relative; background: #0F5132; border-radius: 8px; overflow: hidden;">
                     
                     <!-- 桌面中央區域 - 顯示打出的牌 -->
                     <div class="table-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; height: 220px; border: 2px solid #666; background: rgba(0,0,0,0.1); border-radius: 8px;">
@@ -666,6 +670,8 @@ function loadMahjongGame() {
                     
                     <!-- 隱藏的動作提示面板 (備用) -->
                     <div class="action-prompt" id="actionPrompt" style="display: none;"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
