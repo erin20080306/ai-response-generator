@@ -533,7 +533,12 @@ function loadMahjongGame() {
             <!-- 左側遊戲控制面板 -->
             <div class="mahjong-controls-panel" style="width: 280px; background: var(--bs-dark); color: white; padding: 20px; border-radius: 8px; margin-right: 15px;">
                 <div class="panel-header" style="border-bottom: 1px solid #495057; padding-bottom: 15px; margin-bottom: 20px;">
-                    <h5 class="mb-0" style="color: #fff;">🀄 麻將遊戲</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0" style="color: #fff;">🀄 麻將遊戲</h5>
+                        <button onclick="showGameSelection()" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>返回
+                        </button>
+                    </div>
                     <small class="text-muted">四人對戰模式</small>
                 </div>
                 
@@ -546,9 +551,6 @@ function loadMahjongGame() {
                         </button>
                         <button onclick="restartMahjongGame()" class="btn btn-secondary">
                             <i class="fas fa-redo me-2"></i>重新開始
-                        </button>
-                        <button onclick="showGameSelection()" class="btn btn-outline-light">
-                            <i class="fas fa-arrow-left me-2"></i>返回遊戲選擇
                         </button>
                     </div>
                 </div>
