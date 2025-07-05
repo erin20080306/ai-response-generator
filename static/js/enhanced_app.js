@@ -132,8 +132,7 @@ class EnhancedAIAssistant {
         // 設定相關事件
         this.setupSettingsEvents();
         
-        // 協作相關事件
-        this.setupCollaborationEvents();
+        // 協作功能已移除
         
         // 工具相關事件
         this.setupToolEvents();
@@ -302,21 +301,7 @@ class EnhancedAIAssistant {
         }
     }
 
-    setupCollaborationEvents() {
-        const createRoomBtn = document.getElementById('createRoomBtn');
-        const joinRoomBtn = document.getElementById('joinRoomBtn');
-        const roomNameInput = document.getElementById('roomName');
-        const roomCodeInput = document.getElementById('roomCode');
-        const maxParticipantsSelect = document.getElementById('maxParticipants');
-
-        if (createRoomBtn) {
-            createRoomBtn.addEventListener('click', () => this.createRoom());
-        }
-
-        if (joinRoomBtn) {
-            joinRoomBtn.addEventListener('click', () => this.joinRoom());
-        }
-    }
+    // 協作功能已移除
 
     setupToolEvents() {
         // 計算機

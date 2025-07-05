@@ -106,34 +106,7 @@ class FileUpload:
     # 關聯
     user = None
 
-class CollaborationRoom:
-    __tablename__ = 'collaboration_rooms'
-    
-    id = Column(String(50), primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String(100), nullable=False)
-    room_code = Column(String(20), unique=True, nullable=False)
-    created_by = Column(String(50), ForeignKey('users.id'), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    is_active = Column(Boolean, default=True)
-    max_participants = Column(Integer, default=10)
-    
-    # 關聯
-    creator = None
-    participants = None
 
-class RoomParticipant:
-    __tablename__ = 'room_participants'
-    
-    id = Column(String(50), primary_key=True, default=lambda: str(uuid.uuid4()))
-    room_id = Column(String(50), ForeignKey('collaboration_rooms.id'), nullable=False)
-    user_id = Column(String(50), ForeignKey('users.id'), nullable=True)
-    username = Column(String(80), nullable=False)
-    joined_at = Column(DateTime, default=datetime.utcnow)
-    is_active = Column(Boolean, default=True)
-    
-    # 關聯
-    room = None
-    user = None
 
 def init_db(db):
     """初始化資料庫模型"""
@@ -242,34 +215,7 @@ def init_db(db):
         # 關聯
         user = relationship('User')
 
-    class CollaborationRoom(db.Model):
-        __tablename__ = 'collaboration_rooms'
-        
-        id = db.Column(db.String(50), primary_key=True, default=lambda: str(uuid.uuid4()))
-        name = db.Column(db.String(100), nullable=False)
-        room_code = db.Column(db.String(20), unique=True, nullable=False)
-        created_by = db.Column(db.String(50), db.ForeignKey('users.id'), nullable=False)
-        created_at = db.Column(db.DateTime, default=datetime.utcnow)
-        is_active = db.Column(db.Boolean, default=True)
-        max_participants = db.Column(db.Integer, default=10)
-        
-        # 關聯
-        creator = relationship('User')
-        participants = relationship('RoomParticipant', back_populates='room', cascade='all, delete-orphan')
 
-    class RoomParticipant(db.Model):
-        __tablename__ = 'room_participants'
-        
-        id = db.Column(db.String(50), primary_key=True, default=lambda: str(uuid.uuid4()))
-        room_id = db.Column(db.String(50), db.ForeignKey('collaboration_rooms.id'), nullable=False)
-        user_id = db.Column(db.String(50), db.ForeignKey('users.id'), nullable=True)
-        username = db.Column(db.String(80), nullable=False)
-        joined_at = db.Column(db.DateTime, default=datetime.utcnow)
-        is_active = db.Column(db.Boolean, default=True)
-        
-        # 關聯
-        room = relationship('CollaborationRoom', back_populates='participants')
-        user = relationship('User')
     
     # 返回所有模型類別
     return {
@@ -279,7 +225,5 @@ def init_db(db):
         'Bookmark': Bookmark,
         'SharedConversation': SharedConversation,
         'QuickReply': QuickReply,
-        'FileUpload': FileUpload,
-        'CollaborationRoom': CollaborationRoom,
-        'RoomParticipant': RoomParticipant
+        'FileUpload': FileUpload
     }
