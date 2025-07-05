@@ -8,52 +8,52 @@ class MahjongTileMapper {
         // 建立牌面對應圖片的映射表
         this.tileImageMap = {
             // 萬子 (Characters/Man)
-            '1萬': '/attached_assets/60794_man_mahjong_icon_1751722977548.png',
-            '2萬': '/attached_assets/60795_mahjong_man_icon_1751722977550.png', 
-            '3萬': '/attached_assets/60724_mahjong_man_icon_1751722977551.png',
-            '4萬': '/attached_assets/60797_man_mahjong_icon_1751722977552.png',
-            '5萬': '/attached_assets/60727_dora_mahjong_man_red_icon_1751722977545.png', // 紅五萬
-            '6萬': '/attached_assets/60798_dragon_mahjong_man_icon_1751722977547.png',
-            '7萬': '/attached_assets/60800_mahjong_man_icon_1751722977549.png',
-            '8萬': '/attached_assets/60794_man_mahjong_icon_1751722977548.png', // 重複使用
-            '9萬': '/attached_assets/60795_mahjong_man_icon_1751722977550.png', // 重複使用
+            '1萬': '/static/images/一萬.png',
+            '2萬': '/static/images/二萬.png',
+            '3萬': '/static/images/三萬.png',
+            '4萬': '/static/images/四萬.png',
+            '5萬': '/static/images/五萬.png',
+            '6萬': '/static/images/六萬.png',
+            '7萬': '/static/images/七萬.png',
+            '8萬': '/static/images/八萬.png',
+            '9萬': '/static/images/九萬.png',
             
             // 筒子 (Circles/Pin)
-            '1筒': '/attached_assets/60725_mahjong_icon_1751722977552.png',
-            '2筒': '/attached_assets/60805_mahjong_pin_icon_1751722977554.png',
-            '3筒': '/attached_assets/60725_mahjong_icon_1751722977552.png', // 重複使用
-            '4筒': '/attached_assets/60805_mahjong_pin_icon_1751722977554.png', // 重複使用
-            '5筒': '/attached_assets/60725_mahjong_icon_1751722977552.png', // 重複使用
-            '6筒': '/attached_assets/60805_mahjong_pin_icon_1751722977554.png', // 重複使用
-            '7筒': '/attached_assets/60725_mahjong_icon_1751722977552.png', // 重複使用
-            '8筒': '/attached_assets/60805_mahjong_pin_icon_1751722977554.png', // 重複使用
-            '9筒': '/attached_assets/60725_mahjong_icon_1751722977552.png', // 重複使用
+            '1筒': '/static/images/一筒.png',
+            '2筒': '/static/images/二筒.png',
+            '3筒': '/static/images/三筒.png',
+            '4筒': '/static/images/四筒.png',
+            '5筒': '/static/images/五筒.png',
+            '6筒': '/static/images/六筒.png',
+            '7筒': '/static/images/七筒.png',
+            '8筒': '/static/images/八筒.png',
+            '9筒': '/static/images/九筒.png',
             
-            // 條子 (Bamboo/Sou) - 使用現有的竹子圖片
-            '1條': '/attached_assets/60720_bamboo_mahjong_icon (1)_1751722936479.png',
-            '2條': '/attached_assets/60784_mahjong_bamboo_icon_1751722936473.png',
-            '3條': '/attached_assets/60785_mahjong_bamboo_icon_1751722936472.png',
-            '4條': '/attached_assets/60786_bamboo_icon_1751722936482.png',
-            '5條': '/attached_assets/60726_bamboo_dora_mahjong_red_icon_1751722936480.png', // 紅五條
-            '6條': '/attached_assets/60787_bamboo_icon_1751722936481.png',
-            '7條': '/attached_assets/60790_mahjong_bamboo_icon (1)_1751722936478.png',
-            '8條': '/attached_assets/60791_mahjong_bamboo_icon_1751722936476.png',
-            '9條': '/attached_assets/60720_bamboo_mahjong_icon (2)_1751722936474.png',
+            // 條子 (Bamboo/Sou)
+            '1條': '/static/images/一條.png',
+            '2條': '/static/images/二條.png',
+            '3條': '/static/images/三條.png',
+            '4條': '/static/images/四條.png',
+            '5條': '/static/images/五條.png',
+            '6條': '/static/images/六條.png',
+            '7條': '/static/images/七條.png',
+            '8條': '/static/images/八條.png',
+            '9條': '/static/images/九條.png',
             
             // 風牌 (Wind tiles)
-            '東': '/attached_assets/60729_east_mahjong_wind_icon (1)_1751722936489.png',
-            '南': '/attached_assets/60731_mahjong_south_wind_icon_1751722977542.png',
-            '西': '/attached_assets/60732_mahjong_west_wind_icon_1751722977543.png',
-            '北': '/attached_assets/60730_mahjong_north_wind_icon_1751722977540.png',
+            '東': '/static/images/東風.png',
+            '南': '/static/images/南風.png',
+            '西': '/static/images/西風.png',
+            '北': '/static/images/北風.png',
             
             // 龍牌 (Dragon tiles)
-            '中': '/attached_assets/60721_chun_dragon_mahjong_icon_1751722977555.png',
-            '發': '/attached_assets/60722_dragon_green_mahjong_icon_1751722977555.png',
-            '白': '/attached_assets/60720_bamboo_mahjong_icon (1)_1751722936479.png' // 使用白色底圖
+            '中': '/static/images/紅中.png',
+            '發': '/static/images/青發.png',
+            '白': '/static/images/一萬.png' // 暫時用一萬替代白板
         };
         
         // 牌背圖片
-        this.tileBackImage = '/attached_assets/60799_mahjong_icon_1751722936488.png';
+        this.tileBackImage = '/static/images/一萬.png';
     }
     
     /**
