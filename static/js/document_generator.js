@@ -209,14 +209,10 @@ class DocumentGenerator {
                 
                 console.log('點擊範本:', type, template); // 調試日志
                 
-                // 使用簡化版生成器
-                if (window.generateAndDownloadFromTemplate) {
-                    window.generateAndDownloadFromTemplate(type, template);
-                } else {
-                    this.generateFromTemplate(type, template);
-                }
+                // 直接調用範本生成方法
+                this.generateFromTemplate(type, template);
             }
-        });
+        }.bind(this));
 
         // 清除歷史
         const clearBtn = document.getElementById('clearHistoryBtn');
