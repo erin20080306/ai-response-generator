@@ -1650,8 +1650,7 @@ def execute_mahjong_action():
                 'success': True,
                 'action': 'hu',
                 'message': '恭喜胡牌！',
-                'game_over': True,
-                'result': '玩家胡牌獲勝！'
+                'game_over': True
             })
         
         elif action == 'pong':
@@ -1664,104 +1663,17 @@ def execute_mahjong_action():
                 if game_state['discarded_tiles']:
                     game_state['discarded_tiles'].pop()
                 
-                game_state['player_hand'].sort()
                 session['mahjong_game'] = game_state
                 
                 return jsonify({
                     'success': True,
                     'action': 'pong',
-                    'message': f'成功碰牌：{tile}',
                     'player_hand': game_state['player_hand'],
-                    'melded_tiles': game_state['player_melded'],
-                    'discarded_tiles': game_state['discarded_tiles'],
-                    'waiting_for_discard': True
+                    'player_melded': game_state['player_melded'],
+                    'discarded_tiles': game_state['discarded_tiles']
                 })
-            else:
-                return jsonify({'success': False, 'error': '無法碰牌'})
         
-        elif action == 'chi':
-            tile = game_state['last_discarded_tile']
-            if tile and can_chi(game_state['player_hand'], tile):
-                # 執行吃牌 - 找到合適的順子
-                num = int(tile[0]) if tile[0].isdigit() else 0
-                suit = tile[1:]
-                
-                sequences = [
-                    [f'{num-2}{suit}', f'{num-1}{suit}'],
-                    [f'{num-1}{suit}', f'{num+1}{suit}'],
-                    [f'{num+1}{suit}', f'{num+2}{suit}']
-                ]
-                
-                for seq in sequences:
-                    if all(card in game_state['player_hand'] for card in seq):
-                        # 從手牌移除
-                        for card in seq:
-                            game_state['player_hand'].remove(card)
-                        
-                        # 添加到組合牌
-                        chi_tiles = sorted(seq + [tile])
-                        game_state['player_melded'].append(chi_tiles)
-                        
-                        # 移除桌面牌
-                        if game_state['discarded_tiles']:
-                            game_state['discarded_tiles'].pop()
-                        
-                        game_state['player_hand'].sort()
-                        session['mahjong_game'] = game_state
-                        
-                        return jsonify({
-                            'success': True,
-                            'action': 'chi',
-                            'message': f'成功吃牌：{", ".join(chi_tiles)}',
-                            'player_hand': game_state['player_hand'],
-                            'melded_tiles': game_state['player_melded'],
-                            'discarded_tiles': game_state['discarded_tiles'],
-                            'waiting_for_discard': True
-                        })
-                
-                return jsonify({'success': False, 'error': '無法吃牌'})
-            else:
-                return jsonify({'success': False, 'error': '無法吃牌'})
-        
-        elif action == 'kong':
-            tile = game_state['last_discarded_tile']
-            if tile and game_state['player_hand'].count(tile) >= 3:
-                # 執行槓牌
-                for _ in range(3):
-                    game_state['player_hand'].remove(tile)
-                game_state['player_melded'].append([tile, tile, tile, tile])
-                if game_state['discarded_tiles']:
-                    game_state['discarded_tiles'].pop()
-                
-                # 槓牌後需要補牌
-                if game_state['deck']:
-                    new_tile = game_state['deck'].pop()
-                    game_state['player_hand'].append(new_tile)
-                
-                game_state['player_hand'].sort()
-                session['mahjong_game'] = game_state
-                
-                return jsonify({
-                    'success': True,
-                    'action': 'kong',
-                    'message': f'成功槓牌：{tile}',
-                    'player_hand': game_state['player_hand'],
-                    'melded_tiles': game_state['player_melded'],
-                    'discarded_tiles': game_state['discarded_tiles'],
-                    'waiting_for_discard': True
-                })
-            else:
-                return jsonify({'success': False, 'error': '無法槓牌'})
-        
-        elif action == 'pass':
-            return jsonify({
-                'success': True,
-                'action': 'pass',
-                'message': '過牌',
-                'next_player': (game_state['current_player'] + 1) % 4
-            })
-        
-        return jsonify({'success': False, 'error': '無效的動作'})
+        return jsonify({'success': False, 'error': '無法執行該動作'})
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})

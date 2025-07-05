@@ -416,20 +416,36 @@
             }
         }
 
-        // 顯示動作提示
-        function showActionPrompt(actions, tile) {
-            const promptElement = document.getElementById('actionPrompt');
-            if (promptElement) {
-                promptElement.style.display = 'block';
-                showMessage(`可對 ${tile} 執行：${actions.join(', ')}`, 'info');
-            }
-        }
-
-        // 隱藏動作提示
-        function hideActionPrompt() {
-            const promptElement = document.getElementById('actionPrompt');
-            if (promptElement) {
-                promptElement.style.display = 'none';
+        // 執行動作
+        async function executeAction(action) {
+            try {
+                const response = await fetch('/mahjong/action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action: action })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    hideActionPrompt();
+                    
+                    if (data.game_over) {
+                        showMessage(data.message, 'success');
+                        document.getElementById('drawBtn').disabled = true;
+                    } else {
+                        renderPlayerHand(data.player_hand);
+                        renderPlayerMelded(data.player_melded);
+                        renderDiscardedTiles(data.discarded_tiles);
+                        showMessage(action + '成功！請選擇要打出的牌。', 'success');
+                        waitingForAction = true;
+                    }
+                } else {
+                    showMessage('動作失敗：' + data.error, 'danger');
+                }
+            } catch (error) {
+                showMessage('網絡錯誤：' + error.message, 'danger');
             }
         }
 
@@ -648,85 +664,6 @@
         function getPlayerName(playerIndex) {
             const names = ['你', '電腦1', '電腦2', '電腦3'];
             return names[playerIndex] || '未知';
-        }
-
-        // 執行麻將動作（全域函數）
-        async function executeAction(action) {
-            try {
-                const response = await fetch('/mahjong/action', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ action: action })
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    // 更新遊戲狀態
-                    if (data.player_hand) {
-                        renderPlayerHand(data.player_hand);
-                    }
-                    if (data.discarded_tiles) {
-                        renderDiscardedTiles(data.discarded_tiles);
-                    }
-                    if (data.melded_tiles) {
-                        renderMeldedTiles(data.melded_tiles);
-                    }
-                    
-                    showMessage(data.message || `執行動作：${action}`, 'success');
-                    
-                    // 隱藏動作提示
-                    document.getElementById('actionPrompt').style.display = 'none';
-                    
-                    // 檢查是否需要等待玩家動作
-                    if (data.waiting_for_discard) {
-                        waitingForAction = true;
-                        showMessage('請選擇要打出的牌', 'info');
-                    } else if (data.game_over) {
-                        showMessage(data.result || '遊戲結束', 'primary');
-                    } else {
-                        // 繼續遊戲流程
-                        setTimeout(() => {
-                            if (data.next_player !== 0) {
-                                computerTurn();
-                            }
-                        }, 1000);
-                    }
-                } else {
-                    showMessage('動作失敗：' + data.error, 'danger');
-                }
-            } catch (error) {
-                showMessage('網絡錯誤：' + error.message, 'danger');
-            }
-        }
-
-        // 過牌動作（全域函數）
-        async function passAction() {
-            try {
-                const response = await fetch('/mahjong/action', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ action: 'pass' })
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    showMessage('過牌', 'info');
-                    
-                    // 隱藏動作提示
-                    document.getElementById('actionPrompt').style.display = 'none';
-                    
-                    // 繼續遊戲流程
-                    setTimeout(computerTurn, 500);
-                } else {
-                    showMessage('過牌失敗：' + data.error, 'danger');
-                }
-            } catch (error) {
-                showMessage('網絡錯誤：' + error.message, 'danger');
-            }
         }
     </script>
 </body>
