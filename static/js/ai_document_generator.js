@@ -88,16 +88,24 @@ class AIDocumentGenerator {
 
             this.updateProgress(30, '正在使用AI生成文件結構...');
 
+            // 設定較長的超時時間以處理圖片生成
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 120000); // 2分鐘超時
+
             const response = await fetch(this.apiEndpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(requestData)
+                body: JSON.stringify(requestData),
+                signal: controller.signal
             });
 
+            clearTimeout(timeoutId);
+
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                throw new Error(`伺服器錯誤 (${response.status}): ${errorText}`);
             }
 
             const result = await response.json();
@@ -111,7 +119,17 @@ class AIDocumentGenerator {
 
         } catch (error) {
             console.error('AI文件生成錯誤:', error);
-            this.showError(`文件生成失敗: ${error.message}`);
+            
+            let errorMessage = '文件生成失敗';
+            if (error.name === 'AbortError') {
+                errorMessage = '請求超時，請簡化文件描述後重試';
+            } else if (error.message.includes('500')) {
+                errorMessage = '伺服器處理錯誤，可能是圖片生成失敗，請嘗試不使用圖片或簡化描述';
+            } else {
+                errorMessage = `文件生成失敗: ${error.message}`;
+            }
+            
+            this.showError(errorMessage);
             this.showProgress(false);
         }
     }
