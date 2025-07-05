@@ -33,33 +33,24 @@ function loadGameSelection(gameType) {
 // 顯示遊戲選擇畫面
 function showGameSelection() {
     const gameContainer = document.getElementById('gameContainer');
-    gameContainer.innerHTML = `
-        <div class="game-selection">
-            <h3>🎮 選擇遊戲</h3>
-            <div class="game-buttons">
-                <button onclick="loadGameSelection('tetris')" class="game-btn tetris-btn">
-                    <div class="game-icon">🧩</div>
-                    <div class="game-name">俄羅斯方塊</div>
-                    <div class="game-desc">經典拼圖遊戲</div>
-                </button>
-                <button onclick="loadGameSelection('mahjong')" class="game-btn mahjong-btn">
-                    <div class="game-icon">🀄</div>
-                    <div class="game-name">麻將遊戲</div>
-                    <div class="game-desc">傳統麻將對戰</div>
-                </button>
-                <button onclick="loadGameSelection('memory')" class="game-btn memory-btn">
-                    <div class="game-icon">🧠</div>
-                    <div class="game-name">翻牌記憶</div>
-                    <div class="game-desc">記憶力挑戰</div>
-                </button>
-                <button onclick="loadGameSelection('pinball')" class="game-btn pinball-btn">
-                    <div class="game-icon">🏀</div>
-                    <div class="game-name">彈珠檯</div>
-                    <div class="game-desc">彈珠物理遊戲</div>
-                </button>
-            </div>
-        </div>
-    `;
+    
+    // 清空遊戲容器，返回主畫面
+    if (gameContainer) {
+        gameContainer.innerHTML = '';
+        gameContainer.style.display = 'none';
+    }
+    
+    // 顯示主要內容區域
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+        mainContent.style.display = 'block';
+    }
+    
+    // 確保聊天界面顯示
+    const chatContainer = document.getElementById('chat-container');
+    if (chatContainer) {
+        chatContainer.style.display = 'block';
+    }
 }
 
 // 俄羅斯方塊遊戲
