@@ -16,7 +16,8 @@ function loadGameSelection(gameType) {
             loadTetrisGame();
             break;
         case 'mahjong':
-            loadMahjongGame();
+            // 跳轉到獨立的麻將遊戲頁面
+            window.open('/mahjong', '_blank');
             break;
         default:
             showGameSelection();

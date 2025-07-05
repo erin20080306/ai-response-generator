@@ -1218,6 +1218,211 @@ def download_file(filename):
         logging.error(f"Download error: {str(e)}")
         return jsonify({'error': 'Download failed'}), 500
 
+@app.route('/mahjong/start', methods=['POST'])
+def start_mahjong_game():
+    """開始麻將遊戲"""
+    try:
+        # 創建完整的144張牌組
+        base_tiles = [
+            '1萬', '2萬', '3萬', '4萬', '5萬', '6萬', '7萬', '8萬', '9萬',
+            '1筒', '2筒', '3筒', '4筒', '5筒', '6筒', '7筒', '8筒', '9筒',
+            '1條', '2條', '3條', '4條', '5條', '6條', '7條', '8條', '9條',
+            '東', '南', '西', '北', '中', '發', '白'
+        ]
+        
+        # 每種牌4張
+        deck = []
+        for tile in base_tiles:
+            for _ in range(4):
+                deck.append(tile)
+        
+        # 洗牌
+        import random
+        random.shuffle(deck)
+        
+        # 發牌給玩家和3個電腦
+        player_hand = sorted(deck[:13])
+        computer_hands = [deck[13:26], deck[26:39], deck[39:52]]
+        remaining_deck = deck[52:]
+        
+        # 儲存遊戲狀態到session
+        session['mahjong_game'] = {
+            'player_hand': player_hand,
+            'computer_hands': computer_hands,
+            'deck': remaining_deck,
+            'discarded_tiles': [],
+            'player_melded': [],
+            'computer_melded': [[], [], []],
+            'current_player': 0,  # 0=玩家, 1-3=電腦
+            'last_discarded_tile': None,
+            'last_discarded_player': None,
+            'game_started': True
+        }
+        
+        return jsonify({
+            'success': True,
+            'player_hand': player_hand,
+            'hand_count': [len(computer_hands[0]), len(computer_hands[1]), len(computer_hands[2])],
+            'remaining_tiles': len(remaining_deck)
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/mahjong/discard', methods=['POST'])
+def discard_mahjong_tile():
+    """打出麻將牌"""
+    try:
+        data = request.get_json()
+        tile_index = data.get('tile_index')
+        
+        game_state = session.get('mahjong_game')
+        if not game_state:
+            return jsonify({'success': False, 'error': '遊戲未開始'})
+        
+        if tile_index < 0 or tile_index >= len(game_state['player_hand']):
+            return jsonify({'success': False, 'error': '無效的牌索引'})
+        
+        # 玩家打牌
+        discarded_tile = game_state['player_hand'].pop(tile_index)
+        game_state['discarded_tiles'].append(discarded_tile)
+        game_state['last_discarded_tile'] = discarded_tile
+        game_state['last_discarded_player'] = 0
+        game_state['current_player'] = 1
+        
+        session['mahjong_game'] = game_state
+        
+        return jsonify({
+            'success': True,
+            'discarded_tile': discarded_tile,
+            'player_hand': game_state['player_hand'],
+            'discarded_tiles': game_state['discarded_tiles']
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/mahjong/draw', methods=['POST'])
+def draw_mahjong_tile():
+    """摸牌"""
+    try:
+        game_state = session.get('mahjong_game')
+        if not game_state or not game_state['deck']:
+            return jsonify({'success': False, 'error': '無法摸牌'})
+        
+        new_tile = game_state['deck'].pop()
+        game_state['player_hand'].append(new_tile)
+        game_state['player_hand'].sort()
+        
+        session['mahjong_game'] = game_state
+        
+        return jsonify({
+            'success': True,
+            'new_tile': new_tile,
+            'player_hand': game_state['player_hand'],
+            'remaining_tiles': len(game_state['deck'])
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/mahjong/action', methods=['POST'])
+def execute_mahjong_action():
+    """執行麻將動作（吃、碰、槓、胡）"""
+    try:
+        data = request.get_json()
+        action = data.get('action')
+        
+        game_state = session.get('mahjong_game')
+        if not game_state:
+            return jsonify({'success': False, 'error': '遊戲未開始'})
+        
+        if action == 'hu':
+            return jsonify({
+                'success': True,
+                'action': 'hu',
+                'message': '恭喜胡牌！',
+                'game_over': True
+            })
+        
+        elif action == 'pong':
+            tile = game_state['last_discarded_tile']
+            if tile and game_state['player_hand'].count(tile) >= 2:
+                # 執行碰牌
+                for _ in range(2):
+                    game_state['player_hand'].remove(tile)
+                game_state['player_melded'].append([tile, tile, tile])
+                if game_state['discarded_tiles']:
+                    game_state['discarded_tiles'].pop()
+                
+                session['mahjong_game'] = game_state
+                
+                return jsonify({
+                    'success': True,
+                    'action': 'pong',
+                    'player_hand': game_state['player_hand'],
+                    'player_melded': game_state['player_melded'],
+                    'discarded_tiles': game_state['discarded_tiles']
+                })
+        
+        return jsonify({'success': False, 'error': '無法執行該動作'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/mahjong/computer_turn', methods=['POST'])
+def computer_mahjong_turn():
+    """電腦回合"""
+    try:
+        game_state = session.get('mahjong_game')
+        if not game_state:
+            return jsonify({'success': False, 'error': '遊戲未開始'})
+        
+        current_player = game_state['current_player']
+        if current_player < 1 or current_player > 3:
+            current_player = 1
+            game_state['current_player'] = 1
+        
+        computer_index = current_player - 1
+        computer_hand = game_state['computer_hands'][computer_index]
+        
+        # 電腦摸牌
+        if game_state['deck']:
+            new_tile = game_state['deck'].pop()
+            computer_hand.append(new_tile)
+        
+        # 電腦打牌（簡單AI）
+        discarded_tile = None
+        if computer_hand:
+            import random
+            discard_index = random.randint(0, len(computer_hand) - 1)
+            discarded_tile = computer_hand.pop(discard_index)
+            game_state['discarded_tiles'].append(discarded_tile)
+            game_state['last_discarded_tile'] = discarded_tile
+            game_state['last_discarded_player'] = current_player
+        
+        # 下一個玩家
+        game_state['current_player'] = (current_player + 1) % 4
+        
+        session['mahjong_game'] = game_state
+        
+        return jsonify({
+            'success': True,
+            'discarded_tile': discarded_tile or '',
+            'computer_player': current_player,
+            'discarded_tiles': game_state['discarded_tiles'],
+            'hand_counts': [len(h) for h in game_state['computer_hands']],
+            'current_player': game_state['current_player']
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/mahjong')
+def mahjong_page():
+    """麻將遊戲頁面"""
+    return render_template('mahjong.html')
+
 @app.route('/health')
 def health():
     """Health check endpoint"""
