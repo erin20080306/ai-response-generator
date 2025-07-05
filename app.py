@@ -604,15 +604,72 @@ def generate_template_document(data):
     templates = get_document_templates(language)
     
     if template_type == 'spreadsheet':
-        template_data = templates['spreadsheet'].get(template_name)
-        if template_data:
+        if 'spreadsheet' in templates and template_name in templates['spreadsheet']:
+            template_data = templates['spreadsheet'][template_name]
             return create_spreadsheet(template_data, 'excel', language)
     elif template_type == 'document':
-        template_data = templates['document'].get(template_name)
-        if template_data:
+        if 'document' in templates and template_name in templates['document']:
+            template_data = templates['document'][template_name]
             return create_word_document(template_data, language)
+    elif template_type == 'google_sheets':
+        if 'google_sheets' in templates and template_name in templates['google_sheets']:
+            template_data = templates['google_sheets'][template_name]
+            return create_google_sheets_template(template_data, language)
     
-    return jsonify({'success': False, 'error': '找不到指定的範本'})
+    # 提供更詳細的錯誤訊息
+    available_templates = []
+    if 'spreadsheet' in templates:
+        available_templates.extend([f"spreadsheet/{k}" for k in templates['spreadsheet'].keys()])
+    if 'document' in templates:
+        available_templates.extend([f"document/{k}" for k in templates['document'].keys()])
+    if 'google_sheets' in templates:
+        available_templates.extend([f"google_sheets/{k}" for k in templates['google_sheets'].keys()])
+    
+    error_msg = f'找不到範本 "{template_type}/{template_name}"。可用範本：{", ".join(available_templates)}'
+    return jsonify({'success': False, 'error': error_msg})
+
+def create_google_sheets_template(template_data, language):
+    """創建 Google Sheets 範本（實際上創建 CSV 檔案）"""
+    try:
+        # 創建 CSV 檔案
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.csv', mode='w', encoding='utf-8')
+        
+        # 寫入標題
+        title = template_data.get('title', '未命名範本')
+        temp_file.write(f"# {title}\n")
+        temp_file.write(f"# {template_data.get('description', '')}\n")
+        temp_file.write("\n")
+        
+        # 寫入表頭
+        headers = template_data.get('headers', template_data.get('columns', []))
+        if headers:
+            temp_file.write(','.join(headers) + '\n')
+        
+        # 寫入資料行
+        rows = template_data.get('rows', [])
+        for row in rows:
+            temp_file.write(','.join([str(cell) for cell in row]) + '\n')
+        
+        temp_file.close()
+        
+        # 準備下載檔案
+        filename = f"{title}.csv"
+        
+        # 移動檔案到靜態資料夾（為了下載）
+        static_path = os.path.join('static', 'downloads', filename)
+        os.makedirs(os.path.dirname(static_path), exist_ok=True)
+        shutil.move(temp_file.name, static_path)
+        
+        return jsonify({
+            'success': True,
+            'filename': filename,
+            'download_url': f'/download/{filename}',
+            'message': f'{title} 範本已生成完成，可以匯入 Google Sheets'
+        })
+        
+    except Exception as e:
+        logging.error(f"Google Sheets 範本生成錯誤: {e}")
+        return jsonify({'success': False, 'error': f'範本生成失敗: {str(e)}'})
 
 def create_spreadsheet(structure, file_type, language):
     """創建試算表"""
