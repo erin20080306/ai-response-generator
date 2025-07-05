@@ -551,6 +551,13 @@ class EnhancedAIAssistant {
                     });
                     
                     this.showNotification('程式碼分類回應完成', 'success');
+                } else if (data.image_generated && data.image_url) {
+                    // 圖片生成回應
+                    console.log('顯示圖片生成回應:', data.response);
+                    const useTypewriter = this.settings.typewriterEffect;
+                    this.addMessageWithImage(data.response, data.image_url, useTypewriter);
+                    
+                    this.showNotification('圖片生成成功', 'success');
                 } else {
                     // 一般回應
                     console.log('顯示AI回應:', data.response);
@@ -757,6 +764,110 @@ class EnhancedAIAssistant {
             content: content,
             timestamp: new Date().toISOString()
         });
+    }
+
+    addMessageWithImage(content, imageUrl, useTypewriter = false) {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+
+        const messageItem = document.createElement('div');
+        messageItem.className = 'message-item ai-message';
+
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+
+        const icon = '<i class="fas fa-robot me-2"></i>';
+        const timestamp = new Date().toLocaleTimeString();
+
+        if (useTypewriter) {
+            messageContent.innerHTML = icon;
+            this.typewriterEffectWithImage(messageContent, content, imageUrl, icon);
+        } else {
+            messageContent.innerHTML = icon + this.escapeHtml(content);
+            
+            // 添加圖片
+            const imageDiv = document.createElement('div');
+            imageDiv.className = 'generated-image mt-3';
+            imageDiv.innerHTML = `
+                <img src="${imageUrl}" alt="AI生成圖片" class="img-fluid rounded shadow" style="max-width: 100%; max-height: 400px; cursor: pointer;" onclick="window.open('${imageUrl}', '_blank')">
+                <div class="image-actions mt-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="navigator.clipboard.writeText('${imageUrl}')">
+                        <i class="fas fa-link me-1"></i>複製連結
+                    </button>
+                    <a href="${imageUrl}" download="generated-image.png" class="btn btn-sm btn-outline-success ms-2">
+                        <i class="fas fa-download me-1"></i>下載圖片
+                    </a>
+                </div>
+            `;
+            messageContent.appendChild(imageDiv);
+        }
+
+        // 添加時間戳
+        const timeStamp = document.createElement('div');
+        timeStamp.className = 'message-timestamp';
+        timeStamp.style.fontSize = '0.75rem';
+        timeStamp.style.color = 'var(--text-muted)';
+        timeStamp.style.marginTop = '0.5rem';
+        timeStamp.textContent = timestamp;
+        messageContent.appendChild(timeStamp);
+
+        messageItem.appendChild(messageContent);
+        chatMessages.appendChild(messageItem);
+
+        // 滾動到底部
+        this.scrollToBottom();
+
+        // 更新聊天歷史
+        this.chatHistory.push({
+            role: 'assistant',
+            content: content,
+            image_url: imageUrl,
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    typewriterEffectWithImage(element, text, imageUrl, icon) {
+        const speed = parseInt(this.settings.typingSpeed) || 50;
+        const delay = Math.max(15, Math.min(60, 101 - speed));
+        
+        let index = 0;
+        const cursor = '<span class="typewriter-cursor">|</span>';
+        
+        element.innerHTML = icon;
+        
+        const type = () => {
+            if (index < text.length) {
+                const currentText = text.substring(0, index + 1);
+                element.innerHTML = icon + this.escapeHtml(currentText) + cursor;
+                this.scrollToBottom();
+                index++;
+                
+                if (index < text.length) {
+                    setTimeout(type, delay);
+                } else {
+                    // 完成時顯示圖片
+                    element.innerHTML = icon + this.escapeHtml(text);
+                    
+                    const imageDiv = document.createElement('div');
+                    imageDiv.className = 'generated-image mt-3';
+                    imageDiv.innerHTML = `
+                        <img src="${imageUrl}" alt="AI生成圖片" class="img-fluid rounded shadow" style="max-width: 100%; max-height: 400px; cursor: pointer;" onclick="window.open('${imageUrl}', '_blank')">
+                        <div class="image-actions mt-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="navigator.clipboard.writeText('${imageUrl}')">
+                                <i class="fas fa-link me-1"></i>複製連結
+                            </button>
+                            <a href="${imageUrl}" download="generated-image.png" class="btn btn-sm btn-outline-success ms-2">
+                                <i class="fas fa-download me-1"></i>下載圖片
+                            </a>
+                        </div>
+                    `;
+                    element.appendChild(imageDiv);
+                    this.scrollToBottom();
+                }
+            }
+        };
+        
+        setTimeout(type, delay);
     }
 
     typewriterEffect(element, text, icon) {

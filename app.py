@@ -222,8 +222,61 @@ def chat():
                 'success': True
             })
         else:
-            # Regular single response
-            ai_response = openai_client.get_response(chat_history)
+            # 檢查是否為圖片生成請求
+            image_keywords = ['畫', '繪', '圖', 'draw', 'paint', 'image', 'picture', '生成圖片', '產圖', '畫一個', '畫個', '給我一個', '圖片']
+            is_image_request = any(keyword in user_message.lower() for keyword in image_keywords)
+            
+            if is_image_request and openai_client.is_configured():
+                try:
+                    # 生成圖片
+                    response = openai_client.client.images.generate(
+                        model="dall-e-3",
+                        prompt=user_message,
+                        size="1024x1024",
+                        quality="standard",
+                        n=1,
+                    )
+                    
+                    image_url = response.data[0].url
+                    
+                    # 下載圖片並轉換為 base64
+                    img_response = requests.get(image_url)
+                    if img_response.status_code == 200:
+                        img = Image.open(BytesIO(img_response.content))
+                        
+                        # 轉換為 base64
+                        buffer = BytesIO()
+                        img.save(buffer, format='PNG')
+                        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+                        
+                        ai_response = f"我為您生成了圖片：{user_message}"
+                        
+                        # Add both user and AI response to history
+                        chat_history.append({
+                            'role': 'assistant',
+                            'content': ai_response
+                        })
+                        
+                        # Update session
+                        session['chat_history'] = chat_history
+                        session.modified = True
+                        
+                        return jsonify({
+                            'response': ai_response,
+                            'image_generated': True,
+                            'image_url': f"data:image/png;base64,{img_base64}",
+                            'success': True
+                        })
+                    else:
+                        # 圖片下載失敗，返回普通回應
+                        ai_response = openai_client.get_response(chat_history)
+                except Exception as e:
+                    logging.error(f"圖片生成失敗: {e}")
+                    # 生成失敗，返回普通回應
+                    ai_response = openai_client.get_response(chat_history)
+            else:
+                # Regular single response
+                ai_response = openai_client.get_response(chat_history)
             
             # Add AI response to history
             chat_history.append({
