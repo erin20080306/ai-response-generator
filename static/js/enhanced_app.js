@@ -963,15 +963,34 @@ class EnhancedAIAssistant {
         // 首先處理雙換行為段落分隔標記
         text = text.replace(/\n\n/g, '||PARAGRAPH_BREAK||');
         
-        // 處理程式碼區塊，添加語言標籤和間距
+        // 處理程式碼區塊，添加語言標籤和複製按鈕
         text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
             const language = lang || 'text';
             const cleanCode = this.escapeHtml(code.trim());
-            return `<pre data-language="${language}"><code class="language-${language}">${cleanCode}</code></pre>`;
+            const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
+            return `
+                <div class="code-block-container">
+                    <div class="code-header">
+                        <span class="code-language">${language}</span>
+                        <button class="btn btn-sm btn-outline-light copy-code-btn" onclick="copyCodeToClipboard('${codeId}')">
+                            <i class="fas fa-copy me-1"></i>複製
+                        </button>
+                    </div>
+                    <pre data-language="${language}" id="${codeId}"><code class="language-${language}">${cleanCode}</code></pre>
+                </div>
+            `;
         });
 
-        // 處理行內程式碼
-        text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+        // 處理行內程式碼（添加複製功能）
+        text = text.replace(/`([^`]+)`/g, (match, code) => {
+            const codeId = 'inline-code-' + Math.random().toString(36).substr(2, 9);
+            return `<span class="inline-code-container">
+                <code id="${codeId}">${code}</code>
+                <button class="btn btn-sm btn-link inline-copy-btn" onclick="copyCodeToClipboard('${codeId}')" title="複製程式碼">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </span>`;
+        });
 
         // 處理標題 (添加更多間距)
         text = text.replace(/^### (.*$)/gm, '<h3>$1</h3>');
@@ -2582,4 +2601,73 @@ if (document.readyState === 'loading') {
     if (!window.aiAssistant) {
         window.aiAssistant = new EnhancedAIAssistant();
     }
+}
+
+// 全域複製程式碼函數
+function copyCodeToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element) {
+        console.error('找不到程式碼元素:', elementId);
+        return;
+    }
+    
+    // 獲取純文字內容
+    const codeText = element.textContent || element.innerText;
+    
+    // 使用現代 Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(codeText).then(() => {
+            showCopyFeedback(elementId);
+        }).catch(err => {
+            console.error('複製失敗:', err);
+            fallbackCopy(codeText, elementId);
+        });
+    } else {
+        // 舊版瀏覽器的備案方法
+        fallbackCopy(codeText, elementId);
+    }
+}
+
+// 備案複製方法
+function fallbackCopy(text, elementId) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        showCopyFeedback(elementId);
+    } catch (err) {
+        console.error('複製失敗:', err);
+        alert('複製失敗，請手動選取文字複製');
+    } finally {
+        document.body.removeChild(textArea);
+    }
+}
+
+// 顯示複製成功回饋
+function showCopyFeedback(elementId) {
+    // 找到對應的複製按鈕
+    const button = document.querySelector(`[onclick*="${elementId}"]`);
+    if (button) {
+        const originalText = button.innerHTML;
+        const originalClass = button.className;
+        
+        // 顯示成功狀態
+        button.innerHTML = '<i class="fas fa-check me-1"></i>已複製';
+        button.className = button.className.replace('btn-outline-light', 'btn-success').replace('btn-link', 'btn-success');
+        
+        // 2秒後恢復原狀
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.className = originalClass;
+        }, 2000);
+    }
+    
+    console.log('程式碼已複製到剪貼簿');
 }

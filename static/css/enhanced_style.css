@@ -2299,3 +2299,123 @@ body {
         gap: 5px;
     }
 }
+
+/* 程式碼複製按鈕樣式 */
+.code-block-container {
+    position: relative;
+    margin: 1rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--darker-bg);
+    border: 1px solid var(--border-color);
+}
+
+.code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: var(--dark-bg);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.85rem;
+}
+
+.code-language {
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.copy-code-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-muted);
+    transition: var(--transition);
+}
+
+.copy-code-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.code-block-container pre {
+    margin: 0;
+    padding: 1rem;
+    background: var(--darker-bg);
+    border: none;
+    border-radius: 0;
+}
+
+/* 行內程式碼複製按鈕 */
+.inline-code-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background: var(--darker-bg);
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin: 0 2px;
+}
+
+.inline-code-container code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: var(--info-color);
+}
+
+.inline-copy-btn {
+    padding: 2px 4px;
+    font-size: 0.7rem;
+    margin-left: 4px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    transition: var(--transition);
+    min-width: auto;
+    line-height: 1;
+}
+
+.inline-copy-btn:hover {
+    color: var(--primary-color);
+    background: rgba(13, 110, 253, 0.1);
+}
+
+.inline-copy-btn i {
+    font-size: 0.65rem;
+}
+
+/* 複製成功狀態 */
+.btn-success {
+    background-color: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+    color: white !important;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .code-header {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .copy-code-btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.7rem;
+    }
+    
+    .code-block-container pre {
+        padding: 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .inline-copy-btn {
+        font-size: 0.65rem;
+        padding: 1px 3px;
+    }
+}
