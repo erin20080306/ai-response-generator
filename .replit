@@ -5,7 +5,7 @@ channel = "stable-24_05"
 packages = ["cacert", "cairo", "cargo", "espeak-ng", "ffmpeg-full", "file", "firefox", "freetype", "geckodriver", "geos", "ghostscript", "gitFull", "glibcLocales", "gobject-introspection", "gtk3", "iana-etc", "imagemagickBig", "lcms2", "libGL", "libGLU", "libev", "libiconv", "libimagequant", "libjpeg", "libjpeg_turbo", "libpng", "libtiff", "libwebp", "libxcrypt", "nodejs", "openjpeg", "openssl", "pkg-config", "postgresql", "qhull", "rustc", "sqlite", "tcl", "tk", "which", "xsimd", "zbar", "zlib"]
 
 [deployment]
-deploymentTarget = "autoscale"
+deploymentTarget = "gce"
 run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
 
 [workflows]
