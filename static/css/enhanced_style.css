@@ -1622,3 +1622,203 @@ body {
     padding: 20px;
     border: 1px solid var(--border-color);
 }
+
+/* 翻牌記憶遊戲樣式 */
+.memory-game-container {
+    background: var(--darker-bg);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid var(--border-color);
+}
+
+.memory-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.memory-stats .stat-item {
+    text-align: center;
+    font-weight: bold;
+    color: var(--info-color);
+}
+
+.memory-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.memory-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.memory-card {
+    aspect-ratio: 1;
+    background: var(--dark-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.memory-card:hover {
+    transform: scale(1.05);
+    border-color: var(--primary-color);
+}
+
+.memory-card.flipped {
+    transform: rotateY(180deg);
+    border-color: var(--success-color);
+}
+
+.memory-card.matched {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    opacity: 0.8;
+    cursor: default;
+}
+
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    backface-visibility: hidden;
+    transition: transform 0.6s;
+}
+
+.card-back {
+    transform: rotateY(180deg);
+}
+
+.memory-card.flipped .card-front {
+    transform: rotateY(180deg);
+}
+
+.memory-card.flipped .card-back {
+    transform: rotateY(0deg);
+}
+
+.memory-message {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--info-color);
+    min-height: 30px;
+}
+
+/* 彈珠檯遊戲樣式 */
+.pinball-game-container {
+    background: var(--darker-bg);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid var(--border-color);
+}
+
+.pinball-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.pinball-stats .stat-item {
+    text-align: center;
+    font-weight: bold;
+    color: var(--warning-color);
+}
+
+.pinball-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+#pinballCanvas {
+    border: 3px solid var(--primary-color);
+    border-radius: 10px;
+    display: block;
+    margin: 0 auto;
+    background: #0f0f23;
+}
+
+.pinball-instructions {
+    text-align: center;
+    margin-top: 15px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.pinball-instructions p {
+    margin: 5px 0;
+}
+
+/* 遊戲選擇按鈕樣式增強 */
+.game-btn.memory-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+}
+
+.game-btn.memory-btn:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-2px);
+}
+
+.game-btn.pinball-btn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border: none;
+    color: white;
+}
+
+.game-btn.pinball-btn:hover {
+    background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+    transform: translateY(-2px);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .memory-board {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 300px;
+    }
+    
+    #pinballCanvas {
+        width: 100%;
+        height: auto;
+        max-width: 600px;
+    }
+    
+    .memory-controls, .pinball-controls {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .memory-stats, .pinball-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

@@ -113,6 +113,7 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 05, 2025. Fixed AI document template generation system by creating comprehensive template library with 8 spreadsheet types (financial, project, employee, sales, inventory, schedule, budget, attendance) and 6 document types (meeting, proposal, contract, report, policy, manual). Added simplified document generator that creates CSV/HTML for spreadsheets and TXT/HTML for documents, providing immediate download functionality without external dependencies
 - July 05, 2025. Added Google Sheets specialized templates with 6 advanced templates (財務儀表板, 專案追蹤器, 庫存管理系統, 員工排班表, 銷售分析, 預算規劃) featuring Google Sheets formulas (SUM, AVERAGE, IF, COUNT functions), automatic calculations, and enhanced CSV export with import instructions for seamless Google Sheets integration
 - July 05, 2025. Updated AI system with latest Taiwan Special Leave Law: comprehensive special leave calculation rules integrated into AI responses, including 6-month to 10+ year service periods with accurate day allocations (3-30 days) and proper formula guidance for HR spreadsheet calculations
+- July 05, 2025. Added two new games to the platform: Memory Card Flip game (翻牌記憶) with 4x4 grid layout, timer and move tracking, and Pinball game (彈珠檯) with Canvas-based physics engine, collision detection, and keyboard controls. Both games feature complete CSS styling and responsive design integration
 
 ## Enhanced Features Added
 
