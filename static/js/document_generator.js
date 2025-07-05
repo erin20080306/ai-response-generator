@@ -22,6 +22,14 @@ class DocumentGenerator {
                 { name: '客戶資料', type: 'customer' },
                 { name: '學生成績', type: 'grades' }
             ],
+            google_sheets: [
+                { name: '財務儀表板', type: 'financial_dashboard' },
+                { name: '專案追蹤器', type: 'project_tracker' },
+                { name: '庫存管理系統', type: 'inventory_management' },
+                { name: '員工排班表', type: 'employee_schedule' },
+                { name: '銷售分析', type: 'sales_analytics' },
+                { name: '預算規劃', type: 'budget_planner' }
+            ],
             document: [
                 { name: '會議紀錄', type: 'meeting' },
                 { name: '項目提案', type: 'proposal' },
@@ -90,7 +98,25 @@ class DocumentGenerator {
 
                         <!-- 範本選擇 -->
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fab fa-google me-2" style="color: #4285f4;"></i>Google Sheets 範本</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="list-group list-group-flush">
+                                            ${this.templates.google_sheets.map(template => `
+                                                <a href="#" class="list-group-item list-group-item-action template-item" 
+                                                   data-type="google_sheets" data-template="${template.type}">
+                                                    <i class="fab fa-google me-2" style="color: #34a853;"></i>${template.name}
+                                                </a>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
                                 <div class="card">
                                     <div class="card-header">
                                         <h6 class="mb-0"><i class="fas fa-table me-2"></i>試算表範本</h6>
@@ -108,7 +134,7 @@ class DocumentGenerator {
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="card">
                                     <div class="card-header">
                                         <h6 class="mb-0"><i class="fas fa-file-word me-2"></i>文件範本</h6>

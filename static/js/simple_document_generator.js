@@ -29,9 +29,46 @@ function generateCSV(data) {
     return csv;
 }
 
+// 生成Google Sheets格式的CSV (保留公式)
+function generateGoogleSheetsCSV(data) {
+    const { title, description, headers, rows } = data;
+    
+    let csv = '';
+    
+    // 添加標題
+    if (title) {
+        csv += `${title}\n`;
+        if (description) {
+            csv += `${description}\n`;
+        }
+        csv += '\n';
+    }
+    
+    // 添加標題行
+    if (headers && headers.length > 0) {
+        csv += headers.join(',') + '\n';
+    }
+    
+    // 添加數據行，保留Google Sheets公式
+    if (rows && rows.length > 0) {
+        rows.forEach(row => {
+            const processedRow = row.map(cell => {
+                // 保留Google Sheets公式格式
+                if (typeof cell === 'string' && cell.startsWith('=')) {
+                    return `"${cell}"`;
+                }
+                return `"${cell}"`;
+            });
+            csv += processedRow.join(',') + '\n';
+        });
+    }
+    
+    return csv;
+}
+
 // 生成HTML表格格式
 function generateHTMLTable(data) {
-    const { title, description, headers, rows } = data;
+    const { title, description, headers, rows, type } = data;
     
     let html = `
 <!DOCTYPE html>
@@ -199,6 +236,53 @@ function generateAndDownloadFromTemplate(templateType, templateName) {
             downloadFile(htmlContent, `${templates.title}_${timestamp}.html`, 'text/html;charset=utf-8;');
             
             showMessage(`已生成 ${templates.title} (CSV + HTML格式)`, 'success');
+            
+        } else if (templateType === 'google_sheets') {
+            // 生成Google Sheets專用CSV文件 (保留公式)
+            const googleSheetsContent = generateGoogleSheetsCSV(templates);
+            downloadFile(googleSheetsContent, `${templates.title}_GoogleSheets_${timestamp}.csv`, 'text/csv;charset=utf-8;');
+            
+            // 生成增強版HTML (包含Google Sheets樣式)
+            const htmlContent = generateHTMLTable(templates);
+            downloadFile(htmlContent, `${templates.title}_GoogleSheets_${timestamp}.html`, 'text/html;charset=utf-8;');
+            
+            // 生成導入說明
+            const instructionContent = `
+Google Sheets 導入說明
+====================
+
+檔案名稱：${templates.title}
+生成時間：${new Date().toLocaleString('zh-TW')}
+
+導入步驟：
+1. 開啟 Google Sheets (https://sheets.google.com)
+2. 建立新的試算表
+3. 點選「檔案」→「匯入」
+4. 選擇「上傳」並選擇生成的 CSV 檔案
+5. 選擇「取代試算表」或「插入新工作表」
+6. 點選「匯入資料」
+
+注意事項：
+- 此範本包含 Google Sheets 公式，匯入後將自動計算
+- 建議在匯入後檢查公式是否正確顯示
+- 可以根據需要調整格式和樣式
+
+範本特色：
+${templates.description}
+
+公式說明：
+本範本包含自動計算功能，如SUM、AVERAGE、IF等函數
+可以直接在Google Sheets中使用，實現自動化數據處理
+
+使用提示：
+- 修改數據後公式會自動重新計算
+- 可以複製公式到其他儲存格
+- 建議備份原始範本以便重複使用
+`;
+            
+            downloadFile(instructionContent, `${templates.title}_導入說明_${timestamp}.txt`, 'text/plain;charset=utf-8;');
+            
+            showMessage(`已生成 ${templates.title} Google Sheets範本 (CSV + HTML + 導入說明)`, 'success');
             
         } else if (templateType === 'document') {
             // 生成純文字文件
