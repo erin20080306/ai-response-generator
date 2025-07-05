@@ -39,6 +39,12 @@ except ImportError:
     HAS_XLSXWRITER = False
 
 try:
+    from pptx import Presentation
+    HAS_PPTX = True
+except ImportError:
+    HAS_PPTX = False
+
+try:
     from docx import Document
     from docx.shared import Inches as DocxInches
     from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -628,6 +634,324 @@ def generate_template_document(data):
     
     error_msg = f'找不到範本 "{template_type}/{template_name}"。可用範本：{", ".join(available_templates)}'
     return jsonify({'success': False, 'error': error_msg})
+
+@app.route('/generate_ai_document', methods=['POST'])
+def generate_ai_document_endpoint():
+    """AI智能文件生成端點"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': '沒有提供數據'})
+        
+        document_type = data.get('document_type', 'excel')
+        description = data.get('description', '')
+        style = data.get('style', 'professional')
+        language = data.get('language', 'zh-TW')
+        include_images = data.get('include_images', False)
+        
+        if not description:
+            return jsonify({'success': False, 'error': '請提供文件描述'})
+        
+        if not openai_client.is_configured():
+            return jsonify({'success': False, 'error': 'OpenAI API 未配置'})
+        
+        # 使用OpenAI生成文件結構
+        return generate_ai_document_with_images(document_type, description, style, language, include_images)
+        
+    except Exception as e:
+        logging.error(f"AI文件生成錯誤: {e}")
+        return jsonify({'success': False, 'error': f'AI文件生成失敗: {str(e)}'})
+
+def generate_ai_document_with_images(document_type, description, style, language, include_images):
+    """使用AI生成帶有圖片的文件"""
+    try:
+        # 生成文件結構
+        structure_prompt = f"""
+        請根據以下要求生成一個{document_type}文件的詳細結構：
+        
+        文件描述：{description}
+        風格：{style}
+        語言：{language}
+        
+        請以JSON格式回應，包含：
+        {{
+            "title": "文件標題",
+            "description": "文件描述",
+            "structure": {{
+                "headers": ["欄位1", "欄位2", ...] (適用於Excel),
+                "content": "文件內容" (適用於Word),
+                "slides": [
+                    {{
+                        "title": "投影片標題",
+                        "content": "投影片內容",
+                        "image_description": "需要的圖片描述"
+                    }}
+                ] (適用於PPT)
+            }},
+            "image_requirements": ["圖片描述1", "圖片描述2", ...] (如需圖片)
+        }}
+        """
+        
+        response = openai_client.client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "你是一個專業的文件生成專家，能夠創建結構化的商業文件。"},
+                {"role": "user", "content": structure_prompt}
+            ],
+            response_format={"type": "json_object"}
+        )
+        
+        ai_structure = json.loads(response.choices[0].message.content)
+        
+        # 生成圖片（如果需要）
+        generated_images = []
+        if include_images and 'image_requirements' in ai_structure and document_type in ['word', 'ppt']:
+            for img_desc in ai_structure['image_requirements'][:3]:  # 最多生成3張圖片
+                try:
+                    img_response = openai_client.client.images.generate(
+                        model="dall-e-3",
+                        prompt=f"{img_desc}, {style} style, professional quality",
+                        size="1024x1024",
+                        quality="standard",
+                        n=1
+                    )
+                    
+                    # 下載並保存圖片
+                    img_url = img_response.data[0].url
+                    img_data = requests.get(img_url).content
+                    
+                    # 創建唯一檔名
+                    import uuid
+                    img_filename = f"ai_image_{uuid.uuid4()}.png"
+                    img_path = os.path.join('static', 'downloads', img_filename)
+                    os.makedirs(os.path.dirname(img_path), exist_ok=True)
+                    
+                    with open(img_path, 'wb') as img_file:
+                        img_file.write(img_data)
+                    
+                    generated_images.append({
+                        'url': f'/static/downloads/{img_filename}',
+                        'description': img_desc,
+                        'path': img_path
+                    })
+                    
+                except Exception as e:
+                    logging.warning(f"圖片生成失敗: {e}")
+                    continue
+        
+        # 根據文件類型生成相應文件
+        if document_type == 'excel':
+            return create_ai_excel_document(ai_structure, generated_images)
+        elif document_type == 'word':
+            return create_ai_word_document(ai_structure, generated_images)
+        elif document_type == 'ppt':
+            return create_ai_ppt_document(ai_structure, generated_images)
+        else:
+            return jsonify({'success': False, 'error': '不支援的文件類型'})
+            
+    except Exception as e:
+        logging.error(f"AI文件生成錯誤: {e}")
+        return jsonify({'success': False, 'error': f'文件生成失敗: {str(e)}'})
+
+def create_ai_excel_document(structure, images):
+    """創建AI生成的Excel文件"""
+    try:
+        if not HAS_OPENPYXL:
+            return jsonify({'success': False, 'error': '系統未安裝 openpyxl 套件'})
+        
+        # 創建工作簿
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = structure.get('title', 'AI生成表格')
+        
+        # 設置樣式
+        title_font = Font(size=16, bold=True)
+        header_font = Font(size=12, bold=True)
+        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        
+        # 添加標題
+        title = structure.get('title', 'AI生成文件')
+        ws['A1'] = title
+        ws['A1'].font = title_font
+        ws.merge_cells('A1:F1')
+        
+        # 添加標題行
+        headers = structure.get('structure', {}).get('headers', ['項目', '描述', '數值'])
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=3, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal='center')
+        
+        # 添加示例數據
+        sample_data = [
+            ['項目1', '說明1', '100'],
+            ['項目2', '說明2', '200'],
+            ['項目3', '說明3', '300'],
+            ['總計', '', '=SUM(C4:C6)']
+        ]
+        
+        for row_idx, row_data in enumerate(sample_data, 4):
+            for col_idx, value in enumerate(row_data, 1):
+                ws.cell(row=row_idx, column=col_idx, value=value)
+        
+        # 調整列寬
+        for column in ws.columns:
+            max_length = 0
+            column_letter = None
+            for cell in column:
+                if hasattr(cell, 'column_letter'):
+                    column_letter = cell.column_letter
+                    if cell.value and len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+            if column_letter and max_length > 0:
+                adjusted_width = min(max_length + 2, 30)
+                ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # 保存文件
+        import uuid
+        filename = f"ai_excel_{uuid.uuid4()}.xlsx"
+        file_path = os.path.join('static', 'downloads', filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        wb.save(file_path)
+        
+        return jsonify({
+            'success': True,
+            'filename': filename,
+            'download_url': f'/download/{filename}',
+            'type': 'excel',
+            'title': title,
+            'description': structure.get('description', ''),
+            'file_size': f'{os.path.getsize(file_path) // 1024}KB'
+        })
+        
+    except Exception as e:
+        logging.error(f"Excel生成錯誤: {e}")
+        return jsonify({'success': False, 'error': f'Excel生成失敗: {str(e)}'})
+
+def create_ai_word_document(structure, images):
+    """創建AI生成的Word文件"""
+    try:
+        if not HAS_DOCX:
+            return jsonify({'success': False, 'error': '系統未安裝 python-docx 套件'})
+        
+        from docx import Document
+        from docx.shared import Inches
+        from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+        
+        doc = Document()
+        
+        # 添加標題
+        title = structure.get('title', 'AI生成文件')
+        title_para = doc.add_heading(title, 0)
+        title_para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        
+        # 添加描述
+        if structure.get('description'):
+            doc.add_paragraph(structure['description'])
+            doc.add_paragraph()  # 空行
+        
+        # 添加內容
+        content = structure.get('structure', {}).get('content', '這是AI生成的文件內容。')
+        doc.add_paragraph(content)
+        
+        # 添加圖片
+        for i, image in enumerate(images[:2]):  # 最多添加2張圖片
+            doc.add_paragraph()  # 空行
+            doc.add_heading(f'圖片 {i+1}: {image["description"]}', level=2)
+            try:
+                doc.add_picture(image['path'], width=Inches(4))
+            except Exception as e:
+                logging.warning(f"插入圖片失敗: {e}")
+                doc.add_paragraph(f"[圖片: {image['description']}]")
+        
+        # 保存文件
+        import uuid
+        filename = f"ai_word_{uuid.uuid4()}.docx"
+        file_path = os.path.join('static', 'downloads', filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        doc.save(file_path)
+        
+        return jsonify({
+            'success': True,
+            'filename': filename,
+            'download_url': f'/download/{filename}',
+            'type': 'word',
+            'title': title,
+            'description': structure.get('description', ''),
+            'file_size': f'{os.path.getsize(file_path) // 1024}KB',
+            'images_generated': images
+        })
+        
+    except Exception as e:
+        logging.error(f"Word生成錯誤: {e}")
+        return jsonify({'success': False, 'error': f'Word生成失敗: {str(e)}'})
+
+def create_ai_ppt_document(structure, images):
+    """創建AI生成的PowerPoint文件"""
+    try:
+        if not HAS_PPTX:
+            return jsonify({'success': False, 'error': '系統未安裝 python-pptx 套件'})
+        
+        from pptx import Presentation
+        from pptx.util import Inches
+        from pptx.enum.text import PP_ALIGN
+        
+        prs = Presentation()
+        
+        # 標題投影片
+        title_slide_layout = prs.slide_layouts[0]
+        slide = prs.slides.add_slide(title_slide_layout)
+        title = slide.shapes.title
+        subtitle = slide.placeholders[1]
+        
+        title.text = structure.get('title', 'AI生成簡報')
+        subtitle.text = structure.get('description', 'AI智能生成的專業簡報')
+        
+        # 內容投影片
+        slides_data = structure.get('structure', {}).get('slides', [
+            {'title': '內容概述', 'content': '這是AI生成的簡報內容', 'image_description': '相關示意圖'}
+        ])
+        
+        for i, slide_data in enumerate(slides_data[:5]):  # 最多5張投影片
+            bullet_slide_layout = prs.slide_layouts[1]
+            slide = prs.slides.add_slide(bullet_slide_layout)
+            
+            title = slide.shapes.title
+            title.text = slide_data.get('title', f'投影片 {i+1}')
+            
+            content = slide.placeholders[1]
+            content.text = slide_data.get('content', '投影片內容')
+            
+            # 添加圖片（如果有的話）
+            if i < len(images):
+                try:
+                    slide.shapes.add_picture(images[i]['path'], Inches(7), Inches(2), width=Inches(3))
+                except Exception as e:
+                    logging.warning(f"PPT插入圖片失敗: {e}")
+        
+        # 保存文件
+        import uuid
+        filename = f"ai_ppt_{uuid.uuid4()}.pptx"
+        file_path = os.path.join('static', 'downloads', filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        prs.save(file_path)
+        
+        return jsonify({
+            'success': True,
+            'filename': filename,
+            'download_url': f'/download/{filename}',
+            'type': 'powerpoint',
+            'title': structure.get('title', 'AI生成簡報'),
+            'description': structure.get('description', ''),
+            'file_size': f'{os.path.getsize(file_path) // 1024}KB',
+            'slides': len(prs.slides),
+            'images_generated': images
+        })
+        
+    except Exception as e:
+        logging.error(f"PPT生成錯誤: {e}")
+        return jsonify({'success': False, 'error': f'PPT生成失敗: {str(e)}'})
 
 def create_google_sheets_template(template_data, language):
     """創建 Google Sheets 範本（實際上創建 CSV 檔案）"""
