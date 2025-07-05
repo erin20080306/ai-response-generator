@@ -91,9 +91,13 @@ class MahjongGame {
             this.renderGame();
             
             // 檢查是否可以自摸胡牌
+            console.log('檢查自摸胡牌，手牌數量：', this.playerHand.length);
             if (this.checkWin(this.playerHand)) {
+                console.log('可以自摸胡牌！');
                 this.showActionPrompt(['hu']);
                 return;
+            } else {
+                console.log('尚未達到胡牌條件');
             }
         }
         
@@ -165,7 +169,7 @@ class MahjongGame {
             tileCounts[tile] = (tileCounts[tile] || 0) + 1;
         });
         
-        // 檢查七對子
+        // 檢查七對子 (7對)
         const pairs = Object.values(tileCounts).filter(count => count >= 2).length;
         if (pairs >= 7) return true;
         
@@ -173,7 +177,17 @@ class MahjongGame {
         const groups = Object.values(tileCounts).filter(count => count >= 3).length;
         const hasPair = Object.values(tileCounts).some(count => count === 2);
         
-        return groups >= 4 && hasPair;
+        // 放寬胡牌條件：3個三張牌組 + 1個對子，或者多個對子
+        if (groups >= 3 && hasPair) return true;
+        
+        // 檢查多對子胡牌（降低難度）
+        if (pairs >= 5) return true;
+        
+        // 檢查是否有足夠的牌組合（更寬鬆的條件）
+        const totalGroups = groups + Math.floor(pairs / 2);
+        if (totalGroups >= 4) return true;
+        
+        return false;
     }
     
     checkWinWithTile(hand, tile) {
@@ -318,9 +332,24 @@ class MahjongGame {
     }
     
     executeHu() {
-        alert('恭喜胡牌！');
+        console.log('執行胡牌');
+        
+        // 判斷是自摸還是點炮
+        const isZimo = this.currentPlayer === 0 && this.waitingForAction;
+        
+        if (isZimo) {
+            alert('恭喜自摸胡牌！🎉');
+            console.log('自摸胡牌成功！');
+        } else {
+            alert('恭喜胡牌！🎉');
+            console.log('點炮胡牌成功！');
+        }
+        
         this.gameStarted = false;
         this.hideActionPrompt();
+        
+        // 重置遊戲狀態
+        this.waitingForAction = false;
     }
     
     passAction() {
