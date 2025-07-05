@@ -251,17 +251,25 @@ var gameData = {
         symbols: ['🎯', '🎲', '🎮', '🎪', '🎨', '🎭', '🎸', '🎺', '🎻', '🎹', '🏆', '🏅', '⭐', '💎', '🔥', '⚡']
     },
     pinball: {
-        ball: { x: 400, y: 500, vx: 0, vy: 0, radius: 8 },
-        paddle: { x: 350, y: 580, width: 100, height: 15 },
+        ball: { x: 300, y: 700, vx: 0, vy: 0, radius: 8 },
+        leftPaddle: { x: 200, y: 750, width: 80, height: 15, active: false },
+        rightPaddle: { x: 320, y: 750, width: 80, height: 15, active: false },
         score: 0,
+        highScore: 0,
         balls: 3,
+        combo: 0,
+        multiplier: 1,
+        power: 0,
         gameStarted: false,
         gameRunning: false,
+        chargingPower: false,
         obstacles: [],
         bumpers: [],
+        bonuses: [],
         animationId: null,
         canvas: null,
-        ctx: null
+        ctx: null,
+        keys: {}
     }
 };
 
@@ -1170,21 +1178,68 @@ function loadPinballGame() {
     const gameContainer = document.getElementById('gameContainer');
     gameContainer.innerHTML = `
         <div class="pinball-game-container">
-            <h3>🏀 彈珠檯遊戲</h3>
-            <div class="pinball-stats">
-                <div class="stat-item">分數: <span id="pinballScore">0</span></div>
-                <div class="stat-item">球數: <span id="pinballBalls">3</span></div>
-                <div class="stat-item">狀態: <span id="pinballStatus">準備中</span></div>
+            <h3>🎯 彈珠檯遊戲</h3>
+            <div class="pinball-header">
+                <div class="pinball-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">分數</div>
+                        <div class="stat-value" id="pinballScore">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">球數</div>
+                        <div class="stat-value" id="pinballBalls">3</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">倍數</div>
+                        <div class="stat-value" id="pinballMultiplier">1x</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">最高分</div>
+                        <div class="stat-value" id="pinballHighScore">0</div>
+                    </div>
+                </div>
+                <div class="pinball-controls">
+                    <button onclick="startPinballGame()" class="btn btn-primary" id="startBtn">開始遊戲</button>
+                    <button onclick="launchPinball()" class="btn btn-success" id="launchBtn" disabled>發射 (空白鍵)</button>
+                    <button onclick="resetPinballGame()" class="btn btn-warning">重新開始</button>
+                    <button onclick="showGameSelection()" class="btn btn-secondary">返回選單</button>
+                </div>
             </div>
-            <div class="pinball-controls">
-                <button onclick="startPinballGame()" class="btn btn-primary">開始遊戲</button>
-                <button onclick="launchPinball()" class="btn btn-success" id="launchBtn" disabled>發射</button>
-                <button onclick="resetPinballGame()" class="btn btn-warning">重置</button>
-                <button onclick="showGameSelection()" class="btn btn-secondary">返回選單</button>
+            <div class="pinball-game-area">
+                <canvas id="pinballCanvas" width="600" height="800"></canvas>
+                <div class="pinball-side-panel">
+                    <div class="power-meter">
+                        <div class="meter-label">發射力度</div>
+                        <div class="meter-bar">
+                            <div class="meter-fill" id="powerFill"></div>
+                        </div>
+                        <div class="meter-text" id="powerText">0%</div>
+                    </div>
+                    <div class="combo-display">
+                        <div class="combo-label">連擊</div>
+                        <div class="combo-value" id="comboValue">0</div>
+                    </div>
+                    <div class="bonus-display">
+                        <div class="bonus-label">獎勵區域</div>
+                        <div class="bonus-list" id="bonusList">
+                            <div class="bonus-item">🎯 撞球器: 200分</div>
+                            <div class="bonus-item">🔥 加速器: 500分</div>
+                            <div class="bonus-item">⭐ 星星: 1000分</div>
+                            <div class="bonus-item">💎 鑽石: 2000分</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <canvas id="pinballCanvas" width="800" height="600"></canvas>
             <div class="pinball-instructions">
-                <p>使用左右方向鍵控制擋板，空白鍵發射彈珠</p>
+                <div class="instruction-row">
+                    <span class="key">←→</span> 控制左右擋板
+                </div>
+                <div class="instruction-row">
+                    <span class="key">空白鍵</span> 發射彈珠 (長按蓄力)
+                </div>
+                <div class="instruction-row">
+                    <span class="tip">💡 連續撞擊可獲得額外分數獎勵</span>
+                </div>
             </div>
         </div>
     `;
@@ -1194,44 +1249,59 @@ function loadPinballGame() {
 
 function initPinballGame() {
     const canvas = document.getElementById('pinballCanvas');
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     
     gameData.pinball.canvas = canvas;
     gameData.pinball.ctx = ctx;
     
     // 重置遊戲狀態
-    gameData.pinball.ball = { x: 400, y: 500, vx: 0, vy: 0, radius: 8 };
-    gameData.pinball.paddle = { x: 350, y: 580, width: 100, height: 15 };
+    gameData.pinball.ball = { x: 300, y: 700, vx: 0, vy: 0, radius: 8 };
+    gameData.pinball.leftPaddle = { x: 200, y: 750, width: 80, height: 15, active: false };
+    gameData.pinball.rightPaddle = { x: 320, y: 750, width: 80, height: 15, active: false };
     gameData.pinball.score = 0;
     gameData.pinball.balls = 3;
+    gameData.pinball.combo = 0;
+    gameData.pinball.multiplier = 1;
+    gameData.pinball.power = 0;
     gameData.pinball.gameStarted = false;
     gameData.pinball.gameRunning = false;
+    gameData.pinball.chargingPower = false;
     
-    // 創建障礙物和撞球器
+    // 載入最高分
+    gameData.pinball.highScore = localStorage.getItem('pinballHighScore') || 0;
+    
+    // 創建更豐富的遊戲元素
     gameData.pinball.obstacles = [
-        { x: 200, y: 200, width: 80, height: 20, points: 100 },
-        { x: 520, y: 200, width: 80, height: 20, points: 100 },
-        { x: 360, y: 150, width: 80, height: 20, points: 150 },
-        { x: 100, y: 350, width: 20, height: 80, points: 50 },
-        { x: 680, y: 350, width: 20, height: 80, points: 50 }
+        { x: 150, y: 200, width: 100, height: 20, points: 100, type: 'normal' },
+        { x: 350, y: 200, width: 100, height: 20, points: 100, type: 'normal' },
+        { x: 250, y: 150, width: 100, height: 20, points: 150, type: 'special' },
+        { x: 50, y: 400, width: 20, height: 100, points: 50, type: 'normal' },
+        { x: 530, y: 400, width: 20, height: 100, points: 50, type: 'normal' }
     ];
     
     gameData.pinball.bumpers = [
-        { x: 200, y: 300, radius: 30, points: 200 },
-        { x: 400, y: 250, radius: 30, points: 200 },
-        { x: 600, y: 300, radius: 30, points: 200 }
+        { x: 150, y: 350, radius: 25, points: 200, type: 'bumper' },
+        { x: 300, y: 280, radius: 25, points: 200, type: 'bumper' },
+        { x: 450, y: 350, radius: 25, points: 200, type: 'bumper' }
+    ];
+    
+    gameData.pinball.bonuses = [
+        { x: 100, y: 250, radius: 15, points: 500, type: 'accelerator', active: true },
+        { x: 300, y: 180, radius: 15, points: 1000, type: 'star', active: true },
+        { x: 500, y: 250, radius: 15, points: 2000, type: 'diamond', active: true }
     ];
     
     renderPinballGame();
     updatePinballStats();
-    
-    // 添加鍵盤控制
     setupPinballControls();
 }
 
 function renderPinballGame() {
     const ctx = gameData.pinball.ctx;
     const canvas = gameData.pinball.canvas;
+    if (!ctx || !canvas) return;
     
     // 清空畫布
     ctx.fillStyle = '#0f0f23';
@@ -1239,96 +1309,166 @@ function renderPinballGame() {
     
     // 繪製邊界
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+    ctx.lineWidth = 4;
+    ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+    
+    // 繪製發射器軌道
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width - 30, canvas.height - 100);
+    ctx.lineTo(canvas.width - 30, canvas.height - 20);
+    ctx.stroke();
     
     // 繪製障礙物
-    ctx.fillStyle = '#ff6b6b';
     gameData.pinball.obstacles.forEach(obstacle => {
+        if (obstacle.type === 'special') {
+            ctx.fillStyle = '#ff6b6b';
+            ctx.shadowColor = '#ff6b6b';
+            ctx.shadowBlur = 10;
+        } else {
+            ctx.fillStyle = '#888';
+            ctx.shadowBlur = 0;
+        }
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
     });
     
     // 繪製撞球器
-    ctx.fillStyle = '#4ecdc4';
     gameData.pinball.bumpers.forEach(bumper => {
+        ctx.fillStyle = '#4ecdc4';
+        ctx.shadowColor = '#4ecdc4';
+        ctx.shadowBlur = 15;
         ctx.beginPath();
         ctx.arc(bumper.x, bumper.y, bumper.radius, 0, Math.PI * 2);
         ctx.fill();
+        
+        // 繪製撞球器內圈
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(bumper.x, bumper.y, bumper.radius - 8, 0, Math.PI * 2);
+        ctx.fill();
     });
     
-    // 繪製擋板
-    ctx.fillStyle = '#45b7d1';
-    ctx.fillRect(gameData.pinball.paddle.x, gameData.pinball.paddle.y, 
-                gameData.pinball.paddle.width, gameData.pinball.paddle.height);
+    // 繪製獎勵道具
+    gameData.pinball.bonuses.forEach(bonus => {
+        if (!bonus.active) return;
+        
+        let symbol, color;
+        switch(bonus.type) {
+            case 'accelerator': symbol = '🔥'; color = '#ff4444'; break;
+            case 'star': symbol = '⭐'; color = '#ffdd44'; break;
+            case 'diamond': symbol = '💎'; color = '#44ddff'; break;
+        }
+        
+        ctx.fillStyle = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(bonus.x, bonus.y, bonus.radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 使用文字代替emoji以確保兼容性
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(symbol, bonus.x, bonus.y + 5);
+    });
+    
+    // 繪製左右擋板
+    const leftPaddle = gameData.pinball.leftPaddle;
+    const rightPaddle = gameData.pinball.rightPaddle;
+    
+    ctx.fillStyle = leftPaddle.active ? '#45b7d1' : '#666';
+    ctx.shadowColor = leftPaddle.active ? '#45b7d1' : '#666';
+    ctx.shadowBlur = leftPaddle.active ? 10 : 0;
+    ctx.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
+    
+    ctx.fillStyle = rightPaddle.active ? '#45b7d1' : '#666';
+    ctx.shadowColor = rightPaddle.active ? '#45b7d1' : '#666';
+    ctx.shadowBlur = rightPaddle.active ? 10 : 0;
+    ctx.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
     
     // 繪製彈珠
     ctx.fillStyle = '#f9ca24';
+    ctx.shadowColor = '#f9ca24';
+    ctx.shadowBlur = 8;
     ctx.beginPath();
     ctx.arc(gameData.pinball.ball.x, gameData.pinball.ball.y, 
            gameData.pinball.ball.radius, 0, Math.PI * 2);
     ctx.fill();
+    
+    // 重置陰影
+    ctx.shadowBlur = 0;
 }
 
 function startPinballGame() {
     gameData.pinball.gameStarted = true;
-    document.getElementById('launchBtn').disabled = false;
-    document.getElementById('pinballStatus').textContent = '遊戲中';
+    updateUI('launchBtn', 'disabled', false);
+    updateUI('startBtn', 'disabled', true);
 }
 
 function launchPinball() {
     if (!gameData.pinball.gameStarted || gameData.pinball.gameRunning) return;
     
     gameData.pinball.gameRunning = true;
-    gameData.pinball.ball.vx = (Math.random() - 0.5) * 8;
-    gameData.pinball.ball.vy = -12;
+    gameData.pinball.ball.x = gameData.pinball.canvas.width - 30;
+    gameData.pinball.ball.y = gameData.pinball.canvas.height - 50;
     
-    document.getElementById('launchBtn').disabled = true;
-    document.getElementById('pinballStatus').textContent = '彈珠發射中';
+    // 根據力度設定發射速度
+    const power = gameData.pinball.power / 100;
+    gameData.pinball.ball.vx = -3 - power * 5;
+    gameData.pinball.ball.vy = -8 - power * 8;
     
-    gameLoop();
+    gameData.pinball.power = 0;
+    updatePowerMeter();
+    updateUI('launchBtn', 'disabled', true);
+    
+    pinballGameLoop();
 }
 
-function gameLoop() {
+function pinballGameLoop() {
     if (!gameData.pinball.gameRunning) return;
     
     updatePinballPhysics();
     renderPinballGame();
     
-    gameData.pinball.animationId = requestAnimationFrame(gameLoop);
+    gameData.pinball.animationId = requestAnimationFrame(pinballGameLoop);
 }
 
 function updatePinballPhysics() {
     const ball = gameData.pinball.ball;
     const canvas = gameData.pinball.canvas;
     
-    // 重力
-    ball.vy += 0.5;
+    // 重力和阻力
+    ball.vy += 0.3;
+    ball.vx *= 0.995;
+    ball.vy *= 0.995;
     
     // 更新位置
     ball.x += ball.vx;
     ball.y += ball.vy;
     
     // 邊界碰撞
-    if (ball.x <= ball.radius || ball.x >= canvas.width - ball.radius) {
-        ball.vx = -ball.vx * 0.8;
-        ball.x = Math.max(ball.radius, Math.min(canvas.width - ball.radius, ball.x));
+    if (ball.x <= ball.radius + 5) {
+        ball.vx = Math.abs(ball.vx) * 0.8;
+        ball.x = ball.radius + 5;
     }
-    
-    if (ball.y <= ball.radius) {
-        ball.vy = -ball.vy * 0.8;
-        ball.y = ball.radius;
+    if (ball.x >= canvas.width - ball.radius - 5) {
+        ball.vx = -Math.abs(ball.vx) * 0.8;
+        ball.x = canvas.width - ball.radius - 5;
+    }
+    if (ball.y <= ball.radius + 5) {
+        ball.vy = Math.abs(ball.vy) * 0.8;
+        ball.y = ball.radius + 5;
     }
     
     // 擋板碰撞
-    const paddle = gameData.pinball.paddle;
-    if (ball.y + ball.radius >= paddle.y && 
-        ball.x >= paddle.x && ball.x <= paddle.x + paddle.width) {
-        ball.vy = -Math.abs(ball.vy) * 0.9;
-        const paddleCenter = paddle.x + paddle.width / 2;
-        ball.vx += (ball.x - paddleCenter) * 0.2;
-    }
+    checkPaddleCollision(gameData.pinball.leftPaddle);
+    checkPaddleCollision(gameData.pinball.rightPaddle);
     
-    // 檢查撞球器碰撞
+    // 撞球器碰撞
     gameData.pinball.bumpers.forEach(bumper => {
         const dx = ball.x - bumper.x;
         const dy = ball.y - bumper.y;
@@ -1336,23 +1476,43 @@ function updatePinballPhysics() {
         
         if (distance < ball.radius + bumper.radius) {
             const angle = Math.atan2(dy, dx);
-            ball.vx = Math.cos(angle) * 10;
-            ball.vy = Math.sin(angle) * 10;
-            gameData.pinball.score += bumper.points;
-            updatePinballStats();
+            ball.vx = Math.cos(angle) * 12;
+            ball.vy = Math.sin(angle) * 12;
+            
+            addScore(bumper.points);
+            gameData.pinball.combo++;
+            updateCombo();
         }
     });
     
-    // 檢查障礙物碰撞
+    // 障礙物碰撞
     gameData.pinball.obstacles.forEach(obstacle => {
         if (ball.x + ball.radius > obstacle.x && 
             ball.x - ball.radius < obstacle.x + obstacle.width &&
             ball.y + ball.radius > obstacle.y && 
             ball.y - ball.radius < obstacle.y + obstacle.height) {
             
-            ball.vy = -ball.vy;
-            gameData.pinball.score += obstacle.points;
-            updatePinballStats();
+            ball.vy = -ball.vy * 0.8;
+            addScore(obstacle.points);
+        }
+    });
+    
+    // 獎勵道具碰撞
+    gameData.pinball.bonuses.forEach(bonus => {
+        if (!bonus.active) return;
+        
+        const dx = ball.x - bonus.x;
+        const dy = ball.y - bonus.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < ball.radius + bonus.radius) {
+            bonus.active = false;
+            addScore(bonus.points);
+            gameData.pinball.combo += 2;
+            updateCombo();
+            
+            // 3秒後重新激活
+            setTimeout(() => { bonus.active = true; }, 3000);
         }
     });
     
@@ -1362,19 +1522,72 @@ function updatePinballPhysics() {
     }
 }
 
+function checkPaddleCollision(paddle) {
+    const ball = gameData.pinball.ball;
+    
+    if (ball.x + ball.radius > paddle.x && 
+        ball.x - ball.radius < paddle.x + paddle.width &&
+        ball.y + ball.radius > paddle.y && 
+        ball.y - ball.radius < paddle.y + paddle.height) {
+        
+        ball.vy = -Math.abs(ball.vy) * 1.1;
+        const paddleCenter = paddle.x + paddle.width / 2;
+        ball.vx += (ball.x - paddleCenter) * 0.3;
+        
+        // 限制速度
+        const maxSpeed = 15;
+        if (Math.abs(ball.vx) > maxSpeed) ball.vx = Math.sign(ball.vx) * maxSpeed;
+        if (Math.abs(ball.vy) > maxSpeed) ball.vy = Math.sign(ball.vy) * maxSpeed;
+    }
+}
+
+function addScore(points) {
+    const multipliedPoints = points * gameData.pinball.multiplier;
+    gameData.pinball.score += multipliedPoints;
+    
+    // 更新倍數
+    if (gameData.pinball.combo > 5) {
+        gameData.pinball.multiplier = Math.min(5, Math.floor(gameData.pinball.combo / 3));
+    }
+    
+    updatePinballStats();
+}
+
+function updateCombo() {
+    updateUI('comboValue', 'textContent', gameData.pinball.combo);
+    updateUI('pinballMultiplier', 'textContent', gameData.pinball.multiplier + 'x');
+    
+    // 連擊歸零定時器
+    clearTimeout(gameData.pinball.comboTimer);
+    gameData.pinball.comboTimer = setTimeout(() => {
+        gameData.pinball.combo = 0;
+        gameData.pinball.multiplier = 1;
+        updateUI('comboValue', 'textContent', 0);
+        updateUI('pinballMultiplier', 'textContent', '1x');
+    }, 2000);
+}
+
 function ballLost() {
     gameData.pinball.gameRunning = false;
     gameData.pinball.balls--;
+    gameData.pinball.combo = 0;
+    gameData.pinball.multiplier = 1;
     
     if (gameData.pinball.balls > 0) {
         // 重置球的位置
-        gameData.pinball.ball = { x: 400, y: 500, vx: 0, vy: 0, radius: 8 };
-        document.getElementById('launchBtn').disabled = false;
-        document.getElementById('pinballStatus').textContent = '準備發射';
+        gameData.pinball.ball = { x: 300, y: 700, vx: 0, vy: 0, radius: 8 };
+        updateUI('launchBtn', 'disabled', false);
     } else {
         // 遊戲結束
         gameData.pinball.gameStarted = false;
-        document.getElementById('pinballStatus').textContent = `遊戲結束！最終分數：${gameData.pinball.score}`;
+        updateUI('startBtn', 'disabled', false);
+        updateUI('launchBtn', 'disabled', true);
+        
+        // 更新最高分
+        if (gameData.pinball.score > gameData.pinball.highScore) {
+            gameData.pinball.highScore = gameData.pinball.score;
+            localStorage.setItem('pinballHighScore', gameData.pinball.highScore);
+        }
     }
     
     updatePinballStats();
@@ -1382,35 +1595,104 @@ function ballLost() {
 }
 
 function setupPinballControls() {
-    document.addEventListener('keydown', (e) => {
-        if (!gameData.pinball.gameStarted) return;
-        
-        const paddle = gameData.pinball.paddle;
+    // 移除現有監聽器
+    document.removeEventListener('keydown', pinballKeyHandler);
+    document.removeEventListener('keyup', pinballKeyHandler);
+    
+    // 添加新監聽器
+    document.addEventListener('keydown', pinballKeyHandler);
+    document.addEventListener('keyup', pinballKeyHandler);
+}
+
+function pinballKeyHandler(e) {
+    if (!gameData.pinball.gameStarted) return;
+    
+    const leftPaddle = gameData.pinball.leftPaddle;
+    const rightPaddle = gameData.pinball.rightPaddle;
+    
+    if (e.type === 'keydown') {
+        gameData.pinball.keys[e.key] = true;
         
         switch(e.key) {
             case 'ArrowLeft':
                 e.preventDefault();
-                paddle.x = Math.max(10, paddle.x - 20);
+                leftPaddle.active = true;
                 break;
             case 'ArrowRight':
                 e.preventDefault();
-                paddle.x = Math.min(gameData.pinball.canvas.width - paddle.width - 10, paddle.x + 20);
+                rightPaddle.active = true;
                 break;
             case ' ':
                 e.preventDefault();
-                launchPinball();
+                if (!gameData.pinball.gameRunning) {
+                    chargePower();
+                }
                 break;
         }
+    } else if (e.type === 'keyup') {
+        gameData.pinball.keys[e.key] = false;
         
-        if (gameData.pinball.gameRunning) {
-            renderPinballGame();
+        switch(e.key) {
+            case 'ArrowLeft':
+                leftPaddle.active = false;
+                break;
+            case 'ArrowRight':
+                rightPaddle.active = false;
+                break;
+            case ' ':
+                if (!gameData.pinball.gameRunning && gameData.pinball.chargingPower) {
+                    gameData.pinball.chargingPower = false;
+                    launchPinball();
+                }
+                break;
         }
-    });
+    }
+}
+
+function chargePower() {
+    if (gameData.pinball.chargingPower) return;
+    
+    gameData.pinball.chargingPower = true;
+    gameData.pinball.power = 0;
+    
+    const chargeInterval = setInterval(() => {
+        if (!gameData.pinball.chargingPower) {
+            clearInterval(chargeInterval);
+            return;
+        }
+        
+        gameData.pinball.power = Math.min(100, gameData.pinball.power + 2);
+        updatePowerMeter();
+        
+        if (gameData.pinball.power >= 100) {
+            gameData.pinball.chargingPower = false;
+            clearInterval(chargeInterval);
+            launchPinball();
+        }
+    }, 50);
+}
+
+function updatePowerMeter() {
+    updateUI('powerFill', 'style.width', gameData.pinball.power + '%');
+    updateUI('powerText', 'textContent', gameData.pinball.power + '%');
+    
+    const fill = document.getElementById('powerFill');
+    if (fill) {
+        if (gameData.pinball.power < 30) {
+            fill.style.backgroundColor = '#28a745';
+        } else if (gameData.pinball.power < 70) {
+            fill.style.backgroundColor = '#ffc107';
+        } else {
+            fill.style.backgroundColor = '#dc3545';
+        }
+    }
 }
 
 function updatePinballStats() {
-    document.getElementById('pinballScore').textContent = gameData.pinball.score;
-    document.getElementById('pinballBalls').textContent = gameData.pinball.balls;
+    updateUI('pinballScore', 'textContent', gameData.pinball.score);
+    updateUI('pinballBalls', 'textContent', gameData.pinball.balls);
+    updateUI('pinballHighScore', 'textContent', gameData.pinball.highScore);
+    updateUI('pinballMultiplier', 'textContent', gameData.pinball.multiplier + 'x');
 }
 
 function resetPinballGame() {
@@ -1418,8 +1700,25 @@ function resetPinballGame() {
         cancelAnimationFrame(gameData.pinball.animationId);
     }
     initPinballGame();
-    document.getElementById('pinballStatus').textContent = '準備中';
-    document.getElementById('launchBtn').disabled = true;
+    updateUI('startBtn', 'disabled', false);
+    updateUI('launchBtn', 'disabled', true);
+}
+
+// 輔助函數：安全更新UI元素
+function updateUI(elementId, property, value) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        if (property.includes('.')) {
+            const props = property.split('.');
+            let obj = element;
+            for (let i = 0; i < props.length - 1; i++) {
+                obj = obj[props[i]];
+            }
+            obj[props[props.length - 1]] = value;
+        } else {
+            element[property] = value;
+        }
+    }
 }
 
 // 添加簡化版麻將的輔助函數
