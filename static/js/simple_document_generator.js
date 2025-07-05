@@ -201,7 +201,14 @@ function generateTextDocument(data) {
 
 // 下載文件
 function downloadFile(content, filename, mimeType) {
-    const blob = new Blob([content], { type: mimeType });
+    let blobContent = content;
+    
+    // 如果是CSV文件，添加UTF-8 BOM以確保中文正確顯示
+    if (filename.endsWith('.csv')) {
+        blobContent = '\ufeff' + content; // 添加UTF-8 BOM
+    }
+    
+    const blob = new Blob([blobContent], { type: mimeType });
     const url = URL.createObjectURL(blob);
     
     const a = document.createElement('a');
