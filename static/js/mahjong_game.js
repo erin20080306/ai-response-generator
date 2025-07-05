@@ -399,17 +399,29 @@ class MahjongGame {
         
         container.innerHTML = '';
         this.playerHand.forEach((tile, index) => {
-            const tileElement = document.createElement('div');
-            tileElement.className = 'mahjong-tile player-tile';
-            tileElement.textContent = tile;
-            tileElement.style.cssText = `
-                width: 30px; height: 40px; background: #fff; border: 1px solid #333; 
-                display: flex; align-items: center; justify-content: center; 
-                font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 2px;
-                margin: 1px;
-            `;
+            const tileElement = mahjongTileMapper.createTileImageElement(tile, {
+                width: '30px',
+                height: '40px',
+                className: 'mahjong-tile player-tile',
+                onclick: () => this.discardTile(index)
+            });
             
-            tileElement.onclick = () => this.discardTile(index);
+            // 添加額外的樣式
+            tileElement.style.margin = '1px';
+            tileElement.style.transition = 'all 0.2s ease';
+            tileElement.style.position = 'relative';
+            
+            // 滑鼠懸停效果
+            tileElement.addEventListener('mouseenter', () => {
+                tileElement.style.transform = 'translateY(-3px)';
+                tileElement.style.boxShadow = '0 6px 12px rgba(0,0,0,0.4)';
+            });
+            
+            tileElement.addEventListener('mouseleave', () => {
+                tileElement.style.transform = 'translateY(0)';
+                tileElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+            });
+            
             container.appendChild(tileElement);
         });
     }
@@ -423,20 +435,23 @@ class MahjongGame {
             const handSize = this.computerHands[i].length;
             
             for (let j = 0; j < handSize; j++) {
-                const tileElement = document.createElement('div');
-                tileElement.className = 'mahjong-tile computer-tile';
+                let tileElement;
                 
                 // 顯示牌背
                 if (i === 0 || i === 2) { // 左右側玩家
-                    tileElement.style.cssText = `
-                        width: 18px; height: 28px; background: #4a90e2; border: 1px solid #333; 
-                        margin: 1px 0; border-radius: 1px;
-                    `;
+                    tileElement = mahjongTileMapper.createTileBackElement({
+                        width: '18px',
+                        height: '28px',
+                        className: 'mahjong-tile computer-tile',
+                        margin: '1px 0'
+                    });
                 } else { // 頂部玩家
-                    tileElement.style.cssText = `
-                        width: 20px; height: 30px; background: #4a90e2; border: 1px solid #333; 
-                        margin: 0 1px; border-radius: 1px;
-                    `;
+                    tileElement = mahjongTileMapper.createTileBackElement({
+                        width: '20px',
+                        height: '30px',
+                        className: 'mahjong-tile computer-tile',
+                        margin: '0 1px'
+                    });
                 }
                 
                 container.appendChild(tileElement);
@@ -450,14 +465,17 @@ class MahjongGame {
         
         container.innerHTML = '';
         this.discardPile.forEach(tile => {
-            const tileElement = document.createElement('div');
-            tileElement.className = 'discarded-tile';
-            tileElement.textContent = tile;
-            tileElement.style.cssText = `
-                width: 24px; height: 32px; background: #fff; border: 1px solid #666; 
-                display: flex; align-items: center; justify-content: center; 
-                font-size: 12px; font-weight: bold; border-radius: 2px;
-            `;
+            const tileElement = mahjongTileMapper.createTileImageElement(tile, {
+                width: '24px',
+                height: '32px',
+                className: 'discarded-tile'
+            });
+            
+            // 添加打出牌的視覺效果
+            tileElement.style.opacity = '0.8';
+            tileElement.style.margin = '1px';
+            tileElement.style.filter = 'brightness(0.9)';
+            
             container.appendChild(tileElement);
         });
     }
@@ -472,13 +490,17 @@ class MahjongGame {
                 meldGroup.style.cssText = 'display: flex; gap: 1px; margin: 0 4px;';
                 
                 meld.forEach(tile => {
-                    const tileElement = document.createElement('div');
-                    tileElement.textContent = tile;
-                    tileElement.style.cssText = `
-                        width: 24px; height: 32px; background: #ffffcc; border: 1px solid #333; 
-                        display: flex; align-items: center; justify-content: center; 
-                        font-size: 10px; font-weight: bold; border-radius: 2px;
-                    `;
+                    const tileElement = mahjongTileMapper.createTileImageElement(tile, {
+                        width: '24px',
+                        height: '32px',
+                        className: 'melded-tile'
+                    });
+                    
+                    // 添加已組合牌的視覺效果
+                    tileElement.style.border = '2px solid #ffd700';
+                    tileElement.style.backgroundColor = '#ffffcc';
+                    tileElement.style.boxShadow = '0 2px 4px rgba(255,215,0,0.3)';
+                    
                     meldGroup.appendChild(tileElement);
                 });
                 
