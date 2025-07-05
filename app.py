@@ -652,7 +652,7 @@ def generate_ai_document_endpoint():
         if not description:
             return jsonify({'success': False, 'error': '請提供文件描述'})
         
-        # 簡化版本 - 直接生成基本文件結構
+        # 生成基本文件結構
         ai_structure = {
             "title": f"{description[:50]}..." if len(description) > 50 else description,
             "description": f"根據「{description}」生成的{document_type}文件",
@@ -660,13 +660,60 @@ def generate_ai_document_endpoint():
             "image_requirements": []
         }
         
+        # 為Word和PPT生成圖片
+        generated_images = []
+        if include_images and document_type in ['word', 'ppt'] and openai_client.is_configured():
+            try:
+                # 根據描述生成相關圖片
+                img_prompts = [
+                    f"{description}, professional style",
+                    f"diagram related to {description}, business style"
+                ]
+                
+                for i, prompt in enumerate(img_prompts[:2]):  # 最多2張圖片
+                    try:
+                        img_response = openai_client.client.images.generate(
+                            model="dall-e-3",
+                            prompt=prompt[:1000],  # 限制提示長度
+                            size="1024x1024",
+                            quality="standard",
+                            n=1
+                        )
+                        
+                        # 下載並保存圖片
+                        img_url = img_response.data[0].url
+                        import requests
+                        img_data = requests.get(img_url, timeout=30).content
+                        
+                        # 創建唯一檔名
+                        import uuid
+                        img_filename = f"ai_image_{uuid.uuid4()}.png"
+                        img_path = os.path.join('static', 'downloads', img_filename)
+                        os.makedirs(os.path.dirname(img_path), exist_ok=True)
+                        
+                        with open(img_path, 'wb') as img_file:
+                            img_file.write(img_data)
+                        
+                        generated_images.append({
+                            'url': f'/static/downloads/{img_filename}',
+                            'description': f"圖片 {i+1}",
+                            'path': img_path
+                        })
+                        
+                    except Exception as e:
+                        logging.warning(f"圖片生成失敗: {e}")
+                        continue
+                        
+            except Exception as e:
+                logging.warning(f"整體圖片生成過程失敗: {e}")
+        
         # 根據文件類型生成相應文件
         if document_type == 'excel':
             return create_ai_excel_document(ai_structure, [])
         elif document_type == 'word':
-            return create_ai_word_document(ai_structure, [])
+            return create_ai_word_document(ai_structure, generated_images)
         elif document_type == 'ppt':
-            return create_ai_ppt_document(ai_structure, [])
+            return create_ai_ppt_document(ai_structure, generated_images)
         else:
             return jsonify({'success': False, 'error': '不支援的文件類型'})
         
