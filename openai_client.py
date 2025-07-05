@@ -93,7 +93,17 @@ class OpenAIClient:
             return "抱歉，無法獲取最新資訊。"
         
         if search_type == 'weather':
-            if search_results.get('summary'):
+            if search_results.get('temperature'):
+                # 使用真實API的詳細天氣資訊
+                location = search_results.get('location', '未知地點')
+                temp = search_results.get('temperature', '?')
+                desc = search_results.get('description', '無描述')
+                feels_like = search_results.get('feels_like', '?')
+                humidity = search_results.get('humidity', '?')
+                wind_speed = search_results.get('wind_speed', '?')
+                
+                return f"🌤️ **{location}即時天氣**：\n溫度：{temp}°C\n天氣：{desc}\n體感：{feels_like}°C\n濕度：{humidity}%\n風速：{wind_speed} m/s"
+            elif search_results.get('summary'):
                 return f"🌤️ **{search_results['location']}天氣資訊**：\n{search_results['summary']}"
             else:
                 return "抱歉，無法獲取天氣資訊。"

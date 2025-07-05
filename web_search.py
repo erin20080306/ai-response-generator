@@ -3,12 +3,14 @@ from bs4 import BeautifulSoup
 import urllib.parse
 import re
 import logging
+import os
 
 class WebSearcher:
     def __init__(self):
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
+        self.weather_api_key = os.environ.get('WEATHER_API_KEY')
         
     def search_web(self, query, max_results=3):
         """
@@ -53,7 +55,58 @@ class WebSearcher:
     
     def get_weather_info(self, location="台北"):
         """
-        獲取天氣資訊
+        獲取天氣資訊 - 使用真實天氣API
+        """
+        try:
+            if not self.weather_api_key:
+                # 如果沒有API金鑰，使用搜尋引擎備案
+                return self._get_weather_from_search(location)
+            
+            # 使用OpenWeatherMap API（假設用戶提供的是OpenWeatherMap API金鑰）
+            # 如果是其他服務的API，可以根據需要調整
+            base_url = "http://api.openweathermap.org/data/2.5/weather"
+            params = {
+                'q': location,
+                'appid': self.weather_api_key,
+                'units': 'metric',  # 攝氏溫度
+                'lang': 'zh_tw'     # 繁體中文
+            }
+            
+            response = requests.get(base_url, params=params, timeout=10)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            # 解析天氣資料
+            weather_info = {
+                'location': data.get('name', location),
+                'status': 'success',
+                'temperature': round(data['main']['temp']),
+                'description': data['weather'][0]['description'],
+                'humidity': data['main']['humidity'],
+                'wind_speed': data['wind']['speed'],
+                'pressure': data['main']['pressure'],
+                'feels_like': round(data['main']['feels_like']),
+                'summary': f"{data.get('name', location)} 目前氣溫 {round(data['main']['temp'])}°C，{data['weather'][0]['description']}，體感溫度 {round(data['main']['feels_like'])}°C，濕度 {data['main']['humidity']}%，風速 {data['wind']['speed']} m/s"
+            }
+            
+            return weather_info
+            
+        except requests.exceptions.RequestException as e:
+            logging.error(f"天氣API請求錯誤: {e}")
+            # API失敗時使用搜尋引擎備案
+            return self._get_weather_from_search(location)
+        except Exception as e:
+            logging.error(f"天氣查詢錯誤: {e}")
+            return {
+                'location': location,
+                'status': 'error',
+                'message': f"天氣查詢失敗: {str(e)}"
+            }
+    
+    def _get_weather_from_search(self, location):
+        """
+        使用搜尋引擎獲取天氣資訊（備案方法）
         """
         try:
             query = f"{location} 天氣 今天"
@@ -74,7 +127,7 @@ class WebSearcher:
             return weather_info
             
         except Exception as e:
-            logging.error(f"天氣查詢錯誤: {e}")
+            logging.error(f"天氣搜尋錯誤: {e}")
             return {
                 'location': location,
                 'status': 'error',
