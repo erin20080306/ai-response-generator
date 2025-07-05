@@ -622,11 +622,13 @@ function loadMahjongGame() {
                     
                     <!-- 玩家位置 - 底部(你) -->
                     <div class="player-bottom" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); text-align: center;">
-                        <div class="player-info" style="color: #fff; font-size: 14px; margin-bottom: 8px; background: rgba(0,0,0,0.8); padding: 6px 12px; border-radius: 6px;">
-                            <span>👤 你 (25000分)</span>
-                        </div>
                         <div class="player-tiles" id="playerTiles" style="display: flex; gap: 2px; justify-content: center; flex-wrap: wrap; max-width: 500px;"></div>
                         <div class="player-melded" id="playerMelded" style="display: flex; gap: 4px; justify-content: center; margin-top: 8px;"></div>
+                    </div>
+                    
+                    <!-- 玩家信息 - 右側不遮擋麻將 -->
+                    <div class="player-info-right" style="position: absolute; bottom: 20px; right: 150px; color: #fff; font-size: 14px; background: rgba(0,0,0,0.8); padding: 6px 12px; border-radius: 6px;">
+                        <span>👤 你 (25000分)</span>
                     </div>
                     
                     <!-- 電腦AI玩家 - 右側 (東家 - 你的上家) -->
