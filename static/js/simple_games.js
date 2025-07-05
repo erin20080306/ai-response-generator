@@ -108,37 +108,76 @@ function loadMahjongGame() {
     
     const gameContainer = document.getElementById('gameContainer');
     gameContainer.innerHTML = `
-        <div class="mahjong-game-container">
-            <div class="game-header">
-                <h4>🀄 麻將遊戲</h4>
-                <button onclick="showGameSelection()" class="back-btn">← 返回</button>
+        <div class="mahjong-game-container" style="width: 800px; height: 600px; margin: 0 auto; border: 2px solid #333; position: relative;">
+            <div class="game-header" style="height: 40px; background: #333; color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 10px;">
+                <h4 style="margin: 0;">🀄 麻將遊戲</h4>
+                <button onclick="showGameSelection()" class="back-btn btn btn-secondary btn-sm">← 返回</button>
             </div>
             
-            <div class="mahjong-main">
-                <div class="mahjong-info">
-                    <div class="score-display">
-                        <span>分數: <strong id="mahjongScore">0</strong></span>
-                        <span>回合: <strong id="mahjongRound">1</strong></span>
-                    </div>
+            <!-- 固定大小的遊戲桌面 -->
+            <div class="mahjong-table" style="width: 796px; height: 516px; position: relative; background: #0F5132; margin: 0; padding: 0;">
+                
+                <!-- 桌面中央區域 - 顯示打出的牌 -->
+                <div class="table-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 200px; border: 1px solid #666; background: rgba(0,0,0,0.1);">
+                    <div class="discarded-tiles" id="discardedTiles" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 1px; padding: 5px; font-size: 10px; height: 100%; overflow: hidden;"></div>
                 </div>
                 
-                <div id="mahjongBoard" class="mahjong-board">
-                    <div class="mahjong-hand">
-                        <h6>玩家手牌：</h6>
-                        <div class="mahjong-tiles" id="playerTiles"></div>
+                <!-- 玩家位置 - 底部(你) -->
+                <div class="player-bottom" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); text-align: center;">
+                    <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 5px; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 3px;">
+                        <span>你 (25000分)</span>
                     </div>
-                    
-                    <div class="mahjong-discard">
-                        <h6>牌河：</h6>
-                        <div class="discard-tiles" id="discardPile"></div>
-                    </div>
+                    <div class="player-tiles" id="playerTiles" style="display: flex; gap: 2px; justify-content: center; flex-wrap: wrap; max-width: 400px;"></div>
                 </div>
                 
-                <div class="mahjong-controls">
-                    <button onclick="drawMahjongTile()" class="mahjong-btn draw-btn">摸牌</button>
-                    <button onclick="discardMahjongTile()" class="mahjong-btn discard-btn">打牌</button>
-                    <button onclick="declareMahjongWin()" class="mahjong-btn win-btn">胡牌</button>
-                    <button onclick="restartMahjong()" class="mahjong-btn restart-btn">重新開始</button>
+                <!-- 電腦AI玩家 - 右側 -->
+                <div class="player-right" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); text-align: center;">
+                    <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 5px; writing-mode: vertical-lr; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 3px;">
+                        <span>電腦A (25000分)</span>
+                    </div>
+                    <div class="player-tiles" id="computerTiles1" style="display: flex; flex-direction: column; gap: 2px; align-items: center; max-height: 300px; overflow: hidden;"></div>
+                </div>
+                
+                <!-- 電腦AI玩家 - 頂部 -->
+                <div class="player-top" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center;">
+                    <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 5px; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 3px;">
+                        <span>電腦B (25000分)</span>
+                    </div>
+                    <div class="player-tiles" id="computerTiles2" style="display: flex; gap: 2px; justify-content: center; flex-wrap: wrap; max-width: 400px;"></div>
+                </div>
+                
+                <!-- 電腦AI玩家 - 左側 -->
+                <div class="player-left" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); text-align: center;">
+                    <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 5px; writing-mode: vertical-lr; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 3px;">
+                        <span>電腦C (25000分)</span>
+                    </div>
+                    <div class="player-tiles" id="computerTiles3" style="display: flex; flex-direction: column; gap: 2px; align-items: center; max-height: 300px; overflow: hidden;"></div>
+                </div>
+                
+                <!-- 遊戲資訊 -->
+                <div class="game-status" style="position: absolute; top: 10px; left: 10px; color: #fff; font-size: 12px; background: rgba(0,0,0,0.7); padding: 5px; border-radius: 3px; z-index: 10;">
+                    <div>東一局</div>
+                    <div>剩餘: <span id="tilesLeft">136</span>張</div>
+                </div>
+                
+                <!-- 不阻擋畫面的提示區域 -->
+                <div class="action-prompt" id="actionPrompt" style="position: absolute; top: 50px; right: 10px; color: #fff; font-size: 14px; background: rgba(255,165,0,0.95); padding: 8px; border-radius: 5px; display: none; max-width: 120px; z-index: 20; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+                    <div id="promptText" style="font-weight: bold;"></div>
+                </div>
+            </div>
+            
+            <!-- 控制按鈕 - 在遊戲桌面外側底部 -->
+            <div class="control-panel" style="position: absolute; bottom: 5px; left: 10px; right: 10px; display: flex; justify-content: center; gap: 10px; background: #333; padding: 5px; border-radius: 3px;">
+                <button onclick="startMahjongGame()" class="btn btn-success btn-sm">🎮 開始遊戲</button>
+                <button onclick="restartMahjong()" class="btn btn-secondary btn-sm">🔄 重新開始</button>
+                
+                <!-- 動作按鈕 - 只在需要時顯示 -->
+                <div class="action-buttons" id="actionButtons" style="display: none;">
+                    <button onclick="executeSpecialAction('chi')" class="btn btn-warning btn-sm">吃</button>
+                    <button onclick="executeSpecialAction('pong')" class="btn btn-warning btn-sm">碰</button>
+                    <button onclick="executeSpecialAction('kong')" class="btn btn-warning btn-sm">槓</button>
+                    <button onclick="executeSpecialAction('hu')" class="btn btn-danger btn-sm">胡</button>
+                    <button onclick="passAction()" class="btn btn-info btn-sm">過</button>
                 </div>
             </div>
         </div>
@@ -417,47 +456,324 @@ function restartTetris() {
 function initMahjongGame() {
     gameData.mahjong.playerHand = [];
     gameData.mahjong.discardPile = [];
+    gameData.mahjong.computerHands = [[], [], []]; // 三個電腦玩家
     gameData.mahjong.selectedTile = null;
     gameData.mahjong.score = 0;
     gameData.mahjong.round = 1;
+    gameData.mahjong.gameStarted = false;
+    gameData.mahjong.currentPlayer = 0; // 0=玩家, 1-3=電腦
+    gameData.mahjong.tilesRemaining = 136;
+    
+    clearMahjongDisplay();
+    updateMahjongDisplay();
+}
+
+// 開始麻將遊戲
+function startMahjongGame() {
+    if (gameData.mahjong.gameStarted) return;
+    
     gameData.mahjong.gameStarted = true;
     
-    // 初始手牌
-    for (let i = 0; i < 13; i++) {
-        drawTile();
+    // 初始發牌給所有玩家
+    dealInitialTiles();
+}
+
+// 發初始牌
+function dealInitialTiles() {
+    // 每個玩家13張牌
+    for (let round = 0; round < 13; round++) {
+        setTimeout(() => {
+            // 玩家
+            drawTileToPlayer(0);
+            // 三個電腦玩家
+            for (let i = 0; i < 3; i++) {
+                drawTileToComputer(i);
+            }
+            
+            if (round === 12) {
+                // 發牌完成，開始遊戲
+                setTimeout(() => {
+                    playerTurn();
+                }, 500);
+            }
+        }, round * 300); // 逐一發牌
+    }
+}
+
+// 給玩家發牌
+function drawTileToPlayer(playerIndex) {
+    const tileSet = gameData.mahjong.tileSet;
+    const randomTile = tileSet[Math.floor(Math.random() * tileSet.length)];
+    
+    if (playerIndex === 0) {
+        gameData.mahjong.playerHand.push(randomTile);
+    } else {
+        gameData.mahjong.computerHands[playerIndex - 1].push(randomTile);
     }
     
+    gameData.mahjong.tilesRemaining--;
     renderMahjongBoard();
     updateMahjongDisplay();
 }
 
-function drawTile() {
+// 給電腦發牌
+function drawTileToComputer(computerIndex) {
     const tileSet = gameData.mahjong.tileSet;
     const randomTile = tileSet[Math.floor(Math.random() * tileSet.length)];
-    gameData.mahjong.playerHand.push(randomTile);
+    gameData.mahjong.computerHands[computerIndex].push(randomTile);
+    gameData.mahjong.tilesRemaining--;
 }
 
+// 清空顯示
+function clearMahjongDisplay() {
+    document.getElementById('playerTiles').innerHTML = '';
+    document.getElementById('computerTiles1').innerHTML = '';
+    document.getElementById('computerTiles2').innerHTML = '';
+    document.getElementById('computerTiles3').innerHTML = '';
+    document.getElementById('discardedTiles').innerHTML = '';
+    hideActionPrompt();
+}
+
+// 渲染麻將桌面
 function renderMahjongBoard() {
+    renderPlayerTiles();
+    renderComputerTiles();
+    renderDiscardedTiles();
+}
+
+// 渲染玩家牌張
+function renderPlayerTiles() {
     const playerTiles = document.getElementById('playerTiles');
-    const discardPile = document.getElementById('discardPile');
+    if (!playerTiles) return;
     
-    if (playerTiles) {
-        playerTiles.innerHTML = gameData.mahjong.playerHand.map((tile, index) => 
-            `<div class="mahjong-tile ${gameData.mahjong.selectedTile === tile ? 'selected' : ''}" 
-                  onclick="selectTile('${tile}', ${index})">${tile}</div>`
-        ).join('');
-    }
-    
-    if (discardPile) {
-        discardPile.innerHTML = gameData.mahjong.discardPile.map(tile => 
-            `<span class="discarded-tile">${tile}</span>`
-        ).join('');
+    playerTiles.innerHTML = '';
+    gameData.mahjong.playerHand.forEach((tile, index) => {
+        const tileElement = document.createElement('div');
+        tileElement.className = 'mahjong-tile player-tile';
+        tileElement.style.cssText = `
+            width: 25px; height: 35px; background: #fff; border: 1px solid #333; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 10px; cursor: pointer; border-radius: 2px;
+        `;
+        tileElement.textContent = tile;
+        tileElement.onclick = () => selectPlayerTile(index);
+        
+        if (gameData.mahjong.selectedTile === index) {
+            tileElement.style.background = '#ffeb3b';
+        }
+        
+        playerTiles.appendChild(tileElement);
+    });
+}
+
+// 渲染電腦玩家牌張
+function renderComputerTiles() {
+    // 渲染三個電腦玩家的牌背
+    for (let i = 0; i < 3; i++) {
+        const computerTiles = document.getElementById(`computerTiles${i + 1}`);
+        if (!computerTiles) continue;
+        
+        computerTiles.innerHTML = '';
+        const handSize = gameData.mahjong.computerHands[i].length;
+        
+        for (let j = 0; j < handSize; j++) {
+            const tileElement = document.createElement('div');
+            tileElement.className = 'mahjong-tile computer-tile';
+            
+            if (i === 0 || i === 2) { // 左右側玩家
+                tileElement.style.cssText = `
+                    width: 15px; height: 25px; background: #4a90e2; border: 1px solid #333; 
+                    margin: 1px 0; border-radius: 1px;
+                `;
+            } else { // 頂部玩家
+                tileElement.style.cssText = `
+                    width: 20px; height: 30px; background: #4a90e2; border: 1px solid #333; 
+                    margin: 0 1px; border-radius: 1px;
+                `;
+            }
+            
+            computerTiles.appendChild(tileElement);
+        }
     }
 }
 
+// 渲染打出的牌
+function renderDiscardedTiles() {
+    const discardedTiles = document.getElementById('discardedTiles');
+    if (!discardedTiles) return;
+    
+    discardedTiles.innerHTML = '';
+    gameData.mahjong.discardPile.forEach(tile => {
+        const tileElement = document.createElement('div');
+        tileElement.className = 'discarded-tile';
+        tileElement.style.cssText = `
+            width: 18px; height: 25px; background: #fff; border: 1px solid #666; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 8px; border-radius: 1px;
+        `;
+        tileElement.textContent = tile;
+        discardedTiles.appendChild(tileElement);
+    });
+}
+
+// 選擇玩家牌張
+function selectPlayerTile(index) {
+    gameData.mahjong.selectedTile = index;
+    renderPlayerTiles();
+    
+    // 檢查是否可以執行特殊動作
+    checkPossibleActions();
+}
+
+// 檢查可能的動作
+function checkPossibleActions() {
+    const canChi = checkCanChi();
+    const canPong = checkCanPong();
+    const canKong = checkCanKong();
+    const canHu = checkCanHu();
+    
+    if (canChi || canPong || canKong || canHu) {
+        showActionPrompt(canChi, canPong, canKong, canHu);
+    } else {
+        hideActionPrompt();
+    }
+}
+
+// 顯示動作提示
+function showActionPrompt(canChi, canPong, canKong, canHu) {
+    const prompt = document.getElementById('actionPrompt');
+    const promptText = document.getElementById('promptText');
+    
+    let actions = [];
+    if (canChi) actions.push('吃');
+    if (canPong) actions.push('碰');
+    if (canKong) actions.push('槓');
+    if (canHu) actions.push('胡');
+    
+    promptText.textContent = actions.join('/');
+    prompt.style.display = 'block';
+    
+    // 顯示動作按鈕
+    document.getElementById('actionButtons').style.display = 'inline-block';
+}
+
+// 隱藏動作提示
+function hideActionPrompt() {
+    document.getElementById('actionPrompt').style.display = 'none';
+    document.getElementById('actionButtons').style.display = 'none';
+}
+
+// 檢查動作的簡化版本
+function checkCanChi() { return Math.random() < 0.3; }
+function checkCanPong() { return Math.random() < 0.2; }
+function checkCanKong() { return Math.random() < 0.1; }
+function checkCanHu() { return gameData.mahjong.playerHand.length >= 13; }
+
+// 玩家回合
+function playerTurn() {
+    if (!gameData.mahjong.gameStarted) return;
+    
+    // 摸一張牌
+    drawTileToPlayer(0);
+    
+    // 檢查動作
+    checkPossibleActions();
+}
+
+// 電腦回合
+function computerTurn(computerIndex) {
+    setTimeout(() => {
+        // 電腦摸牌
+        drawTileToComputer(computerIndex);
+        
+        // 電腦打牌
+        setTimeout(() => {
+            const hand = gameData.mahjong.computerHands[computerIndex];
+            if (hand.length > 0) {
+                const discardIndex = Math.floor(Math.random() * hand.length);
+                const discardedTile = hand.splice(discardIndex, 1)[0];
+                gameData.mahjong.discardPile.push(discardedTile);
+                
+                renderMahjongBoard();
+                
+                // 下一個玩家
+                nextPlayer();
+            }
+        }, 1000);
+    }, 500);
+}
+
+// 下一個玩家
+function nextPlayer() {
+    gameData.mahjong.currentPlayer = (gameData.mahjong.currentPlayer + 1) % 4;
+    
+    if (gameData.mahjong.currentPlayer === 0) {
+        playerTurn();
+    } else {
+        computerTurn(gameData.mahjong.currentPlayer - 1);
+    }
+}
+
+// 更新顯示
 function updateMahjongDisplay() {
-    document.getElementById('mahjongScore').textContent = gameData.mahjong.score;
-    document.getElementById('mahjongRound').textContent = gameData.mahjong.round;
+    const tilesLeft = document.getElementById('tilesLeft');
+    if (tilesLeft) {
+        tilesLeft.textContent = gameData.mahjong.tilesRemaining;
+    }
+}
+
+// 執行特殊動作
+function executeSpecialAction(action) {
+    console.log(`執行動作: ${action}`);
+    hideActionPrompt();
+    
+    switch(action) {
+        case 'chi':
+            // 吃牌邏輯
+            break;
+        case 'pong':
+            // 碰牌邏輯
+            break;
+        case 'kong':
+            // 槓牌邏輯
+            break;
+        case 'hu':
+            alert('恭喜胡牌！');
+            restartMahjong();
+            break;
+    }
+}
+
+// 過牌
+function passAction() {
+    hideActionPrompt();
+    
+    // 打出選中的牌
+    if (gameData.mahjong.selectedTile !== null) {
+        const discardedTile = gameData.mahjong.playerHand.splice(gameData.mahjong.selectedTile, 1)[0];
+        gameData.mahjong.discardPile.push(discardedTile);
+        gameData.mahjong.selectedTile = null;
+        
+        renderMahjongBoard();
+        nextPlayer();
+    }
+}
+
+// 舊的麻將函數（保持兼容性）
+function drawMahjongTile() {
+    if (!gameData.mahjong.gameStarted) {
+        startMahjongGame();
+        return;
+    }
+    playerTurn();
+}
+
+function discardMahjongTile() {
+    passAction();
+}
+
+function declareMahjongWin() {
+    executeSpecialAction('hu');
 }
 
 // 麻將控制
@@ -501,6 +817,11 @@ function selectTile(tile, index) {
 function restartMahjong() {
     initMahjongGame();
 }
+
+// 確保所有函數都可以全域訪問
+window.executeSpecialAction = executeSpecialAction;
+window.passAction = passAction;
+window.startMahjongGame = startMahjongGame;
 
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
