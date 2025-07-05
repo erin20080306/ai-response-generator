@@ -1829,6 +1829,9 @@ class EnhancedAIAssistant {
                     downloadBtn.style.display = 'block';
                     currentDesignData = data.download_data;
                     
+                    // 顯示編輯工具
+                    this.showDesignEditor(content, designType, style, color);
+                    
                     this.showNotification('設計生成成功！', 'success');
                 } else {
                     this.showNotification('生成失敗：' + (data.error || '未知錯誤'), 'error');
@@ -1873,6 +1876,13 @@ class EnhancedAIAssistant {
             `;
             document.getElementById('designInfo').style.display = 'none';
             document.getElementById('downloadDesignBtn').style.display = 'none';
+            
+            // 移除編輯器
+            const designEditor = document.getElementById('designEditor');
+            if (designEditor) {
+                designEditor.remove();
+            }
+            
             currentDesignData = null;
         });
         
@@ -1882,6 +1892,207 @@ class EnhancedAIAssistant {
         });
         
         ModalManager.showModal(document.getElementById('designModal'), designModal);
+    }
+
+    // 設計編輯器
+    showDesignEditor(content, designType, style, color) {
+        const editorHTML = `
+            <div class="card mt-3" id="designEditor">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>編輯設計
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">修改內容</label>
+                            <textarea id="editDesignContent" class="form-control" rows="3" placeholder="輸入新的文字內容">${content}</textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">字體大小</label>
+                            <select id="editFontSize" class="form-select">
+                                <option value="small">小</option>
+                                <option value="medium" selected>中</option>
+                                <option value="large">大</option>
+                                <option value="xlarge">特大</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">字體樣式</label>
+                            <select id="editFontStyle" class="form-select">
+                                <option value="normal">標準</option>
+                                <option value="bold">粗體</option>
+                                <option value="italic">斜體</option>
+                                <option value="bold-italic">粗斜體</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">字體家族</label>
+                            <select id="editFontFamily" class="form-select">
+                                <option value="arial">Arial</option>
+                                <option value="helvetica" selected>Helvetica</option>
+                                <option value="times">Times</option>
+                                <option value="georgia">Georgia</option>
+                                <option value="verdana">Verdana</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">文字顏色</label>
+                            <select id="editTextColor" class="form-select">
+                                <option value="black" selected>黑色</option>
+                                <option value="white">白色</option>
+                                <option value="red">紅色</option>
+                                <option value="blue">藍色</option>
+                                <option value="green">綠色</option>
+                                <option value="purple">紫色</option>
+                                <option value="orange">橙色</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" id="regenerateDesignBtn" class="btn btn-primary">
+                            <i class="fas fa-sync me-2"></i>重新生成設計
+                        </button>
+                        <button type="button" id="previewChangesBtn" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-2"></i>預覽修改
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 插入編輯器到設計預覽下方
+        const designPreviewParent = document.getElementById('designPreview').closest('.card');
+        designPreviewParent.insertAdjacentHTML('afterend', editorHTML);
+
+        // 綁定編輯功能事件
+        this.bindDesignEditorEvents(designType, style, color);
+    }
+
+    bindDesignEditorEvents(originalDesignType, originalStyle, originalColor) {
+        // 重新生成設計
+        document.getElementById('regenerateDesignBtn').addEventListener('click', async () => {
+            const newContent = document.getElementById('editDesignContent').value.trim();
+            const fontSize = document.getElementById('editFontSize').value;
+            const fontStyle = document.getElementById('editFontStyle').value;
+            const fontFamily = document.getElementById('editFontFamily').value;
+            const textColor = document.getElementById('editTextColor').value;
+
+            if (!newContent) {
+                this.showNotification('請輸入內容', 'warning');
+                return;
+            }
+
+            const regenerateBtn = document.getElementById('regenerateDesignBtn');
+            regenerateBtn.disabled = true;
+            regenerateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>重新生成中...';
+
+            try {
+                // 構建詳細的設計提示，包含字體設定
+                const enhancedPrompt = `${newContent}
+
+字體設置：
+- 字體大小：${fontSize}
+- 字體樣式：${fontStyle} 
+- 字體家族：${fontFamily}
+- 文字顏色：${textColor}
+
+設計要求：
+- 使用指定的字體設置
+- 確保文字清晰可讀
+- 保持專業外觀
+- 適當的間距和佈局`;
+
+                const response = await fetch('/generate_design', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: enhancedPrompt,
+                        design_type: originalDesignType,
+                        style: originalStyle,
+                        color_scheme: originalColor
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 更新預覽
+                    document.getElementById('designPreview').innerHTML = `
+                        <img src="${data.image}" alt="設計預覽" class="img-fluid rounded shadow" style="max-height: 400px;">
+                    `;
+
+                    // 更新下載數據
+                    window.currentDesignData = data.download_data;
+
+                    this.showNotification('設計已更新！', 'success');
+                } else {
+                    this.showNotification('更新失敗：' + (data.error || '未知錯誤'), 'error');
+                }
+
+            } catch (error) {
+                console.error('設計更新錯誤:', error);
+                this.showNotification('更新失敗，請檢查網路連接', 'error');
+            } finally {
+                regenerateBtn.disabled = false;
+                regenerateBtn.innerHTML = '<i class="fas fa-sync me-2"></i>重新生成設計';
+            }
+        });
+
+        // 預覽修改（顯示文字預覽）
+        document.getElementById('previewChangesBtn').addEventListener('click', () => {
+            const newContent = document.getElementById('editDesignContent').value.trim();
+            const fontSize = document.getElementById('editFontSize').value;
+            const fontStyle = document.getElementById('editFontStyle').value;
+            const fontFamily = document.getElementById('editFontFamily').value;
+            const textColor = document.getElementById('editTextColor').value;
+
+            // 創建文字預覽
+            const fontSizeMap = {
+                'small': '16px',
+                'medium': '24px', 
+                'large': '32px',
+                'xlarge': '48px'
+            };
+
+            const fontStyleCSS = fontStyle.includes('bold') ? 'font-weight: bold;' : '';
+            const fontItalicCSS = fontStyle.includes('italic') ? 'font-style: italic;' : '';
+
+            const previewStyle = `
+                font-family: ${fontFamily}, sans-serif;
+                font-size: ${fontSizeMap[fontSize]};
+                color: ${textColor};
+                ${fontStyleCSS}
+                ${fontItalicCSS}
+                text-align: center;
+                padding: 20px;
+                border: 2px dashed #ccc;
+                border-radius: 8px;
+                background: #f8f9fa;
+                margin-top: 10px;
+            `;
+
+            // 創建或更新預覽區域
+            let previewArea = document.getElementById('textPreview');
+            if (!previewArea) {
+                previewArea = document.createElement('div');
+                previewArea.id = 'textPreview';
+                document.getElementById('designEditor').querySelector('.card-body').appendChild(previewArea);
+            }
+
+            previewArea.innerHTML = `
+                <div style="${previewStyle}">
+                    ${newContent || '請輸入內容進行預覽'}
+                </div>
+            `;
+
+            this.showNotification('文字預覽已更新', 'info');
+        });
     }
 
     // 添加缺失的工具方法
