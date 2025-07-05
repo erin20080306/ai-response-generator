@@ -34,6 +34,21 @@ function loadGameSelection(gameType) {
         case 'pinball':
             loadPinballGame();
             break;
+        case 'gomoku':
+            loadGomokuGame();
+            break;
+        case 'chess':
+            loadChessGame();
+            break;
+        case 'poker':
+            loadPokerGame();
+            break;
+        case 'sudoku':
+            loadSudokuGame();
+            break;
+        case 'tower':
+            loadTowerDefenseGame();
+            break;
         default:
             showGameSelection();
     }
@@ -1752,6 +1767,1070 @@ window.passAction = passAction;
 window.startMahjongGame = startMahjongGame;
 window.startGame = startGame;
 window.drawTile = drawTile;
+
+// ====== 五子棋遊戲 ======
+function loadGomokuGame() {
+    const gameHTML = `
+        <div class="game-header">
+            <h3><i class="fas fa-circle"></i> 五子棋</h3>
+            <button class="btn btn-secondary btn-sm" onclick="showGameSelection()">
+                <i class="fas fa-arrow-left"></i> 返回
+            </button>
+        </div>
+        <div class="gomoku-game">
+            <div class="game-info">
+                <div class="current-player">當前玩家: <span id="currentPlayer">⚫</span></div>
+                <div class="score">黑子: <span id="blackScore">0</span> | 白子: <span id="whiteScore">0</span></div>
+                <button class="btn btn-primary btn-sm" onclick="resetGomoku()">重新開始</button>
+            </div>
+            <div class="gomoku-board" id="gomokuBoard"></div>
+            <div class="game-message" id="gomokuMessage">點擊棋盤開始遊戲</div>
+        </div>
+    `;
+    
+    document.getElementById('gameContainer').innerHTML = gameHTML;
+    initGomoku();
+}
+
+let gomokuBoard = [];
+let currentPlayer = 'black';
+let gomokuGameOver = false;
+
+function initGomoku() {
+    gomokuBoard = Array(15).fill(null).map(() => Array(15).fill(null));
+    currentPlayer = 'black';
+    gomokuGameOver = false;
+    
+    const board = document.getElementById('gomokuBoard');
+    board.innerHTML = '';
+    
+    for (let i = 0; i < 15; i++) {
+        for (let j = 0; j < 15; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'gomoku-cell';
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+            cell.addEventListener('click', () => makeGomokuMove(i, j));
+            board.appendChild(cell);
+        }
+    }
+    
+    document.getElementById('currentPlayer').textContent = currentPlayer === 'black' ? '⚫' : '⚪';
+    document.getElementById('gomokuMessage').textContent = '點擊棋盤開始遊戲';
+}
+
+function makeGomokuMove(row, col) {
+    if (gomokuGameOver || gomokuBoard[row][col]) return;
+    
+    gomokuBoard[row][col] = currentPlayer;
+    const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+    cell.textContent = currentPlayer === 'black' ? '⚫' : '⚪';
+    cell.classList.add(currentPlayer);
+    
+    if (checkGomokuWin(row, col)) {
+        gomokuGameOver = true;
+        document.getElementById('gomokuMessage').textContent = `${currentPlayer === 'black' ? '黑子' : '白子'}獲勝！`;
+        updateGomokuScore();
+        return;
+    }
+    
+    if (checkGomokuDraw()) {
+        gomokuGameOver = true;
+        document.getElementById('gomokuMessage').textContent = '平局！';
+        return;
+    }
+    
+    currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+    document.getElementById('currentPlayer').textContent = currentPlayer === 'black' ? '⚫' : '⚪';
+    
+    if (currentPlayer === 'white') {
+        setTimeout(makeGomokuAIMove, 500);
+    }
+}
+
+function makeGomokuAIMove() {
+    if (gomokuGameOver) return;
+    
+    const move = findBestGomokuMove();
+    if (move) {
+        makeGomokuMove(move.row, move.col);
+    }
+}
+
+function findBestGomokuMove() {
+    // 簡單AI：找最佳位置
+    for (let i = 0; i < 15; i++) {
+        for (let j = 0; j < 15; j++) {
+            if (!gomokuBoard[i][j]) {
+                // 檢查是否能獲勝
+                gomokuBoard[i][j] = 'white';
+                if (checkGomokuWin(i, j)) {
+                    gomokuBoard[i][j] = null;
+                    return { row: i, col: j };
+                }
+                gomokuBoard[i][j] = null;
+                
+                // 檢查是否需要阻止對手獲勝
+                gomokuBoard[i][j] = 'black';
+                if (checkGomokuWin(i, j)) {
+                    gomokuBoard[i][j] = null;
+                    return { row: i, col: j };
+                }
+                gomokuBoard[i][j] = null;
+            }
+        }
+    }
+    
+    // 隨機選擇空位
+    const emptyCells = [];
+    for (let i = 0; i < 15; i++) {
+        for (let j = 0; j < 15; j++) {
+            if (!gomokuBoard[i][j]) {
+                emptyCells.push({ row: i, col: j });
+            }
+        }
+    }
+    
+    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+}
+
+function checkGomokuWin(row, col) {
+    const directions = [
+        [0, 1], [1, 0], [1, 1], [1, -1]
+    ];
+    
+    for (const [dx, dy] of directions) {
+        let count = 1;
+        
+        // 正方向
+        let r = row + dx, c = col + dy;
+        while (r >= 0 && r < 15 && c >= 0 && c < 15 && gomokuBoard[r][c] === currentPlayer) {
+            count++;
+            r += dx;
+            c += dy;
+        }
+        
+        // 反方向
+        r = row - dx;
+        c = col - dy;
+        while (r >= 0 && r < 15 && c >= 0 && c < 15 && gomokuBoard[r][c] === currentPlayer) {
+            count++;
+            r -= dx;
+            c -= dy;
+        }
+        
+        if (count >= 5) return true;
+    }
+    
+    return false;
+}
+
+function checkGomokuDraw() {
+    return gomokuBoard.every(row => row.every(cell => cell !== null));
+}
+
+function updateGomokuScore() {
+    const scoreElement = document.getElementById(currentPlayer === 'black' ? 'blackScore' : 'whiteScore');
+    scoreElement.textContent = parseInt(scoreElement.textContent) + 1;
+}
+
+function resetGomoku() {
+    initGomoku();
+}
+
+// ====== 象棋遊戲 ======
+function loadChessGame() {
+    const gameHTML = `
+        <div class="game-header">
+            <h3><i class="fas fa-chess"></i> 象棋</h3>
+            <button class="btn btn-secondary btn-sm" onclick="showGameSelection()">
+                <i class="fas fa-arrow-left"></i> 返回
+            </button>
+        </div>
+        <div class="chess-game">
+            <div class="game-info">
+                <div class="current-player">當前玩家: <span id="chessCurrentPlayer">紅方</span></div>
+                <div class="score">紅方: <span id="redScore">0</span> | 黑方: <span id="blackChessScore">0</span></div>
+                <button class="btn btn-primary btn-sm" onclick="resetChess()">重新開始</button>
+            </div>
+            <div class="chess-board" id="chessBoard"></div>
+            <div class="game-message" id="chessMessage">點擊棋子開始遊戲</div>
+        </div>
+    `;
+    
+    document.getElementById('gameContainer').innerHTML = gameHTML;
+    initChess();
+}
+
+let chessBoard = [];
+let chessCurrentPlayer = 'red';
+let selectedPiece = null;
+let chessGameOver = false;
+
+function initChess() {
+    // 初始化象棋棋盤
+    chessBoard = [
+        ['車','馬','象','仕','將','仕','象','馬','車'],
+        ['','','','','','','','',''],
+        ['','砲','','','','','','砲',''],
+        ['兵','','兵','','兵','','兵','','兵'],
+        ['','','','','','','','',''],
+        ['','','','','','','','',''],
+        ['卒','','卒','','卒','','卒','','卒'],
+        ['','炮','','','','','','炮',''],
+        ['','','','','','','','',''],
+        ['俥','傌','相','士','帥','士','相','傌','俥']
+    ];
+    
+    chessCurrentPlayer = 'red';
+    selectedPiece = null;
+    chessGameOver = false;
+    
+    const board = document.getElementById('chessBoard');
+    board.innerHTML = '';
+    
+    for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 9; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'chess-cell';
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+            cell.addEventListener('click', () => handleChessMove(i, j));
+            
+            if (chessBoard[i][j]) {
+                cell.textContent = chessBoard[i][j];
+                cell.classList.add(i < 5 ? 'black-piece' : 'red-piece');
+            }
+            
+            board.appendChild(cell);
+        }
+    }
+    
+    document.getElementById('chessCurrentPlayer').textContent = '紅方';
+    document.getElementById('chessMessage').textContent = '點擊棋子開始遊戲';
+}
+
+function handleChessMove(row, col) {
+    if (chessGameOver) return;
+    
+    if (selectedPiece) {
+        // 移動棋子
+        if (isValidChessMove(selectedPiece.row, selectedPiece.col, row, col)) {
+            const piece = chessBoard[selectedPiece.row][selectedPiece.col];
+            chessBoard[selectedPiece.row][selectedPiece.col] = '';
+            chessBoard[row][col] = piece;
+            
+            updateChessDisplay();
+            
+            if (checkChessWin()) {
+                chessGameOver = true;
+                document.getElementById('chessMessage').textContent = `${chessCurrentPlayer === 'red' ? '紅方' : '黑方'}獲勝！`;
+                updateChessScore();
+                return;
+            }
+            
+            chessCurrentPlayer = chessCurrentPlayer === 'red' ? 'black' : 'red';
+            document.getElementById('chessCurrentPlayer').textContent = chessCurrentPlayer === 'red' ? '紅方' : '黑方';
+            
+            if (chessCurrentPlayer === 'black') {
+                setTimeout(makeChessAIMove, 500);
+            }
+        }
+        
+        clearChessSelection();
+    } else {
+        // 選擇棋子
+        if (chessBoard[row][col] && isPlayerPiece(chessBoard[row][col], chessCurrentPlayer)) {
+            selectedPiece = { row, col };
+            document.querySelector(`[data-row="${row}"][data-col="${col}"]`).classList.add('selected');
+        }
+    }
+}
+
+function isPlayerPiece(piece, player) {
+    const redPieces = ['俥','傌','相','士','帥','炮','卒'];
+    const blackPieces = ['車','馬','象','仕','將','砲','兵'];
+    
+    if (player === 'red') {
+        return redPieces.includes(piece);
+    } else {
+        return blackPieces.includes(piece);
+    }
+}
+
+function isValidChessMove(fromRow, fromCol, toRow, toCol) {
+    // 簡化的移動規則檢查
+    if (toRow < 0 || toRow >= 10 || toCol < 0 || toCol >= 9) return false;
+    if (fromRow === toRow && fromCol === toCol) return false;
+    
+    const piece = chessBoard[fromRow][fromCol];
+    const targetPiece = chessBoard[toRow][toCol];
+    
+    // 不能吃自己的棋子
+    if (targetPiece && isPlayerPiece(targetPiece, chessCurrentPlayer)) return false;
+    
+    return true; // 簡化規則
+}
+
+function makeChessAIMove() {
+    if (chessGameOver) return;
+    
+    const move = findBestChessMove();
+    if (move) {
+        handleChessMove(move.fromRow, move.fromCol);
+        setTimeout(() => handleChessMove(move.toRow, move.toCol), 100);
+    }
+}
+
+function findBestChessMove() {
+    // 簡單AI：隨機移動
+    const pieces = [];
+    for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 9; j++) {
+            if (chessBoard[i][j] && isPlayerPiece(chessBoard[i][j], 'black')) {
+                pieces.push({ row: i, col: j });
+            }
+        }
+    }
+    
+    if (pieces.length === 0) return null;
+    
+    const piece = pieces[Math.floor(Math.random() * pieces.length)];
+    const moves = [];
+    
+    for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 9; j++) {
+            if (isValidChessMove(piece.row, piece.col, i, j)) {
+                moves.push({ fromRow: piece.row, fromCol: piece.col, toRow: i, toCol: j });
+            }
+        }
+    }
+    
+    return moves.length > 0 ? moves[Math.floor(Math.random() * moves.length)] : null;
+}
+
+function updateChessDisplay() {
+    const board = document.getElementById('chessBoard');
+    board.innerHTML = '';
+    
+    for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 9; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'chess-cell';
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+            cell.addEventListener('click', () => handleChessMove(i, j));
+            
+            if (chessBoard[i][j]) {
+                cell.textContent = chessBoard[i][j];
+                cell.classList.add(i < 5 ? 'black-piece' : 'red-piece');
+            }
+            
+            board.appendChild(cell);
+        }
+    }
+}
+
+function clearChessSelection() {
+    selectedPiece = null;
+    document.querySelectorAll('.chess-cell').forEach(cell => {
+        cell.classList.remove('selected');
+    });
+}
+
+function checkChessWin() {
+    // 檢查將/帥是否被吃
+    let redKing = false, blackKing = false;
+    
+    for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 9; j++) {
+            if (chessBoard[i][j] === '帥') redKing = true;
+            if (chessBoard[i][j] === '將') blackKing = true;
+        }
+    }
+    
+    return !redKing || !blackKing;
+}
+
+function updateChessScore() {
+    const scoreElement = document.getElementById(chessCurrentPlayer === 'red' ? 'redScore' : 'blackChessScore');
+    scoreElement.textContent = parseInt(scoreElement.textContent) + 1;
+}
+
+function resetChess() {
+    initChess();
+}
+
+// ====== 21點撲克遊戲 ======
+function loadPokerGame() {
+    const gameHTML = `
+        <div class="game-header">
+            <h3><i class="fas fa-heart"></i> 21點撲克</h3>
+            <button class="btn btn-secondary btn-sm" onclick="showGameSelection()">
+                <i class="fas fa-arrow-left"></i> 返回
+            </button>
+        </div>
+        <div class="poker-game">
+            <div class="game-info">
+                <div class="score">勝利: <span id="pokerWins">0</span> | 失敗: <span id="pokerLosses">0</span></div>
+                <div class="game-controls">
+                    <button class="btn btn-success btn-sm" onclick="hitCard()" id="hitBtn">要牌</button>
+                    <button class="btn btn-warning btn-sm" onclick="stand()" id="standBtn">停牌</button>
+                    <button class="btn btn-primary btn-sm" onclick="newPokerGame()">新遊戲</button>
+                </div>
+            </div>
+            <div class="poker-table">
+                <div class="dealer-area">
+                    <h4>莊家 (點數: <span id="dealerPoints">0</span>)</h4>
+                    <div class="cards" id="dealerCards"></div>
+                </div>
+                <div class="player-area">
+                    <h4>玩家 (點數: <span id="playerPoints">0</span>)</h4>
+                    <div class="cards" id="playerCards"></div>
+                </div>
+            </div>
+            <div class="game-message" id="pokerMessage">點擊新遊戲開始</div>
+        </div>
+    `;
+    
+    document.getElementById('gameContainer').innerHTML = gameHTML;
+    initPoker();
+}
+
+let pokerDeck = [];
+let playerCards = [];
+let dealerCards = [];
+let pokerGameActive = false;
+
+function initPoker() {
+    newPokerGame();
+}
+
+function createPokerDeck() {
+    const suits = ['♠', '♥', '♦', '♣'];
+    const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    const deck = [];
+    
+    for (const suit of suits) {
+        for (const rank of ranks) {
+            deck.push({ suit, rank });
+        }
+    }
+    
+    // 洗牌
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    
+    return deck;
+}
+
+function newPokerGame() {
+    pokerDeck = createPokerDeck();
+    playerCards = [];
+    dealerCards = [];
+    pokerGameActive = true;
+    
+    // 發初始牌
+    playerCards.push(pokerDeck.pop());
+    dealerCards.push(pokerDeck.pop());
+    playerCards.push(pokerDeck.pop());
+    dealerCards.push(pokerDeck.pop());
+    
+    updatePokerDisplay();
+    document.getElementById('pokerMessage').textContent = '選擇要牌或停牌';
+    document.getElementById('hitBtn').disabled = false;
+    document.getElementById('standBtn').disabled = false;
+}
+
+function hitCard() {
+    if (!pokerGameActive) return;
+    
+    playerCards.push(pokerDeck.pop());
+    updatePokerDisplay();
+    
+    const playerPoints = calculatePoints(playerCards);
+    if (playerPoints > 21) {
+        endPokerGame('爆牌！莊家獲勝');
+    } else if (playerPoints === 21) {
+        stand();
+    }
+}
+
+function stand() {
+    if (!pokerGameActive) return;
+    
+    // 莊家抽牌
+    while (calculatePoints(dealerCards) < 17) {
+        dealerCards.push(pokerDeck.pop());
+    }
+    
+    updatePokerDisplay();
+    
+    const playerPoints = calculatePoints(playerCards);
+    const dealerPoints = calculatePoints(dealerCards);
+    
+    if (dealerPoints > 21) {
+        endPokerGame('莊家爆牌！玩家獲勝');
+    } else if (playerPoints > dealerPoints) {
+        endPokerGame('玩家獲勝！');
+    } else if (dealerPoints > playerPoints) {
+        endPokerGame('莊家獲勝！');
+    } else {
+        endPokerGame('平局！');
+    }
+}
+
+function calculatePoints(cards) {
+    let points = 0;
+    let aces = 0;
+    
+    for (const card of cards) {
+        if (card.rank === 'A') {
+            aces++;
+            points += 11;
+        } else if (['J', 'Q', 'K'].includes(card.rank)) {
+            points += 10;
+        } else {
+            points += parseInt(card.rank);
+        }
+    }
+    
+    // 處理A的點數
+    while (points > 21 && aces > 0) {
+        points -= 10;
+        aces--;
+    }
+    
+    return points;
+}
+
+function updatePokerDisplay() {
+    const playerCardsDiv = document.getElementById('playerCards');
+    const dealerCardsDiv = document.getElementById('dealerCards');
+    
+    playerCardsDiv.innerHTML = '';
+    dealerCardsDiv.innerHTML = '';
+    
+    playerCards.forEach(card => {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'playing-card';
+        cardDiv.textContent = card.rank + card.suit;
+        if (card.suit === '♥' || card.suit === '♦') {
+            cardDiv.classList.add('red-card');
+        }
+        playerCardsDiv.appendChild(cardDiv);
+    });
+    
+    dealerCards.forEach((card, index) => {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'playing-card';
+        if (index === 0 && pokerGameActive) {
+            cardDiv.textContent = '🂠';
+            cardDiv.classList.add('hidden-card');
+        } else {
+            cardDiv.textContent = card.rank + card.suit;
+            if (card.suit === '♥' || card.suit === '♦') {
+                cardDiv.classList.add('red-card');
+            }
+        }
+        dealerCardsDiv.appendChild(cardDiv);
+    });
+    
+    document.getElementById('playerPoints').textContent = calculatePoints(playerCards);
+    document.getElementById('dealerPoints').textContent = pokerGameActive ? '?' : calculatePoints(dealerCards);
+}
+
+function endPokerGame(message) {
+    pokerGameActive = false;
+    document.getElementById('pokerMessage').textContent = message;
+    document.getElementById('hitBtn').disabled = true;
+    document.getElementById('standBtn').disabled = true;
+    
+    updatePokerDisplay();
+    
+    // 更新分數
+    if (message.includes('玩家獲勝')) {
+        const winsElement = document.getElementById('pokerWins');
+        winsElement.textContent = parseInt(winsElement.textContent) + 1;
+    } else if (message.includes('莊家獲勝') || message.includes('爆牌')) {
+        const lossesElement = document.getElementById('pokerLosses');
+        lossesElement.textContent = parseInt(lossesElement.textContent) + 1;
+    }
+}
+
+// ====== 數獨遊戲 ======
+function loadSudokuGame() {
+    const gameHTML = `
+        <div class="game-header">
+            <h3><i class="fas fa-th"></i> 數獨</h3>
+            <button class="btn btn-secondary btn-sm" onclick="showGameSelection()">
+                <i class="fas fa-arrow-left"></i> 返回
+            </button>
+        </div>
+        <div class="sudoku-game">
+            <div class="game-info">
+                <div class="difficulty">
+                    <label>難度:</label>
+                    <select id="sudokuDifficulty" onchange="generateSudoku()">
+                        <option value="easy">簡單</option>
+                        <option value="medium">中等</option>
+                        <option value="hard">困難</option>
+                    </select>
+                </div>
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="generateSudoku()">新遊戲</button>
+                    <button class="btn btn-success btn-sm" onclick="checkSudoku()">檢查</button>
+                    <button class="btn btn-warning btn-sm" onclick="solveSudoku()">提示</button>
+                </div>
+            </div>
+            <div class="sudoku-board" id="sudokuBoard"></div>
+            <div class="game-message" id="sudokuMessage">選擇難度開始新遊戲</div>
+        </div>
+    `;
+    
+    document.getElementById('gameContainer').innerHTML = gameHTML;
+    initSudoku();
+}
+
+let sudokuBoard = [];
+let sudokuSolution = [];
+
+function initSudoku() {
+    generateSudoku();
+}
+
+function generateSudoku() {
+    // 生成完整的數獨解答
+    sudokuSolution = generateCompleteSudoku();
+    sudokuBoard = JSON.parse(JSON.stringify(sudokuSolution));
+    
+    // 根據難度移除數字
+    const difficulty = document.getElementById('sudokuDifficulty').value;
+    const removeCount = difficulty === 'easy' ? 30 : difficulty === 'medium' ? 45 : 60;
+    
+    for (let i = 0; i < removeCount; i++) {
+        const row = Math.floor(Math.random() * 9);
+        const col = Math.floor(Math.random() * 9);
+        sudokuBoard[row][col] = 0;
+    }
+    
+    displaySudoku();
+    document.getElementById('sudokuMessage').textContent = '填入數字完成數獨';
+}
+
+function generateCompleteSudoku() {
+    const board = Array(9).fill(null).map(() => Array(9).fill(0));
+    
+    // 簡化的數獨生成
+    const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    
+    // 填入第一行
+    for (let i = 0; i < 9; i++) {
+        board[0][i] = nums[i];
+    }
+    
+    // 簡單的數獨生成算法
+    if (solveSudokuRecursive(board, 1, 0)) {
+        return board;
+    }
+    
+    return board;
+}
+
+function solveSudokuRecursive(board, row, col) {
+    if (row === 9) return true;
+    if (col === 9) return solveSudokuRecursive(board, row + 1, 0);
+    if (board[row][col] !== 0) return solveSudokuRecursive(board, row, col + 1);
+    
+    const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    shuffleArray(nums);
+    
+    for (const num of nums) {
+        if (isValidSudokuMove(board, row, col, num)) {
+            board[row][col] = num;
+            if (solveSudokuRecursive(board, row, col + 1)) {
+                return true;
+            }
+            board[row][col] = 0;
+        }
+    }
+    
+    return false;
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function isValidSudokuMove(board, row, col, num) {
+    // 檢查行
+    for (let i = 0; i < 9; i++) {
+        if (board[row][i] === num) return false;
+    }
+    
+    // 檢查列
+    for (let i = 0; i < 9; i++) {
+        if (board[i][col] === num) return false;
+    }
+    
+    // 檢查3x3格子
+    const boxRow = Math.floor(row / 3) * 3;
+    const boxCol = Math.floor(col / 3) * 3;
+    for (let i = boxRow; i < boxRow + 3; i++) {
+        for (let j = boxCol; j < boxCol + 3; j++) {
+            if (board[i][j] === num) return false;
+        }
+    }
+    
+    return true;
+}
+
+function displaySudoku() {
+    const board = document.getElementById('sudokuBoard');
+    board.innerHTML = '';
+    
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            const cell = document.createElement('input');
+            cell.type = 'number';
+            cell.min = '1';
+            cell.max = '9';
+            cell.className = 'sudoku-cell';
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+            
+            if (sudokuBoard[i][j] !== 0) {
+                cell.value = sudokuBoard[i][j];
+                cell.readOnly = true;
+                cell.classList.add('given');
+            }
+            
+            cell.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                if (value >= 1 && value <= 9) {
+                    sudokuBoard[i][j] = value;
+                } else {
+                    sudokuBoard[i][j] = 0;
+                    e.target.value = '';
+                }
+            });
+            
+            board.appendChild(cell);
+        }
+    }
+}
+
+function checkSudoku() {
+    let isComplete = true;
+    let isValid = true;
+    
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            if (sudokuBoard[i][j] === 0) {
+                isComplete = false;
+            } else if (!isValidSudokuMove(sudokuBoard, i, j, sudokuBoard[i][j])) {
+                isValid = false;
+            }
+        }
+    }
+    
+    if (isComplete && isValid) {
+        document.getElementById('sudokuMessage').textContent = '恭喜！數獨完成！';
+    } else if (!isValid) {
+        document.getElementById('sudokuMessage').textContent = '有錯誤，請檢查';
+    } else {
+        document.getElementById('sudokuMessage').textContent = '還沒完成，繼續加油！';
+    }
+}
+
+function solveSudoku() {
+    // 提供一個提示
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            if (sudokuBoard[i][j] === 0) {
+                sudokuBoard[i][j] = sudokuSolution[i][j];
+                displaySudoku();
+                document.getElementById('sudokuMessage').textContent = '提示：已填入一個數字';
+                return;
+            }
+        }
+    }
+}
+
+// ====== 塔防遊戲 ======
+function loadTowerDefenseGame() {
+    const gameHTML = `
+        <div class="game-header">
+            <h3><i class="fas fa-chess-rook"></i> 塔防</h3>
+            <button class="btn btn-secondary btn-sm" onclick="showGameSelection()">
+                <i class="fas fa-arrow-left"></i> 返回
+            </button>
+        </div>
+        <div class="tower-defense-game">
+            <div class="game-info">
+                <div class="game-stats">
+                    <span>生命: <span id="lives">10</span></span>
+                    <span>金幣: <span id="gold">100</span></span>
+                    <span>波次: <span id="wave">1</span></span>
+                    <span>分數: <span id="tdScore">0</span></span>
+                </div>
+                <div class="game-controls">
+                    <button class="btn btn-primary btn-sm" onclick="startWave()">開始波次</button>
+                    <button class="btn btn-success btn-sm" onclick="buildTower()">建造塔 (20金)</button>
+                    <button class="btn btn-warning btn-sm" onclick="upgradeTower()">升級塔 (30金)</button>
+                </div>
+            </div>
+            <canvas id="towerDefenseCanvas" width="600" height="400"></canvas>
+            <div class="game-message" id="towerDefenseMessage">點擊建造塔防禦敵人</div>
+        </div>
+    `;
+    
+    document.getElementById('gameContainer').innerHTML = gameHTML;
+    initTowerDefense();
+}
+
+let tdCanvas, tdCtx;
+let towers = [];
+let enemies = [];
+let projectiles = [];
+let gameStats = { lives: 10, gold: 100, wave: 1, score: 0 };
+let waveInProgress = false;
+let selectedTower = null;
+
+function initTowerDefense() {
+    tdCanvas = document.getElementById('towerDefenseCanvas');
+    tdCtx = tdCanvas.getContext('2d');
+    
+    tdCanvas.addEventListener('click', handleTowerDefenseClick);
+    
+    // 初始化遊戲
+    towers = [];
+    enemies = [];
+    projectiles = [];
+    gameStats = { lives: 10, gold: 100, wave: 1, score: 0 };
+    waveInProgress = false;
+    selectedTower = null;
+    
+    updateTowerDefenseDisplay();
+    gameLoop();
+}
+
+function handleTowerDefenseClick(e) {
+    const rect = tdCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // 檢查是否點擊已有的塔
+    for (let tower of towers) {
+        const distance = Math.sqrt((x - tower.x) ** 2 + (y - tower.y) ** 2);
+        if (distance < 20) {
+            selectedTower = tower;
+            return;
+        }
+    }
+    
+    selectedTower = null;
+}
+
+function buildTower() {
+    if (gameStats.gold < 20) {
+        document.getElementById('towerDefenseMessage').textContent = '金幣不足！';
+        return;
+    }
+    
+    // 隨機位置建塔
+    const x = Math.random() * (tdCanvas.width - 40) + 20;
+    const y = Math.random() * (tdCanvas.height - 40) + 20;
+    
+    towers.push({
+        x: x,
+        y: y,
+        level: 1,
+        damage: 10,
+        range: 80,
+        fireRate: 1000,
+        lastFire: 0
+    });
+    
+    gameStats.gold -= 20;
+    updateTowerDefenseDisplay();
+    document.getElementById('towerDefenseMessage').textContent = '建造了一座塔';
+}
+
+function upgradeTower() {
+    if (!selectedTower) {
+        document.getElementById('towerDefenseMessage').textContent = '請先選擇一座塔';
+        return;
+    }
+    
+    if (gameStats.gold < 30) {
+        document.getElementById('towerDefenseMessage').textContent = '金幣不足！';
+        return;
+    }
+    
+    selectedTower.level++;
+    selectedTower.damage += 5;
+    selectedTower.range += 10;
+    selectedTower.fireRate -= 100;
+    
+    gameStats.gold -= 30;
+    updateTowerDefenseDisplay();
+    document.getElementById('towerDefenseMessage').textContent = '塔升級成功！';
+}
+
+function startWave() {
+    if (waveInProgress) return;
+    
+    waveInProgress = true;
+    const enemyCount = 5 + gameStats.wave * 2;
+    
+    for (let i = 0; i < enemyCount; i++) {
+        setTimeout(() => {
+            enemies.push({
+                x: -20,
+                y: Math.random() * tdCanvas.height,
+                health: 20 + gameStats.wave * 10,
+                maxHealth: 20 + gameStats.wave * 10,
+                speed: 1 + gameStats.wave * 0.2,
+                reward: 5 + gameStats.wave
+            });
+        }, i * 500);
+    }
+    
+    setTimeout(() => {
+        waveInProgress = false;
+        gameStats.wave++;
+        updateTowerDefenseDisplay();
+    }, enemyCount * 500 + 5000);
+}
+
+function updateTowerDefenseDisplay() {
+    document.getElementById('lives').textContent = gameStats.lives;
+    document.getElementById('gold').textContent = gameStats.gold;
+    document.getElementById('wave').textContent = gameStats.wave;
+    document.getElementById('tdScore').textContent = gameStats.score;
+}
+
+function gameLoop() {
+    // 清除畫布
+    tdCtx.clearRect(0, 0, tdCanvas.width, tdCanvas.height);
+    
+    // 繪製背景
+    tdCtx.fillStyle = '#228B22';
+    tdCtx.fillRect(0, 0, tdCanvas.width, tdCanvas.height);
+    
+    // 更新敵人
+    enemies.forEach((enemy, enemyIndex) => {
+        enemy.x += enemy.speed;
+        
+        // 敵人到達終點
+        if (enemy.x > tdCanvas.width) {
+            enemies.splice(enemyIndex, 1);
+            gameStats.lives--;
+            if (gameStats.lives <= 0) {
+                document.getElementById('towerDefenseMessage').textContent = '遊戲結束！';
+                return;
+            }
+        }
+        
+        // 繪製敵人
+        tdCtx.fillStyle = '#FF4500';
+        tdCtx.fillRect(enemy.x - 10, enemy.y - 10, 20, 20);
+        
+        // 繪製血條
+        tdCtx.fillStyle = '#FF0000';
+        tdCtx.fillRect(enemy.x - 10, enemy.y - 15, 20, 3);
+        tdCtx.fillStyle = '#00FF00';
+        tdCtx.fillRect(enemy.x - 10, enemy.y - 15, 20 * (enemy.health / enemy.maxHealth), 3);
+    });
+    
+    // 更新塔
+    towers.forEach(tower => {
+        const now = Date.now();
+        
+        // 尋找範圍內的敵人
+        const target = enemies.find(enemy => {
+            const distance = Math.sqrt((enemy.x - tower.x) ** 2 + (enemy.y - tower.y) ** 2);
+            return distance <= tower.range;
+        });
+        
+        // 開火
+        if (target && now - tower.lastFire > tower.fireRate) {
+            projectiles.push({
+                x: tower.x,
+                y: tower.y,
+                targetX: target.x,
+                targetY: target.y,
+                damage: tower.damage,
+                speed: 5
+            });
+            tower.lastFire = now;
+        }
+        
+        // 繪製塔
+        tdCtx.fillStyle = tower === selectedTower ? '#FFD700' : '#8B4513';
+        tdCtx.fillRect(tower.x - 15, tower.y - 15, 30, 30);
+        
+        // 繪製等級
+        tdCtx.fillStyle = '#FFFFFF';
+        tdCtx.font = '12px Arial';
+        tdCtx.textAlign = 'center';
+        tdCtx.fillText(tower.level, tower.x, tower.y + 4);
+        
+        // 繪製範圍（僅選中的塔）
+        if (tower === selectedTower) {
+            tdCtx.strokeStyle = '#FFFFFF';
+            tdCtx.beginPath();
+            tdCtx.arc(tower.x, tower.y, tower.range, 0, Math.PI * 2);
+            tdCtx.stroke();
+        }
+    });
+    
+    // 更新炮彈
+    projectiles.forEach((projectile, projectileIndex) => {
+        const dx = projectile.targetX - projectile.x;
+        const dy = projectile.targetY - projectile.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < projectile.speed) {
+            // 炮彈到達目標
+            const target = enemies.find(enemy => 
+                Math.abs(enemy.x - projectile.targetX) < 15 && 
+                Math.abs(enemy.y - projectile.targetY) < 15
+            );
+            
+            if (target) {
+                target.health -= projectile.damage;
+                if (target.health <= 0) {
+                    const enemyIndex = enemies.indexOf(target);
+                    enemies.splice(enemyIndex, 1);
+                    gameStats.gold += target.reward;
+                    gameStats.score += target.reward * 10;
+                }
+            }
+            
+            projectiles.splice(projectileIndex, 1);
+        } else {
+            // 移動炮彈
+            projectile.x += (dx / distance) * projectile.speed;
+            projectile.y += (dy / distance) * projectile.speed;
+        }
+        
+        // 繪製炮彈
+        tdCtx.fillStyle = '#FFFF00';
+        tdCtx.beginPath();
+        tdCtx.arc(projectile.x, projectile.y, 3, 0, Math.PI * 2);
+        tdCtx.fill();
+    });
+    
+    updateTowerDefenseDisplay();
+    requestAnimationFrame(gameLoop);
+}
 
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {

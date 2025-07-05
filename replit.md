@@ -122,6 +122,7 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 05, 2025. Addressed frontend JavaScript event handling issues in document template generation, improved error handling and debugging for template system reliability
 - July 05, 2025. Implemented AI智能文件生成器 with automatic Excel/Word/PPT generation: created comprehensive UI with description input, style selection, language options. Added DALL-E 3 image generation for Word and PPT documents. Built complete backend API with error handling and file download capabilities. Feature includes progress tracking and result display with thumbnail previews for generated images
 - July 05, 2025. Added comprehensive mobile responsive design: implemented hamburger menu for mobile navigation, optimized touch interface with 44px minimum button sizes, added viewport meta tags, created mobile-first CSS media queries with responsive sidebar, enhanced mobile user experience with touch-friendly controls and proper font sizing to prevent iOS zoom
+- July 05, 2025. Added 5 new local AI games: Five-in-a-Row (五子棋) with 15x15 board and smart AI opponent, Chinese Chess (象棋) with traditional pieces and basic AI, Poker 21 (撲克21點) with dealer mechanics, Sudoku (數獨) with multiple difficulty levels and hint system, Tower Defense (塔防) with Canvas-based gameplay and real-time strategy mechanics. All games feature local AI that doesn't require external APIs
 
 ## Enhanced Features Added
 

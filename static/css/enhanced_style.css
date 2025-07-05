@@ -2011,6 +2011,223 @@ body {
     transform: translateY(-2px);
 }
 
+/* ====== 新遊戲樣式 ====== */
+
+/* 五子棋樣式 */
+.gomoku-game {
+    padding: 20px;
+    text-align: center;
+}
+
+.gomoku-board {
+    display: grid;
+    grid-template-columns: repeat(15, 30px);
+    grid-template-rows: repeat(15, 30px);
+    gap: 1px;
+    justify-content: center;
+    margin: 20px auto;
+    background: #8B4513;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.gomoku-cell {
+    width: 30px;
+    height: 30px;
+    background: #DEB887;
+    border: 1px solid #654321;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    transition: background-color 0.2s;
+}
+
+.gomoku-cell:hover {
+    background: #F5DEB3;
+}
+
+.gomoku-cell.black {
+    background: #2F4F4F;
+}
+
+.gomoku-cell.white {
+    background: #F5F5F5;
+}
+
+/* 象棋樣式 */
+.chess-game {
+    padding: 20px;
+    text-align: center;
+}
+
+.chess-board {
+    display: grid;
+    grid-template-columns: repeat(9, 40px);
+    grid-template-rows: repeat(10, 40px);
+    gap: 1px;
+    justify-content: center;
+    margin: 20px auto;
+    background: #8B4513;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.chess-cell {
+    width: 40px;
+    height: 40px;
+    background: #DEB887;
+    border: 1px solid #654321;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.chess-cell:hover {
+    background: #F5DEB3;
+}
+
+.chess-cell.selected {
+    background: #FFD700;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+}
+
+.chess-cell.red-piece {
+    color: #DC143C;
+}
+
+.chess-cell.black-piece {
+    color: #2F4F4F;
+}
+
+/* 撲克遊戲樣式 */
+.poker-game {
+    padding: 20px;
+    text-align: center;
+}
+
+.poker-table {
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+.dealer-area, .player-area {
+    margin: 20px 0;
+    padding: 15px;
+    background: #0F4C3A;
+    border-radius: 10px;
+    color: white;
+}
+
+.cards {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.playing-card {
+    width: 60px;
+    height: 80px;
+    background: white;
+    border: 2px solid #333;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.playing-card.red-card {
+    color: #DC143C;
+}
+
+.playing-card.hidden-card {
+    background: #4169E1;
+    color: white;
+}
+
+/* 數獨樣式 */
+.sudoku-game {
+    padding: 20px;
+    text-align: center;
+}
+
+.sudoku-board {
+    display: grid;
+    grid-template-columns: repeat(9, 40px);
+    grid-template-rows: repeat(9, 40px);
+    gap: 1px;
+    justify-content: center;
+    margin: 20px auto;
+    background: #333;
+    padding: 5px;
+    border-radius: 8px;
+}
+
+.sudoku-cell {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 1px solid #999;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.sudoku-cell.given {
+    background: #E6E6FA;
+    color: #4B0082;
+}
+
+.sudoku-cell:nth-child(3n) {
+    border-right: 3px solid #333;
+}
+
+.sudoku-cell:nth-child(n+19):nth-child(-n+27),
+.sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+    border-bottom: 3px solid #333;
+}
+
+/* 塔防遊戲樣式 */
+.tower-defense-game {
+    padding: 20px;
+    text-align: center;
+}
+
+#towerDefenseCanvas {
+    border: 2px solid #333;
+    border-radius: 8px;
+    margin: 20px auto;
+    display: block;
+    background: #228B22;
+}
+
+.game-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.game-controls {
+    margin: 15px 0;
+}
+
+.game-controls .btn {
+    margin: 0 5px;
+}
+
 /* 響應式設計 */
 @media (max-width: 768px) {
     .memory-board {
@@ -2018,7 +2235,7 @@ body {
         max-width: 300px;
     }
     
-    #pinballCanvas {
+    #pinballCanvas, #towerDefenseCanvas {
         width: 100%;
         height: auto;
         max-width: 600px;
@@ -2032,5 +2249,53 @@ body {
     .memory-stats, .pinball-stats {
         flex-direction: column;
         gap: 10px;
+    }
+    
+    .gomoku-board {
+        grid-template-columns: repeat(15, 20px);
+        grid-template-rows: repeat(15, 20px);
+    }
+    
+    .gomoku-cell {
+        width: 20px;
+        height: 20px;
+        font-size: 14px;
+    }
+    
+    .chess-board {
+        grid-template-columns: repeat(9, 30px);
+        grid-template-rows: repeat(10, 30px);
+    }
+    
+    .chess-cell {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+    
+    .sudoku-board {
+        grid-template-columns: repeat(9, 30px);
+        grid-template-rows: repeat(9, 30px);
+    }
+    
+    .sudoku-cell {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+    
+    .cards {
+        gap: 5px;
+    }
+    
+    .playing-card {
+        width: 45px;
+        height: 60px;
+        font-size: 12px;
+    }
+    
+    .game-stats {
+        flex-direction: column;
+        gap: 5px;
     }
 }
