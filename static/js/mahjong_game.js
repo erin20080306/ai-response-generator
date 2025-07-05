@@ -597,25 +597,14 @@ function loadMahjongGame() {
                     </div>
                 </div>
                 
-                <!-- 動作提示 -->
-                <div class="action-section" id="actionPromptPanel" style="display: none;">
-                    <h6 class="text-light mb-3">可選動作</h6>
-                    <div class="d-grid gap-2">
-                        <button onclick="executeSpecialAction('chi')" class="btn btn-success btn-sm">
-                            <i class="fas fa-arrow-right me-2"></i>吃
-                        </button>
-                        <button onclick="executeSpecialAction('pong')" class="btn btn-warning btn-sm">
-                            <i class="fas fa-clone me-2"></i>碰
-                        </button>
-                        <button onclick="executeSpecialAction('kong')" class="btn btn-danger btn-sm">
-                            <i class="fas fa-layer-group me-2"></i>槓
-                        </button>
-                        <button onclick="executeSpecialAction('hu')" class="btn btn-primary btn-sm">
-                            <i class="fas fa-trophy me-2"></i>胡
-                        </button>
-                        <button onclick="passAction()" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-times me-2"></i>過
-                        </button>
+                <!-- 遊戲提示信息 -->
+                <div class="game-info-section">
+                    <h6 class="text-light mb-3">遊戲提示</h6>
+                    <div class="text-muted small">
+                        <p>• 點擊手牌可以打出</p>
+                        <p>• 動作提示會顯示在右下角</p>
+                        <p>• 吃牌只能吃上家（電腦1）</p>
+                        <p>• 碰槓胡可以對任何玩家</p>
                     </div>
                 </div>
             </div>
@@ -640,28 +629,50 @@ function loadMahjongGame() {
                         <div class="player-melded" id="playerMelded" style="display: flex; gap: 4px; justify-content: center; margin-top: 8px;"></div>
                     </div>
                     
-                    <!-- 電腦AI玩家 - 右側 -->
+                    <!-- 電腦AI玩家 - 右側 (東家 - 你的上家) -->
                     <div class="player-right" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); text-align: center;">
                         <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 8px; background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;">
-                            <span>🤖 電腦1<br>(25000分)</span>
+                            <span>🤖 電腦1 (東家)<br>你的上家<br>(25000分)</span>
                         </div>
                         <div class="computer-tiles" id="computerTiles1" style="display: flex; flex-direction: column; gap: 2px; align-items: center;"></div>
                     </div>
                     
-                    <!-- 電腦AI玩家 - 頂部 -->
+                    <!-- 電腦AI玩家 - 頂部 (北家 - 你的對家) -->
                     <div class="player-top" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center;">
                         <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 8px; background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;">
-                            <span>🤖 電腦2 (25000分)</span>
+                            <span>🤖 電腦2 (北家)<br>你的對家<br>(25000分)</span>
                         </div>
                         <div class="computer-tiles" id="computerTiles2" style="display: flex; gap: 2px; justify-content: center;"></div>
                     </div>
                     
-                    <!-- 電腦AI玩家 - 左側 -->
+                    <!-- 電腦AI玩家 - 左側 (西家 - 你的下家) -->
                     <div class="player-left" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); text-align: center;">
                         <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 8px; background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;">
-                            <span>🤖 電腦3<br>(25000分)</span>
+                            <span>🤖 電腦3 (西家)<br>你的下家<br>(25000分)</span>
                         </div>
                         <div class="computer-tiles" id="computerTiles3" style="display: flex; flex-direction: column; gap: 2px; align-items: center;"></div>
+                    </div>
+                    
+                    <!-- 動作提示按鈕面板 - 右下角 -->
+                    <div class="action-buttons-corner" id="actionPromptPanel" style="display: none; position: absolute; bottom: 20px; right: 20px; background: rgba(0,0,0,0.9); padding: 15px; border-radius: 8px; border: 2px solid #ffd700;">
+                        <h6 class="text-light mb-3 text-center">可選動作</h6>
+                        <div class="d-grid gap-2" style="min-width: 120px;">
+                            <button onclick="executeSpecialAction('chi')" class="btn btn-success btn-sm">
+                                <i class="fas fa-arrow-right me-2"></i>吃
+                            </button>
+                            <button onclick="executeSpecialAction('pong')" class="btn btn-warning btn-sm">
+                                <i class="fas fa-clone me-2"></i>碰
+                            </button>
+                            <button onclick="executeSpecialAction('kong')" class="btn btn-danger btn-sm">
+                                <i class="fas fa-layer-group me-2"></i>槓
+                            </button>
+                            <button onclick="executeSpecialAction('hu')" class="btn btn-primary btn-sm">
+                                <i class="fas fa-trophy me-2"></i>胡
+                            </button>
+                            <button onclick="passAction()" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-times me-2"></i>過
+                            </button>
+                        </div>
                     </div>
                     
                     <!-- 隱藏的動作提示面板 (備用) -->
