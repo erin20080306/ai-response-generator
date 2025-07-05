@@ -185,7 +185,7 @@ function loadMahjongGame() {
             
             <!-- 控制按鈕 - 在遊戲桌面外側底部 -->
             <div class="control-panel" style="position: absolute; bottom: 5px; left: 10px; right: 10px; display: flex; justify-content: center; gap: 10px; background: #333; padding: 5px; border-radius: 3px;">
-                <button onclick="startMahjongGameWithImages()" class="btn btn-success btn-sm">🎮 開始遊戲</button>
+                <button onclick="startMahjongGame()" class="btn btn-success btn-sm">🎮 開始遊戲</button>
                 <button onclick="restartMahjong()" class="btn btn-secondary btn-sm">🔄 重新開始</button>
                 
                 <!-- 動作按鈕 - 只在需要時顯示 -->
@@ -201,21 +201,6 @@ function loadMahjongGame() {
     `;
     
     initMahjongGame();
-}
-
-// 新的圖片版麻將遊戲啟動函數
-function startMahjongGameWithImages() {
-    console.log('啟動圖片版麻將遊戲');
-    
-    // 如果 mahjongGame 存在於 mahjong_game.js 中，使用它
-    if (typeof MahjongGame !== 'undefined') {
-        // 創建新的麻將遊戲實例
-        window.mahjongGame = new MahjongGame();
-        window.mahjongGame.startGame();
-    } else {
-        // 否則使用原始的麻將遊戲
-        startMahjongGame();
-    }
 }
 
 // 遊戲數據

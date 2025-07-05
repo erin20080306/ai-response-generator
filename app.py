@@ -18,7 +18,7 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
-from flask import Flask, render_template, request, jsonify, session, send_file, make_response, send_from_directory
+from flask import Flask, render_template, request, jsonify, session, send_file, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -2831,14 +2831,6 @@ def check_complete_hand(hand):
             return check_complete_hand(temp_hand)
     
     return False
-
-@app.route('/attached_assets/<filename>')
-def serve_attached_asset(filename):
-    """服務附加資產文件，包括麻將牌圖片"""
-    try:
-        return send_from_directory('attached_assets', filename)
-    except:
-        return '', 404
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
