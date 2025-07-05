@@ -143,6 +143,9 @@ class EnhancedAIAssistant {
         
         // 響應式設計事件
         this.setupResponsiveEvents();
+        
+        // 系統主題監聽器
+        this.setupSystemThemeListener();
     }
 
     setupChatEvents() {
@@ -1186,8 +1189,65 @@ class EnhancedAIAssistant {
 
     changeTheme(theme) {
         this.settings.theme = theme;
-        document.documentElement.setAttribute('data-bs-theme', theme);
+        
+        // 處理新增的主題選項
+        switch(theme) {
+            case 'auto':
+                // 跟隨系統主題
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-bs-theme', prefersDark ? 'dark' : 'light');
+                break;
+            case 'light':
+            case 'dark':
+                // 經典主題
+                document.documentElement.setAttribute('data-theme', theme);
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                break;
+            default:
+                // 所有新增的主題變體
+                document.documentElement.setAttribute('data-theme', theme);
+                // 為新主題選擇適當的Bootstrap主題基礎
+                const isLightTheme = theme.startsWith('light-') || theme === 'retro' || theme === 'minimal';
+                document.documentElement.setAttribute('data-bs-theme', isLightTheme ? 'light' : 'dark');
+                break;
+        }
+        
         this.saveSettings();
+        
+        // 顯示主題變更通知
+        this.showNotification(`已切換至${this.getThemeDisplayName(theme)}主題`, 'success');
+    }
+    
+    getThemeDisplayName(theme) {
+        const themeNames = {
+            'dark': '經典深色',
+            'light': '經典淺色',
+            'auto': '跟隨系統',
+            'dark-blue': '深藍',
+            'dark-purple': '深紫',
+            'dark-green': '深綠',
+            'dark-red': '深紅',
+            'light-blue': '淺藍',
+            'light-purple': '淺紫',
+            'light-green': '淺綠',
+            'cyberpunk': '賽博龐克',
+            'retro': '復古',
+            'minimal': '極簡',
+            'contrast': '高對比度'
+        };
+        return themeNames[theme] || theme;
+    }
+    
+    setupSystemThemeListener() {
+        // 監聽系統主題變化
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (this.settings.theme === 'auto') {
+                // 如果當前是跟隨系統主題，則更新
+                document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-bs-theme', e.matches ? 'dark' : 'light');
+            }
+        });
     }
 
     changeFontSize(fontSize) {
