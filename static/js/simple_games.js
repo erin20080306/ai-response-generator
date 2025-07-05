@@ -118,8 +118,8 @@ function loadMahjongGame() {
             <div class="mahjong-table" style="width: 546px; height: 330px; position: relative; background: #0F5132; margin: 0; padding: 0;">
                 
                 <!-- 桌面中央區域 - 顯示打出的牌 -->
-                <div class="table-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 130px; border: 1px solid #666; background: rgba(0,0,0,0.1);">
-                    <div class="discarded-tiles" id="discardedTiles" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; padding: 4px; font-size: 14px; height: 100%; overflow: hidden;"></div>
+                <div class="table-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 160px; border: 1px solid #666; background: rgba(0,0,0,0.1);">
+                    <div class="discarded-tiles" id="discardedTiles" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 6px; font-size: 18px; height: 100%; overflow: hidden;"></div>
                 </div>
                 
                 <!-- 玩家位置 - 底部(你) -->
@@ -583,14 +583,14 @@ function renderComputerTiles() {
             
             if (i === 0 || i === 2) { // 左右側玩家
                 tileElement.style.cssText = `
-                    width: 18px; height: 28px; background: #e6f3ff; border: 1px solid #333; 
-                    margin: 1px 0; border-radius: 1px; font-size: 10px; font-weight: bold;
+                    width: 20px; height: 30px; background: #e6f3ff; border: 1px solid #333; 
+                    margin: 1px 0; border-radius: 1px; font-size: 14px; font-weight: bold;
                     display: flex; align-items: center; justify-content: center; color: #000;
                 `;
             } else { // 頂部玩家
                 tileElement.style.cssText = `
-                    width: 22px; height: 32px; background: #e6f3ff; border: 1px solid #333; 
-                    margin: 0 1px; border-radius: 1px; font-size: 12px; font-weight: bold;
+                    width: 24px; height: 34px; background: #e6f3ff; border: 1px solid #333; 
+                    margin: 0 1px; border-radius: 1px; font-size: 16px; font-weight: bold;
                     display: flex; align-items: center; justify-content: center; color: #000;
                 `;
             }
@@ -610,9 +610,9 @@ function renderDiscardedTiles() {
         const tileElement = document.createElement('div');
         tileElement.className = 'discarded-tile';
         tileElement.style.cssText = `
-            width: 24px; height: 30px; background: #fff; border: 1px solid #666; 
+            width: 28px; height: 38px; background: #fff; border: 1px solid #666; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 14px; font-weight: bold; border-radius: 1px;
+            font-size: 18px; font-weight: bold; border-radius: 2px;
         `;
         tileElement.textContent = tile;
         discardedTiles.appendChild(tileElement);
@@ -703,6 +703,9 @@ function computerTurn(computerIndex) {
                 const discardIndex = Math.floor(Math.random() * hand.length);
                 const discardedTile = hand.splice(discardIndex, 1)[0];
                 gameData.mahjong.discardPile.push(discardedTile);
+                
+                // 顯示電腦打出的牌
+                console.log(`電腦${computerIndex + 1}打出：${discardedTile}`);
                 
                 renderMahjongBoard();
                 
