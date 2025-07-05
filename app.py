@@ -632,8 +632,8 @@ def generate_template_document(data):
 def create_google_sheets_template(template_data, language):
     """創建 Google Sheets 範本（實際上創建 CSV 檔案）"""
     try:
-        # 創建 CSV 檔案
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.csv', mode='w', encoding='utf-8')
+        # 創建 CSV 檔案，使用UTF-8-BOM編碼避免中文亂碼
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.csv', mode='w', encoding='utf-8-sig')
         
         # 寫入標題
         title = template_data.get('title', '未命名範本')
