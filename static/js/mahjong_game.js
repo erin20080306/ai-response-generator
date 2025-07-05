@@ -601,19 +601,19 @@ function loadMahjongGame() {
                 <div class="action-section" id="actionPromptPanel" style="display: none;">
                     <h6 class="text-light mb-3">可選動作</h6>
                     <div class="d-grid gap-2">
-                        <button onclick="mahjongGame.executeAction('chi')" class="btn btn-success btn-sm">
+                        <button onclick="executeSpecialAction('chi')" class="btn btn-success btn-sm">
                             <i class="fas fa-arrow-right me-2"></i>吃
                         </button>
-                        <button onclick="mahjongGame.executeAction('pong')" class="btn btn-warning btn-sm">
+                        <button onclick="executeSpecialAction('pong')" class="btn btn-warning btn-sm">
                             <i class="fas fa-clone me-2"></i>碰
                         </button>
-                        <button onclick="mahjongGame.executeAction('kong')" class="btn btn-danger btn-sm">
+                        <button onclick="executeSpecialAction('kong')" class="btn btn-danger btn-sm">
                             <i class="fas fa-layer-group me-2"></i>槓
                         </button>
-                        <button onclick="mahjongGame.executeAction('hu')" class="btn btn-primary btn-sm">
+                        <button onclick="executeSpecialAction('hu')" class="btn btn-primary btn-sm">
                             <i class="fas fa-trophy me-2"></i>胡
                         </button>
-                        <button onclick="mahjongGame.passAction()" class="btn btn-secondary btn-sm">
+                        <button onclick="passAction()" class="btn btn-secondary btn-sm">
                             <i class="fas fa-times me-2"></i>過
                         </button>
                     </div>
@@ -685,4 +685,30 @@ function startMahjongGame() {
 function restartMahjongGame() {
     mahjongGame = new MahjongGame();
     mahjongGame.renderGame();
+}
+
+// 特殊動作執行函數
+function executeSpecialAction(action) {
+    if (mahjongGame) {
+        switch(action) {
+            case 'chi':
+                mahjongGame.executeChi();
+                break;
+            case 'pong':
+                mahjongGame.executePong();
+                break;
+            case 'kong':
+                mahjongGame.executeKong();
+                break;
+            case 'hu':
+                mahjongGame.executeHu();
+                break;
+        }
+    }
+}
+
+function passAction() {
+    if (mahjongGame) {
+        mahjongGame.passAction();
+    }
 }
