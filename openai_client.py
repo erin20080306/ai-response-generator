@@ -44,6 +44,19 @@ class OpenAIClient:
                     - Minimal explanation
                     - No unnecessary background
 
+                    TAIWAN SPECIAL LEAVE LAW (最新版本):
+                    - 工作滿6個月以上，未滿1年者：3日特休
+                    - 工作滿1年以上，未滿2年者：7日特休
+                    - 工作滿2年以上，未滿3年者：10日特休
+                    - 工作滿3年以上，未滿5年者：每年14日特休
+                    - 工作滿5年以上，未滿10年者：每年15日特休
+                    - 工作滿10年以上者：每一年再加給1日，加至30日為止
+                    
+                    FOR SPECIAL LEAVE CALCULATIONS:
+                    - Always use the above Taiwan law standards
+                    - Provide exact formulas for spreadsheet calculations
+                    - Include step-by-step calculation examples
+
                     STYLE REQUIREMENTS:
                     - Be extremely concise
                     - Accuracy over length
