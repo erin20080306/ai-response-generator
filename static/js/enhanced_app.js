@@ -419,6 +419,43 @@ class EnhancedAIAssistant {
         });
     }
 
+    toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        
+        if (sidebar && mainContent) {
+            sidebar.classList.toggle('show');
+            
+            // 在手機版本上，當側邊欄打開時添加遮罩
+            if (window.innerWidth <= 768) {
+                if (sidebar.classList.contains('show')) {
+                    // 添加遮罩
+                    if (!document.querySelector('.sidebar-overlay')) {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'sidebar-overlay';
+                        overlay.style.cssText = `
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background: rgba(0, 0, 0, 0.5);
+                            z-index: 999;
+                        `;
+                        overlay.addEventListener('click', () => this.toggleSidebar());
+                        document.body.appendChild(overlay);
+                    }
+                } else {
+                    // 移除遮罩
+                    const overlay = document.querySelector('.sidebar-overlay');
+                    if (overlay) {
+                        overlay.remove();
+                    }
+                }
+            }
+        }
+    }
+
     initializeModules() {
         // 初始化檔案處理器
         if (typeof FileHandler !== 'undefined') {
