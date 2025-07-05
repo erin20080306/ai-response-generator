@@ -177,30 +177,54 @@ class DocumentGenerator {
             const panelContainer = toolsPanel.querySelector('.panel-container');
             if (panelContainer) {
                 panelContainer.appendChild(docSection);
+                // 在DOM元素創建後立即設置事件監聽器
+                this.setupEventListenersAfterDOM();
             }
         }
     }
 
     setupEventListeners() {
-        // AI 生成按鈕
-        document.getElementById('generateDocBtn')?.addEventListener('click', () => {
-            this.generateDocument();
-        });
+        // 初始設置，這個方法在init()中調用但此時DOM可能還沒準備好
+        // 實際的事件監聽器會在setupEventListenersAfterDOM()中設置
+    }
 
-        // 範本選擇
-        document.querySelectorAll('.template-item').forEach(item => {
-            item.addEventListener('click', (e) => {
+    setupEventListenersAfterDOM() {
+        // 在DOM元素創建後設置事件監聽器
+        
+        // AI 生成按鈕
+        const generateBtn = document.getElementById('generateDocBtn');
+        if (generateBtn) {
+            generateBtn.addEventListener('click', () => {
+                this.generateDocument();
+            });
+        }
+
+        // 範本選擇 - 使用事件委託處理動態創建的元素
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.template-item')) {
                 e.preventDefault();
+                const item = e.target.closest('.template-item');
                 const type = item.dataset.type;
                 const template = item.dataset.template;
-                this.generateFromTemplate(type, template);
-            });
+                
+                console.log('點擊範本:', type, template); // 調試日志
+                
+                // 使用簡化版生成器
+                if (window.generateAndDownloadFromTemplate) {
+                    window.generateAndDownloadFromTemplate(type, template);
+                } else {
+                    this.generateFromTemplate(type, template);
+                }
+            }
         });
 
         // 清除歷史
-        document.getElementById('clearHistoryBtn')?.addEventListener('click', () => {
-            this.clearHistory();
-        });
+        const clearBtn = document.getElementById('clearHistoryBtn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                this.clearHistory();
+            });
+        }
     }
 
     async generateDocument() {

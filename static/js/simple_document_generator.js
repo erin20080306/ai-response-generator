@@ -235,7 +235,12 @@ function generateAndDownloadFromTemplate(templateType, templateName) {
             const htmlContent = generateHTMLTable(templates);
             downloadFile(htmlContent, `${templates.title}_${timestamp}.html`, 'text/html;charset=utf-8;');
             
-            showMessage(`已生成 ${templates.title} (CSV + HTML格式)`, 'success');
+            // 顯示成功訊息
+            if (window.showMessage) {
+                window.showMessage(`已生成 ${templates.title} (CSV + HTML格式)`, 'success');
+            } else {
+                alert(`已生成 ${templates.title} (CSV + HTML格式)`);
+            }
             
         } else if (templateType === 'google_sheets') {
             // 生成Google Sheets專用CSV文件 (保留公式)
@@ -282,7 +287,12 @@ ${templates.description}
             
             downloadFile(instructionContent, `${templates.title}_導入說明_${timestamp}.txt`, 'text/plain;charset=utf-8;');
             
-            showMessage(`已生成 ${templates.title} Google Sheets範本 (CSV + HTML + 導入說明)`, 'success');
+            // 顯示成功訊息
+            if (window.showMessage) {
+                window.showMessage(`已生成 ${templates.title} Google Sheets範本 (CSV + HTML + 導入說明)`, 'success');
+            } else {
+                alert(`已生成 ${templates.title} Google Sheets範本 (CSV + HTML + 導入說明)`);
+            }
             
         } else if (templateType === 'document') {
             // 生成純文字文件
@@ -359,12 +369,22 @@ ${templates.description}
             
             downloadFile(htmlContent, `${templates.title}_${timestamp}.html`, 'text/html;charset=utf-8;');
             
-            showMessage(`已生成 ${templates.title} (TXT + HTML格式)`, 'success');
+            // 顯示成功訊息
+            if (window.showMessage) {
+                window.showMessage(`已生成 ${templates.title} (TXT + HTML格式)`, 'success');
+            } else {
+                alert(`已生成 ${templates.title} (TXT + HTML格式)`);
+            }
         }
         
     } catch (error) {
         console.error('生成文件時發生錯誤：', error);
-        showMessage('生成文件時發生錯誤', 'error');
+        // 顯示錯誤訊息
+        if (window.showMessage) {
+            window.showMessage('生成文件時發生錯誤', 'error');
+        } else {
+            alert('生成文件時發生錯誤');
+        }
     }
 }
 
