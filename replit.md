@@ -115,6 +115,7 @@ This is a Flask-based web application that provides a conversational AI interfac
 - July 05, 2025. Updated AI system with latest Taiwan Special Leave Law: comprehensive special leave calculation rules integrated into AI responses, including 6-month to 10+ year service periods with accurate day allocations (3-30 days) and proper formula guidance for HR spreadsheet calculations
 - July 05, 2025. Added two new games to the platform: Memory Card Flip game (翻牌記憶) with 4x4 grid layout, timer and move tracking, and Pinball game (彈珠檯) with Canvas-based physics engine, collision detection, and keyboard controls. Both games feature complete CSS styling and responsive design integration
 - July 05, 2025. Completely redesigned Pinball game with enhanced user interface: added power meter for launch control, combo system with multiplier scoring, side panel with real-time statistics, dual paddle controls, bonus collectibles, and improved physics engine with realistic ball movement and collision detection
+- July 05, 2025. Enhanced Pinball game paddle controls: modified left and right arrow keys to move paddles horizontally across the game board for better ball control, updated game instructions to reflect paddle movement functionality
 
 ## Enhanced Features Added
 

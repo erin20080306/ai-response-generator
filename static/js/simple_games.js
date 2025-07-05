@@ -1232,7 +1232,7 @@ function loadPinballGame() {
             </div>
             <div class="pinball-instructions">
                 <div class="instruction-row">
-                    <span class="key">←→</span> 控制左右擋板
+                    <span class="key">←→</span> 移動左右擋板
                 </div>
                 <div class="instruction-row">
                     <span class="key">空白鍵</span> 發射彈珠 (長按蓄力)
@@ -1609,6 +1609,7 @@ function pinballKeyHandler(e) {
     
     const leftPaddle = gameData.pinball.leftPaddle;
     const rightPaddle = gameData.pinball.rightPaddle;
+    const canvas = gameData.pinball.canvas;
     
     if (e.type === 'keydown') {
         gameData.pinball.keys[e.key] = true;
@@ -1617,10 +1618,14 @@ function pinballKeyHandler(e) {
             case 'ArrowLeft':
                 e.preventDefault();
                 leftPaddle.active = true;
+                // 移動左擋板
+                leftPaddle.x = Math.max(10, leftPaddle.x - 15);
                 break;
             case 'ArrowRight':
                 e.preventDefault();
                 rightPaddle.active = true;
+                // 移動右擋板
+                rightPaddle.x = Math.min(canvas.width - rightPaddle.width - 10, rightPaddle.x + 15);
                 break;
             case ' ':
                 e.preventDefault();
@@ -1628,6 +1633,11 @@ function pinballKeyHandler(e) {
                     chargePower();
                 }
                 break;
+        }
+        
+        // 即時更新畫面
+        if (gameData.pinball.gameRunning || gameData.pinball.gameStarted) {
+            renderPinballGame();
         }
     } else if (e.type === 'keyup') {
         gameData.pinball.keys[e.key] = false;
@@ -1645,6 +1655,11 @@ function pinballKeyHandler(e) {
                     launchPinball();
                 }
                 break;
+        }
+        
+        // 即時更新畫面
+        if (gameData.pinball.gameRunning || gameData.pinball.gameStarted) {
+            renderPinballGame();
         }
     }
 }
