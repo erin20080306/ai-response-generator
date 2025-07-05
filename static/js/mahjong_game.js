@@ -360,29 +360,39 @@ class MahjongGame {
     }
     
     showActionPrompt(actions) {
-        const promptElement = document.getElementById('actionPrompt');
-        if (promptElement) {
-            promptElement.style.display = 'block';
+        const promptPanel = document.getElementById('actionPromptPanel');
+        if (promptPanel) {
+            promptPanel.style.display = 'block';
             
-            // 只顯示可用的按鈕
-            const buttons = promptElement.querySelectorAll('button');
+            // 重置所有按鈕狀態
+            const buttons = promptPanel.querySelectorAll('button');
             buttons.forEach(btn => {
-                const action = btn.onclick.toString().match(/'(\w+)'/);
-                if (action && actions.includes(action[1])) {
-                    btn.style.display = 'inline-block';
-                } else if (btn.onclick.toString().includes('passAction')) {
-                    btn.style.display = 'inline-block';
-                } else {
-                    btn.style.display = 'none';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            });
+            
+            // 根據可用動作禁用不可用的按鈕
+            const actionMap = {
+                'chi': 'chi',
+                'pong': 'pong', 
+                'kong': 'kong',
+                'hu': 'hu'
+            };
+            
+            Object.keys(actionMap).forEach(action => {
+                const button = promptPanel.querySelector(`button[onclick*="${action}"]`);
+                if (button && !actions.includes(action)) {
+                    button.disabled = true;
+                    button.style.opacity = '0.5';
                 }
             });
         }
     }
     
     hideActionPrompt() {
-        const promptElement = document.getElementById('actionPrompt');
-        if (promptElement) {
-            promptElement.style.display = 'none';
+        const promptPanel = document.getElementById('actionPromptPanel');
+        if (promptPanel) {
+            promptPanel.style.display = 'none';
         }
     }
     
@@ -519,70 +529,142 @@ function loadMahjongGame() {
     
     const gameContainer = document.getElementById('gameContainer');
     gameContainer.innerHTML = `
-        <div class="mahjong-game-container" style="width: 800px; height: 600px; margin: 0 auto; border: 2px solid #333; position: relative; background: #0F5132;">
-            <div class="game-header" style="height: 30px; background: #333; color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 8px;">
-                <h6 style="margin: 0; font-size: 14px;">🀄 麻將遊戲</h6>
-                <button onclick="showGameSelection()" class="back-btn btn btn-secondary btn-sm" style="font-size: 12px; padding: 4px 8px;">← 返回</button>
+        <div class="mahjong-game-wrapper" style="display: flex; height: 100%; min-height: 600px;">
+            <!-- 左側遊戲控制面板 -->
+            <div class="mahjong-controls-panel" style="width: 280px; background: var(--bs-dark); color: white; padding: 20px; border-radius: 8px; margin-right: 15px;">
+                <div class="panel-header" style="border-bottom: 1px solid #495057; padding-bottom: 15px; margin-bottom: 20px;">
+                    <h5 class="mb-0" style="color: #fff;">🀄 麻將遊戲</h5>
+                    <small class="text-muted">四人對戰模式</small>
+                </div>
+                
+                <!-- 遊戲控制 -->
+                <div class="game-controls-section mb-4">
+                    <h6 class="text-light mb-3">遊戲控制</h6>
+                    <div class="d-grid gap-2">
+                        <button onclick="startMahjongGame()" class="btn btn-primary">
+                            <i class="fas fa-play me-2"></i>開始遊戲
+                        </button>
+                        <button onclick="restartMahjongGame()" class="btn btn-secondary">
+                            <i class="fas fa-redo me-2"></i>重新開始
+                        </button>
+                        <button onclick="showGameSelection()" class="btn btn-outline-light">
+                            <i class="fas fa-arrow-left me-2"></i>返回遊戲選擇
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 遊戲狀態 -->
+                <div class="game-status-section mb-4">
+                    <h6 class="text-light mb-3">遊戲狀態</h6>
+                    <div class="status-info" style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 6px;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>當前回合:</span>
+                            <span id="currentTurn" class="text-warning">等待開始</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>剩餘牌數:</span>
+                            <span id="remainingTiles" class="text-info">144</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>遊戲狀態:</span>
+                            <span id="gameStatus" class="text-success">準備中</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 玩家積分 -->
+                <div class="player-scores-section mb-4">
+                    <h6 class="text-light mb-3">玩家積分</h6>
+                    <div class="scores-list" style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 6px;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>👤 你:</span>
+                            <span class="text-warning fw-bold">25000</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>🤖 電腦1:</span>
+                            <span class="text-info">25000</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>🤖 電腦2:</span>
+                            <span class="text-info">25000</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>🤖 電腦3:</span>
+                            <span class="text-info">25000</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 動作提示 -->
+                <div class="action-section" id="actionPromptPanel" style="display: none;">
+                    <h6 class="text-light mb-3">可選動作</h6>
+                    <div class="d-grid gap-2">
+                        <button onclick="mahjongGame.executeAction('chi')" class="btn btn-success btn-sm">
+                            <i class="fas fa-arrow-right me-2"></i>吃
+                        </button>
+                        <button onclick="mahjongGame.executeAction('pong')" class="btn btn-warning btn-sm">
+                            <i class="fas fa-clone me-2"></i>碰
+                        </button>
+                        <button onclick="mahjongGame.executeAction('kong')" class="btn btn-danger btn-sm">
+                            <i class="fas fa-layer-group me-2"></i>槓
+                        </button>
+                        <button onclick="mahjongGame.executeAction('hu')" class="btn btn-primary btn-sm">
+                            <i class="fas fa-trophy me-2"></i>胡
+                        </button>
+                        <button onclick="mahjongGame.passAction()" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-times me-2"></i>過
+                        </button>
+                    </div>
+                </div>
             </div>
             
-            <!-- 麻將桌面 -->
-            <div class="mahjong-table" style="width: 796px; height: 536px; position: relative; background: #0F5132; margin: 0; padding: 0;">
-                
-                <!-- 桌面中央區域 - 顯示打出的牌 -->
-                <div class="table-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 200px; border: 2px solid #666; background: rgba(0,0,0,0.1);">
-                    <div class="discarded-tiles" id="discardedTiles" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; padding: 8px; height: 100%; overflow: hidden;"></div>
-                </div>
-                
-                <!-- 玩家位置 - 底部(你) -->
-                <div class="player-bottom" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); text-align: center;">
-                    <div class="player-info" style="color: #fff; font-size: 14px; margin-bottom: 8px; background: rgba(0,0,0,0.7); padding: 4px 10px; border-radius: 5px;">
-                        <span>你 (25000分)</span>
+            <!-- 右側麻將桌面 -->
+            <div class="mahjong-table-wrapper" style="flex: 1; background: #0F5132; border-radius: 8px; position: relative; min-height: 600px;">
+                <!-- 麻將桌面 -->
+                <div class="mahjong-table" style="width: 100%; height: 100%; position: relative; background: #0F5132; border-radius: 8px; overflow: hidden;">
+                    
+                    <!-- 桌面中央區域 - 顯示打出的牌 -->
+                    <div class="table-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; height: 220px; border: 2px solid #666; background: rgba(0,0,0,0.1); border-radius: 8px;">
+                        <div class="text-center text-white p-2" style="font-size: 12px; background: rgba(0,0,0,0.5);">打出的牌</div>
+                        <div class="discarded-tiles" id="discardedTiles" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; padding: 8px; height: calc(100% - 30px); overflow: hidden;"></div>
                     </div>
-                    <div class="player-tiles" id="playerTiles" style="display: flex; gap: 2px; justify-content: center; flex-wrap: wrap;"></div>
-                    <div class="player-melded" id="playerMelded" style="display: flex; gap: 4px; justify-content: center; margin-top: 8px;"></div>
-                </div>
-                
-                <!-- 電腦AI玩家 - 右側 -->
-                <div class="player-right" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); text-align: center;">
-                    <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 5px; background: rgba(0,0,0,0.7); padding: 3px 8px; border-radius: 3px;">
-                        <span>電腦1 (25000分)</span>
+                    
+                    <!-- 玩家位置 - 底部(你) -->
+                    <div class="player-bottom" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); text-align: center;">
+                        <div class="player-info" style="color: #fff; font-size: 14px; margin-bottom: 8px; background: rgba(0,0,0,0.8); padding: 6px 12px; border-radius: 6px;">
+                            <span>👤 你 (25000分)</span>
+                        </div>
+                        <div class="player-tiles" id="playerTiles" style="display: flex; gap: 2px; justify-content: center; flex-wrap: wrap; max-width: 500px;"></div>
+                        <div class="player-melded" id="playerMelded" style="display: flex; gap: 4px; justify-content: center; margin-top: 8px;"></div>
                     </div>
-                    <div class="computer-tiles" id="computerTiles1" style="display: flex; flex-direction: column; gap: 2px; align-items: center;"></div>
-                </div>
-                
-                <!-- 電腦AI玩家 - 頂部 -->
-                <div class="player-top" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center;">
-                    <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 5px; background: rgba(0,0,0,0.7); padding: 3px 8px; border-radius: 3px;">
-                        <span>電腦2 (25000分)</span>
+                    
+                    <!-- 電腦AI玩家 - 右側 -->
+                    <div class="player-right" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); text-align: center;">
+                        <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 8px; background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;">
+                            <span>🤖 電腦1<br>(25000分)</span>
+                        </div>
+                        <div class="computer-tiles" id="computerTiles1" style="display: flex; flex-direction: column; gap: 2px; align-items: center;"></div>
                     </div>
-                    <div class="computer-tiles" id="computerTiles2" style="display: flex; gap: 2px; justify-content: center;"></div>
-                </div>
-                
-                <!-- 電腦AI玩家 - 左側 -->
-                <div class="player-left" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); text-align: center;">
-                    <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 5px; background: rgba(0,0,0,0.7); padding: 3px 8px; border-radius: 3px;">
-                        <span>電腦3 (25000分)</span>
+                    
+                    <!-- 電腦AI玩家 - 頂部 -->
+                    <div class="player-top" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center;">
+                        <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 8px; background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;">
+                            <span>🤖 電腦2 (25000分)</span>
+                        </div>
+                        <div class="computer-tiles" id="computerTiles2" style="display: flex; gap: 2px; justify-content: center;"></div>
                     </div>
-                    <div class="computer-tiles" id="computerTiles3" style="display: flex; flex-direction: column; gap: 2px; align-items: center;"></div>
-                </div>
-                
-                <!-- 動作提示面板 -->
-                <div class="action-prompt" id="actionPrompt" style="position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: white; padding: 10px 15px; border-radius: 8px; display: none;">
-                    <div style="font-size: 14px; margin-bottom: 8px; text-align: center;">可選動作：</div>
-                    <div class="action-buttons" style="display: flex; gap: 8px;">
-                        <button onclick="mahjongGame.executeAction('chi')" class="btn btn-success btn-sm" style="font-size: 12px;">吃</button>
-                        <button onclick="mahjongGame.executeAction('pong')" class="btn btn-warning btn-sm" style="font-size: 12px;">碰</button>
-                        <button onclick="mahjongGame.executeAction('kong')" class="btn btn-danger btn-sm" style="font-size: 12px;">槓</button>
-                        <button onclick="mahjongGame.executeAction('hu')" class="btn btn-primary btn-sm" style="font-size: 12px;">胡</button>
-                        <button onclick="mahjongGame.passAction()" class="btn btn-secondary btn-sm" style="font-size: 12px;">過</button>
+                    
+                    <!-- 電腦AI玩家 - 左側 -->
+                    <div class="player-left" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); text-align: center;">
+                        <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 8px; background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;">
+                            <span>🤖 電腦3<br>(25000分)</span>
+                        </div>
+                        <div class="computer-tiles" id="computerTiles3" style="display: flex; flex-direction: column; gap: 2px; align-items: center;"></div>
                     </div>
+                    
+                    <!-- 隱藏的動作提示面板 (備用) -->
+                    <div class="action-prompt" id="actionPrompt" style="display: none;"></div>
                 </div>
-            </div>
-            
-            <!-- 遊戲控制面板 -->
-            <div class="game-controls" style="text-align: center; padding: 8px; background: #f8f9fa; border-top: 1px solid #ddd; height: 30px;">
-                <button onclick="startMahjongGame()" class="btn btn-primary btn-sm" style="font-size: 12px; margin: 0 5px;">開始遊戲</button>
-                <button onclick="restartMahjongGame()" class="btn btn-secondary btn-sm" style="font-size: 12px; margin: 0 5px;">重新開始</button>
             </div>
         </div>
     `;
