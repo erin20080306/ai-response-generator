@@ -23,9 +23,9 @@
             border-radius: 10px;
         }
         .mahjong-tile {
-            background: linear-gradient(145deg, #fafafa, #f0f0f0);
-            border: 2px solid #666;
-            border-radius: 6px;
+            background: linear-gradient(145deg, #f8f8f8, #e8e8e8);
+            border: 1px solid #999;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -34,20 +34,23 @@
             transition: all 0.2s;
             font-family: 'Noto Sans TC', 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
             color: #000;
-            box-shadow: 3px 3px 6px rgba(0,0,0,0.4), inset 1px 1px 2px rgba(255,255,255,0.8);
+            box-shadow: 
+                2px 2px 4px rgba(0,0,0,0.3),
+                inset 1px 1px 0 rgba(255,255,255,0.9),
+                inset -1px -1px 0 rgba(0,0,0,0.1);
             position: relative;
             overflow: hidden;
         }
         .mahjong-tile::before {
             content: '';
             position: absolute;
-            top: 3px;
-            left: 3px;
-            right: 3px;
-            bottom: 3px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            background: rgba(255,255,255,0.3);
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0.1));
         }
         .mahjong-tile:hover {
             transform: translateY(-3px);
@@ -65,68 +68,24 @@
         
         /* 萬字牌樣式 - 紅色字體 */
         .tile-wan {
-            color: #dc3545;
-            font-size: 16px;
+            color: #d63384;
+            font-size: 18px;
             font-weight: 900;
-            text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.3);
-            background: linear-gradient(to bottom, #ffeaea 0%, #fff5f5 100%);
-            position: relative;
-        }
-        .tile-wan::before {
-            content: '';
-            position: absolute;
-            bottom: 3px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 2px;
-            background: linear-gradient(to right, #dc3545, #e74c3c);
-            border-radius: 1px;
+            text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.4);
         }
         
         /* 條子牌樣式 - 綠色竹子圖案 */
         .tile-tiao {
-            background: linear-gradient(to bottom, #e8f5e8 0%, #f0f8f0 100%);
-            color: #2d5a2d;
+            color: #198754;
             font-size: 0;
             position: relative;
-        }
-        .tile-tiao::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            height: 80%;
-            background-image: repeating-linear-gradient(
-                0deg,
-                #28a745 0px,
-                #28a745 2px,
-                #20c997 2px,
-                #20c997 4px
-            );
-            border-radius: 2px;
         }
         
         /* 筒子牌樣式 - 圓形圖案 */
         .tile-tong {
-            background: linear-gradient(to bottom, #e3f2fd 0%, #f1f8ff 100%);
-            color: #1976d2;
+            color: #0d6efd;
             font-size: 0;
             position: relative;
-        }
-        .tile-tong::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            border: 3px solid #1976d2;
-            border-radius: 50%;
-            background: #fff;
         }
         
         /* 風牌樣式 - 傳統字體 */
@@ -536,47 +495,72 @@
         
         // 創建特殊麻將牌圖案
         function createTilePattern(tile, element) {
+            const num = parseInt(tile[0]);
+            element.innerHTML = '';
+            
             if (tile.includes('條')) {
-                const num = parseInt(tile[0]);
-                element.innerHTML = '';
+                // 條子牌 - 綠色竹子圖案
                 element.style.fontSize = '0';
-                
-                // 創建竹子圖案
                 for (let i = 0; i < num; i++) {
                     const bamboo = document.createElement('div');
+                    let left, top;
+                    
+                    // 根據數字排列竹子
+                    if (num <= 3) {
+                        left = 30 + (i * 15);
+                        top = 30;
+                    } else if (num <= 6) {
+                        left = 20 + ((i % 3) * 20);
+                        top = 20 + (Math.floor(i / 3) * 35);
+                    } else {
+                        left = 15 + ((i % 3) * 20);
+                        top = 15 + (Math.floor(i / 3) * 25);
+                    }
+                    
                     bamboo.style.cssText = `
                         position: absolute;
-                        width: 4px;
-                        height: 80%;
-                        background: linear-gradient(to bottom, #28a745, #20c997);
-                        border-radius: 2px;
-                        left: ${20 + (i * 8)}%;
-                        top: 10%;
+                        width: 3px;
+                        height: 30px;
+                        background: linear-gradient(to bottom, #198754, #20c997);
+                        border: 1px solid #146c43;
+                        border-radius: 1px;
+                        left: ${left}%;
+                        top: ${top}%;
                     `;
                     element.appendChild(bamboo);
                 }
             } else if (tile.includes('筒')) {
-                const num = parseInt(tile[0]);
-                element.innerHTML = '';
+                // 筒子牌 - 藍色圓形圖案
                 element.style.fontSize = '0';
-                
-                // 創建筒子圖案
                 for (let i = 0; i < num; i++) {
                     const circle = document.createElement('div');
-                    const size = num <= 4 ? '16px' : '12px';
-                    const gridCols = num <= 4 ? 2 : 3;
-                    const row = Math.floor(i / gridCols);
-                    const col = i % gridCols;
+                    let left, top, size;
+                    
+                    // 根據數字排列圓圈
+                    if (num === 1) {
+                        left = 40; top = 35; size = '18px';
+                    } else if (num <= 4) {
+                        const positions = [[25, 25], [55, 25], [25, 55], [55, 55]];
+                        left = positions[i][0]; top = positions[i][1]; size = '14px';
+                    } else if (num <= 6) {
+                        const positions = [[20, 20], [50, 20], [80, 20], [20, 60], [50, 60], [80, 60]];
+                        left = positions[i][0]; top = positions[i][1]; size = '12px';
+                    } else {
+                        const cols = 3;
+                        left = 15 + ((i % cols) * 25);
+                        top = 15 + (Math.floor(i / cols) * 25);
+                        size = '10px';
+                    }
                     
                     circle.style.cssText = `
                         position: absolute;
                         width: ${size};
                         height: ${size};
-                        border: 2px solid #1976d2;
+                        border: 2px solid #0d6efd;
                         border-radius: 50%;
                         background: #fff;
-                        left: ${25 + (col * 20)}%;
-                        top: ${25 + (row * 25)}%;
+                        left: ${left}%;
+                        top: ${top}%;
                     `;
                     element.appendChild(circle);
                 }
