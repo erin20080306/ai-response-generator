@@ -23,9 +23,9 @@
             border-radius: 10px;
         }
         .mahjong-tile {
-            background: #fff;
-            border: 1px solid #333;
-            border-radius: 3px;
+            background: linear-gradient(145deg, #f8f8f8, #e8e8e8);
+            border: 2px solid #333;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -34,6 +34,18 @@
             transition: all 0.2s;
             font-family: 'Noto Sans TC', 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
             color: #000;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .mahjong-tile::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            border: 1px solid #ddd;
+            border-radius: 2px;
         }
         .mahjong-tile:hover {
             transform: translateY(-3px);
@@ -42,11 +54,50 @@
         .player-tile {
             width: 40px;
             height: 50px;
-            font-size: 16px;
+            font-size: 18px;
             margin: 2px;
             color: #000;
             font-weight: bold;
             font-family: 'Noto Sans TC', 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+        }
+        
+        /* 萬字牌樣式 */
+        .tile-wan {
+            color: #e74c3c;
+            text-shadow: 1px 1px 0 #333;
+        }
+        
+        /* 條子牌樣式 */
+        .tile-tiao {
+            color: #27ae60;
+            text-shadow: 1px 1px 0 #333;
+        }
+        
+        /* 筒子牌樣式 */
+        .tile-tong {
+            color: #3498db;
+            text-shadow: 1px 1px 0 #333;
+        }
+        
+        /* 風牌樣式 */
+        .tile-feng {
+            color: #8e44ad;
+            font-weight: 900;
+            text-shadow: 1px 1px 0 #333;
+        }
+        
+        /* 箭牌樣式 */
+        .tile-jian {
+            color: #e67e22;
+            font-weight: 900;
+            text-shadow: 1px 1px 0 #333;
+        }
+        
+        /* 花牌樣式 */
+        .tile-hua {
+            background: linear-gradient(145deg, #ffeaa7, #fdcb6e);
+            color: #d63031;
+            font-weight: 900;
         }
         .computer-tile {
             background: #4a90e2;
@@ -320,9 +371,12 @@
                     renderDiscardedTiles(data.discarded_tiles);
                     renderComputerHands(data.hand_counts);
                     updateGameStatus(data.remaining_tiles, getPlayerName(data.current_player));
-                    showMessage('電腦' + data.computer_player + '打出：' + data.discarded_tile, 'info');
+                    showMessage('電腦' + (data.computer_player + 1) + '打出：' + data.discarded_tile, 'info');
                     
-                    if (data.current_player === 0) {
+                    // 檢查是否有可用動作
+                    if (data.available_actions && data.available_actions.length > 0) {
+                        showActionPrompt(data.available_actions, data.discarded_tile);
+                    } else if (data.current_player === 0) {
                         // 輪到玩家
                         document.getElementById('drawBtn').disabled = false;
                         showMessage('輪到你了，請摸牌。', 'success');
@@ -380,15 +434,28 @@
         // 渲染玩家手牌
         function renderPlayerHand(hand) {
             const container = document.getElementById('playerTiles');
+            if (!container) return;
+            
             container.innerHTML = '';
             
             hand.forEach((tile, index) => {
                 const tileElement = document.createElement('div');
-                tileElement.className = 'mahjong-tile player-tile';
+                tileElement.className = 'mahjong-tile player-tile ' + getTileClass(tile);
                 tileElement.textContent = tile;
                 tileElement.onclick = () => discardTile(index);
                 container.appendChild(tileElement);
             });
+        }
+        
+        // 獲取麻將牌樣式類別
+        function getTileClass(tile) {
+            if (tile.includes('萬')) return 'tile-wan';
+            if (tile.includes('條')) return 'tile-tiao';
+            if (tile.includes('筒')) return 'tile-tong';
+            if (['東', '南', '西', '北'].includes(tile)) return 'tile-feng';
+            if (['中', '發', '白'].includes(tile)) return 'tile-jian';
+            if (['春', '夏', '秋', '冬', '梅', '蘭', '竹', '菊'].includes(tile)) return 'tile-hua';
+            return '';
         }
 
         // 渲染電腦手牌數量
@@ -418,11 +485,13 @@
         // 渲染打出的牌
         function renderDiscardedTiles(tiles) {
             const container = document.getElementById('discardedTiles');
+            if (!container) return;
+            
             container.innerHTML = '';
             
             tiles.forEach(tile => {
                 const tileElement = document.createElement('div');
-                tileElement.className = 'mahjong-tile discarded-tile';
+                tileElement.className = 'mahjong-tile discarded-tile ' + getTileClass(tile);
                 tileElement.textContent = tile;
                 container.appendChild(tileElement);
             });

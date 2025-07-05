@@ -1406,13 +1406,25 @@ def computer_mahjong_turn():
         
         session['mahjong_game'] = game_state
         
+        # 檢查玩家是否可以執行動作
+        available_actions = []
+        if discarded_tile:
+            player_hand = game_state['player_hand']
+            if can_chi(player_hand, discarded_tile):
+                available_actions.append('吃')
+            if can_pong(player_hand, discarded_tile):
+                available_actions.append('碰')
+            if can_hu(player_hand, discarded_tile):
+                available_actions.append('胡')
+        
         return jsonify({
             'success': True,
             'discarded_tile': discarded_tile or '',
             'computer_player': current_player,
             'discarded_tiles': game_state['discarded_tiles'],
             'hand_counts': [len(h) for h in game_state['computer_hands']],
-            'current_player': game_state['current_player']
+            'current_player': game_state['current_player'],
+            'available_actions': available_actions
         })
         
     except Exception as e:
@@ -1427,6 +1439,77 @@ def mahjong_page():
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy', 'openai_configured': openai_client.is_configured()})
+
+# 麻將遊戲邏輯函數
+def can_chi(hand, tile):
+    """檢查是否可以吃牌"""
+    if tile in ['東', '南', '西', '北', '中', '發', '白']:
+        return False
+    
+    try:
+        num = int(tile[0])
+        suit = tile[1]
+    except:
+        return False
+    
+    hand_tiles = [t for t in hand if t.endswith(suit)]
+    hand_nums = []
+    for t in hand_tiles:
+        try:
+            hand_nums.append(int(t[0]))
+        except:
+            continue
+    
+    # 檢查順子可能性
+    if (num-2 in hand_nums and num-1 in hand_nums) or \
+       (num-1 in hand_nums and num+1 in hand_nums) or \
+       (num+1 in hand_nums and num+2 in hand_nums):
+        return True
+    
+    return False
+
+def can_pong(hand, tile):
+    """檢查是否可以碰牌"""
+    return hand.count(tile) >= 2
+
+def can_hu(hand, tile=None):
+    """檢查是否可以胡牌（簡化版）"""
+    test_hand = hand.copy()
+    if tile:
+        test_hand.append(tile)
+    
+    if len(test_hand) != 14:
+        return False
+    
+    # 簡化的胡牌判斷：檢查對子和組合
+    for unique_tile in set(test_hand):
+        if test_hand.count(unique_tile) >= 2:
+            temp_hand = test_hand.copy()
+            temp_hand.remove(unique_tile)
+            temp_hand.remove(unique_tile)
+            
+            if check_complete_hand(temp_hand):
+                return True
+    
+    return False
+
+def check_complete_hand(hand):
+    """檢查手牌是否完整"""
+    if len(hand) == 0:
+        return True
+    
+    if len(hand) % 3 != 0:
+        return False
+    
+    # 檢查刻子
+    for unique_tile in set(hand):
+        if hand.count(unique_tile) >= 3:
+            temp_hand = hand.copy()
+            for _ in range(3):
+                temp_hand.remove(unique_tile)
+            return check_complete_hand(temp_hand)
+    
+    return False
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
