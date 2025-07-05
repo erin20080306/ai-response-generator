@@ -2476,13 +2476,72 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 確保在 DOM 載入完成後初始化
+// 手機響應式功能
+function setupMobileFeatures() {
+    // 漢堡選單切換
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (mobileMenuBtn && sidebar) {
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('show');
+        });
+        
+        // 點擊側邊欄外部時關閉
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    sidebar.classList.remove('show');
+                }
+            }
+        });
+        
+        // 側邊欄項目點擊後關閉（手機版）
+        const navLinks = sidebar.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('show');
+                }
+            });
+        });
+    }
+    
+    // 觸控優化
+    if ('ontouchstart' in window) {
+        document.body.classList.add('touch-device');
+    }
+    
+    // 螢幕方向變化處理
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            if (sidebar && sidebar.classList.contains('show') && window.innerWidth > 768) {
+                sidebar.classList.remove('show');
+            }
+        }, 100);
+    });
+    
+    // 視窗大小變化處理
+    window.addEventListener('resize', () => {
+        if (sidebar && sidebar.classList.contains('show') && window.innerWidth > 768) {
+            sidebar.classList.remove('show');
+        }
+    });
+}
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
+        // 設定手機功能
+        setupMobileFeatures();
+        
         if (!window.aiAssistant) {
             window.aiAssistant = new EnhancedAIAssistant();
         }
     });
 } else {
+    // 設定手機功能
+    setupMobileFeatures();
+    
     if (!window.aiAssistant) {
         window.aiAssistant = new EnhancedAIAssistant();
     }
