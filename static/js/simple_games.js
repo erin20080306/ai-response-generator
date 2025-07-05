@@ -739,21 +739,129 @@ function executeSpecialAction(action) {
     console.log(`執行動作: ${action}`);
     hideActionPrompt();
     
+    const lastDiscardedTile = gameData.mahjong.discardPile[gameData.mahjong.discardPile.length - 1];
+    
     switch(action) {
         case 'chi':
-            // 吃牌邏輯
+            // 吃牌邏輯 - 取最後一張棄牌形成順子
+            if (lastDiscardedTile) {
+                gameData.mahjong.playerHand.push(lastDiscardedTile);
+                gameData.mahjong.discardPile.pop(); // 移除棄牌堆的最後一張
+                
+                // 自動找出可以組成順子的牌
+                const tileNumber = parseInt(lastDiscardedTile.match(/\d+/)[0]);
+                const tileType = lastDiscardedTile.match(/[萬條筒]/)[0];
+                
+                // 簡化邏輯：假設玩家有相鄰的牌
+                gameData.mahjong.playerHand.sort();
+                alert(`吃牌成功！獲得${lastDiscardedTile}`);
+                renderMahjongBoard();
+            }
             break;
+            
         case 'pong':
-            // 碰牌邏輯
+            // 碰牌邏輯 - 用手牌中的兩張相同牌與棄牌組成刻子
+            if (lastDiscardedTile) {
+                // 檢查手牌中是否有兩張相同的牌
+                const matchingTiles = gameData.mahjong.playerHand.filter(tile => tile === lastDiscardedTile);
+                if (matchingTiles.length >= 2) {
+                    // 移除手牌中的兩張相同牌
+                    for (let i = 0; i < 2; i++) {
+                        const index = gameData.mahjong.playerHand.indexOf(lastDiscardedTile);
+                        if (index > -1) {
+                            gameData.mahjong.playerHand.splice(index, 1);
+                        }
+                    }
+                    gameData.mahjong.discardPile.pop(); // 移除棄牌堆的最後一張
+                    
+                    // 將碰的牌組加入明牌區
+                    if (!gameData.mahjong.playerMelds) {
+                        gameData.mahjong.playerMelds = [];
+                    }
+                    gameData.mahjong.playerMelds.push([lastDiscardedTile, lastDiscardedTile, lastDiscardedTile]);
+                    
+                    alert(`碰牌成功！獲得${lastDiscardedTile}的刻子`);
+                    renderMahjongBoard();
+                } else {
+                    alert('手牌中沒有足夠的相同牌進行碰牌');
+                }
+            }
             break;
+            
         case 'kong':
-            // 槓牌邏輯
+            // 槓牌邏輯 - 用手牌中的三張相同牌與棄牌組成槓子
+            if (lastDiscardedTile) {
+                const matchingTiles = gameData.mahjong.playerHand.filter(tile => tile === lastDiscardedTile);
+                if (matchingTiles.length >= 3) {
+                    // 移除手牌中的三張相同牌
+                    for (let i = 0; i < 3; i++) {
+                        const index = gameData.mahjong.playerHand.indexOf(lastDiscardedTile);
+                        if (index > -1) {
+                            gameData.mahjong.playerHand.splice(index, 1);
+                        }
+                    }
+                    gameData.mahjong.discardPile.pop(); // 移除棄牌堆的最後一張
+                    
+                    // 將槓的牌組加入明牌區
+                    if (!gameData.mahjong.playerMelds) {
+                        gameData.mahjong.playerMelds = [];
+                    }
+                    gameData.mahjong.playerMelds.push([lastDiscardedTile, lastDiscardedTile, lastDiscardedTile, lastDiscardedTile]);
+                    
+                    alert(`槓牌成功！獲得${lastDiscardedTile}的槓子`);
+                    renderMahjongBoard();
+                    
+                    // 槓牌後要補一張牌
+                    if (gameData.mahjong.tiles.length > 0) {
+                        const newTile = gameData.mahjong.tiles.pop();
+                        gameData.mahjong.playerHand.push(newTile);
+                    }
+                } else {
+                    alert('手牌中沒有足夠的相同牌進行槓牌');
+                }
+            }
             break;
+            
         case 'hu':
-            alert('恭喜胡牌！');
-            restartMahjong();
+            // 胡牌邏輯 - 簡化檢查
+            if (canHu()) {
+                alert('🎉 恭喜胡牌！遊戲結束！');
+                gameData.mahjong.gameStarted = false;
+                // 顯示最終手牌
+                setTimeout(() => {
+                    if (confirm('是否要重新開始遊戲？')) {
+                        restartMahjong();
+                    }
+                }, 1000);
+            } else {
+                alert('現在還不能胡牌，請繼續遊戲');
+            }
             break;
     }
+}
+
+// 檢查是否可以胡牌（簡化版）
+function canHu() {
+    const hand = [...gameData.mahjong.playerHand];
+    
+    // 簡化胡牌條件：手牌數量為14張時就可以胡牌
+    if (hand.length === 14) {
+        return true;
+    }
+    
+    // 或者手牌數量為13張且有一張相同的牌（即將形成對子）
+    if (hand.length === 13) {
+        // 檢查是否有重複的牌
+        const tileCount = {};
+        hand.forEach(tile => {
+            tileCount[tile] = (tileCount[tile] || 0) + 1;
+        });
+        
+        // 如果有兩張相同的牌，可以胡牌
+        return Object.values(tileCount).some(count => count >= 2);
+    }
+    
+    return false;
 }
 
 // 過牌
