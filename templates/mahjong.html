@@ -2,14 +2,16 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>麻將遊戲</title>
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             background: #0F5132;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Noto Sans TC', 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
         }
         .mahjong-table {
             width: 800px;
@@ -30,33 +32,42 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
+            font-family: 'Noto Sans TC', 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+            color: #000;
         }
         .mahjong-tile:hover {
             transform: translateY(-3px);
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
         .player-tile {
-            width: 35px;
-            height: 45px;
-            font-size: 14px;
+            width: 40px;
+            height: 50px;
+            font-size: 16px;
             margin: 2px;
+            color: #000;
+            font-weight: bold;
+            font-family: 'Noto Sans TC', 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
         }
         .computer-tile {
             background: #4a90e2;
             border: 1px solid #333;
         }
         .discarded-tile {
-            width: 28px;
-            height: 38px;
-            font-size: 12px;
+            width: 32px;
+            height: 42px;
+            font-size: 14px;
             margin: 1px;
+            color: #000;
+            font-weight: bold;
         }
         .melded-tile {
-            width: 25px;
-            height: 35px;
-            font-size: 11px;
+            width: 28px;
+            height: 38px;
+            font-size: 13px;
             background: #ffffcc;
             margin: 1px;
+            color: #000;
+            font-weight: bold;
         }
         .player-bottom {
             position: absolute;
