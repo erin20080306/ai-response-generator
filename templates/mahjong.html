@@ -23,9 +23,9 @@
             border-radius: 10px;
         }
         .mahjong-tile {
-            background: linear-gradient(145deg, #f8f8f8, #e8e8e8);
-            border: 2px solid #333;
-            border-radius: 4px;
+            background: linear-gradient(145deg, #fafafa, #f0f0f0);
+            border: 2px solid #666;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -34,18 +34,20 @@
             transition: all 0.2s;
             font-family: 'Noto Sans TC', 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
             color: #000;
-            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 3px 3px 6px rgba(0,0,0,0.4), inset 1px 1px 2px rgba(255,255,255,0.8);
             position: relative;
+            overflow: hidden;
         }
         .mahjong-tile::before {
             content: '';
             position: absolute;
-            top: 2px;
-            left: 2px;
-            right: 2px;
-            bottom: 2px;
-            border: 1px solid #ddd;
-            border-radius: 2px;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 3px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.3);
         }
         .mahjong-tile:hover {
             transform: translateY(-3px);
@@ -61,43 +63,108 @@
             font-family: 'Noto Sans TC', 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
         }
         
-        /* 萬字牌樣式 */
+        /* 萬字牌樣式 - 紅色字體 */
         .tile-wan {
-            color: #e74c3c;
-            text-shadow: 1px 1px 0 #333;
-        }
-        
-        /* 條子牌樣式 */
-        .tile-tiao {
-            color: #27ae60;
-            text-shadow: 1px 1px 0 #333;
-        }
-        
-        /* 筒子牌樣式 */
-        .tile-tong {
-            color: #3498db;
-            text-shadow: 1px 1px 0 #333;
-        }
-        
-        /* 風牌樣式 */
-        .tile-feng {
-            color: #8e44ad;
+            color: #dc3545;
+            font-size: 16px;
             font-weight: 900;
-            text-shadow: 1px 1px 0 #333;
+            text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.3);
+            background: linear-gradient(to bottom, #ffeaea 0%, #fff5f5 100%);
+            position: relative;
+        }
+        .tile-wan::before {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background: linear-gradient(to right, #dc3545, #e74c3c);
+            border-radius: 1px;
+        }
+        
+        /* 條子牌樣式 - 綠色竹子圖案 */
+        .tile-tiao {
+            background: linear-gradient(to bottom, #e8f5e8 0%, #f0f8f0 100%);
+            color: #2d5a2d;
+            font-size: 0;
+            position: relative;
+        }
+        .tile-tiao::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            background-image: repeating-linear-gradient(
+                0deg,
+                #28a745 0px,
+                #28a745 2px,
+                #20c997 2px,
+                #20c997 4px
+            );
+            border-radius: 2px;
+        }
+        
+        /* 筒子牌樣式 - 圓形圖案 */
+        .tile-tong {
+            background: linear-gradient(to bottom, #e3f2fd 0%, #f1f8ff 100%);
+            color: #1976d2;
+            font-size: 0;
+            position: relative;
+        }
+        .tile-tong::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 3px solid #1976d2;
+            border-radius: 50%;
+            background: #fff;
+        }
+        
+        /* 風牌樣式 - 傳統字體 */
+        .tile-feng {
+            color: #6c757d;
+            font-size: 18px;
+            font-weight: 900;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
         }
         
         /* 箭牌樣式 */
-        .tile-jian {
-            color: #e67e22;
+        .tile-zhong {
+            color: #dc3545;
+            font-size: 18px;
             font-weight: 900;
-            text-shadow: 1px 1px 0 #333;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .tile-fa {
+            color: #28a745;
+            font-size: 18px;
+            font-weight: 900;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .tile-bai {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border: 2px solid #007bff;
+            color: #007bff;
+            font-size: 18px;
+            font-weight: 900;
         }
         
         /* 花牌樣式 */
         .tile-hua {
-            background: linear-gradient(145deg, #ffeaa7, #fdcb6e);
-            color: #d63031;
+            background: linear-gradient(145deg, #fff3cd, #ffeaa7);
+            color: #856404;
             font-weight: 900;
+            border: 2px solid #ffc107;
         }
         .computer-tile {
             background: #4a90e2;
@@ -441,7 +508,14 @@
             hand.forEach((tile, index) => {
                 const tileElement = document.createElement('div');
                 tileElement.className = 'mahjong-tile player-tile ' + getTileClass(tile);
-                tileElement.textContent = tile;
+                
+                // 對於條子和筒子牌，創建圖案；其他牌顯示文字
+                if (tile.includes('條') || tile.includes('筒')) {
+                    createTilePattern(tile, tileElement);
+                } else {
+                    tileElement.textContent = tile;
+                }
+                
                 tileElement.onclick = () => discardTile(index);
                 container.appendChild(tileElement);
             });
@@ -453,9 +527,60 @@
             if (tile.includes('條')) return 'tile-tiao';
             if (tile.includes('筒')) return 'tile-tong';
             if (['東', '南', '西', '北'].includes(tile)) return 'tile-feng';
-            if (['中', '發', '白'].includes(tile)) return 'tile-jian';
+            if (tile === '中') return 'tile-zhong';
+            if (tile === '發') return 'tile-fa';
+            if (tile === '白') return 'tile-bai';
             if (['春', '夏', '秋', '冬', '梅', '蘭', '竹', '菊'].includes(tile)) return 'tile-hua';
             return '';
+        }
+        
+        // 創建特殊麻將牌圖案
+        function createTilePattern(tile, element) {
+            if (tile.includes('條')) {
+                const num = parseInt(tile[0]);
+                element.innerHTML = '';
+                element.style.fontSize = '0';
+                
+                // 創建竹子圖案
+                for (let i = 0; i < num; i++) {
+                    const bamboo = document.createElement('div');
+                    bamboo.style.cssText = `
+                        position: absolute;
+                        width: 4px;
+                        height: 80%;
+                        background: linear-gradient(to bottom, #28a745, #20c997);
+                        border-radius: 2px;
+                        left: ${20 + (i * 8)}%;
+                        top: 10%;
+                    `;
+                    element.appendChild(bamboo);
+                }
+            } else if (tile.includes('筒')) {
+                const num = parseInt(tile[0]);
+                element.innerHTML = '';
+                element.style.fontSize = '0';
+                
+                // 創建筒子圖案
+                for (let i = 0; i < num; i++) {
+                    const circle = document.createElement('div');
+                    const size = num <= 4 ? '16px' : '12px';
+                    const gridCols = num <= 4 ? 2 : 3;
+                    const row = Math.floor(i / gridCols);
+                    const col = i % gridCols;
+                    
+                    circle.style.cssText = `
+                        position: absolute;
+                        width: ${size};
+                        height: ${size};
+                        border: 2px solid #1976d2;
+                        border-radius: 50%;
+                        background: #fff;
+                        left: ${25 + (col * 20)}%;
+                        top: ${25 + (row * 25)}%;
+                    `;
+                    element.appendChild(circle);
+                }
+            }
         }
 
         // 渲染電腦手牌數量
@@ -492,7 +617,14 @@
             tiles.forEach(tile => {
                 const tileElement = document.createElement('div');
                 tileElement.className = 'mahjong-tile discarded-tile ' + getTileClass(tile);
-                tileElement.textContent = tile;
+                
+                // 對於條子和筒子牌，創建圖案；其他牌顯示文字
+                if (tile.includes('條') || tile.includes('筒')) {
+                    createTilePattern(tile, tileElement);
+                } else {
+                    tileElement.textContent = tile;
+                }
+                
                 container.appendChild(tileElement);
             });
         }
@@ -508,8 +640,15 @@
                 
                 meld.forEach(tile => {
                     const tileElement = document.createElement('div');
-                    tileElement.className = 'mahjong-tile melded-tile';
-                    tileElement.textContent = tile;
+                    tileElement.className = 'mahjong-tile melded-tile ' + getTileClass(tile);
+                    
+                    // 對於條子和筒子牌，創建圖案；其他牌顯示文字
+                    if (tile.includes('條') || tile.includes('筒')) {
+                        createTilePattern(tile, tileElement);
+                    } else {
+                        tileElement.textContent = tile;
+                    }
+                    
                     meldGroup.appendChild(tileElement);
                 });
                 
