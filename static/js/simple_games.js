@@ -568,27 +568,30 @@ function renderPlayerTiles() {
 
 // 渲染電腦玩家牌張
 function renderComputerTiles() {
-    // 渲染三個電腦玩家的牌背
+    // 渲染三個電腦玩家的牌面
     for (let i = 0; i < 3; i++) {
         const computerTiles = document.getElementById(`computerTiles${i + 1}`);
         if (!computerTiles) continue;
         
         computerTiles.innerHTML = '';
-        const handSize = gameData.mahjong.computerHands[i].length;
+        const hand = gameData.mahjong.computerHands[i];
         
-        for (let j = 0; j < handSize; j++) {
+        for (let j = 0; j < hand.length; j++) {
             const tileElement = document.createElement('div');
             tileElement.className = 'mahjong-tile computer-tile';
+            tileElement.textContent = hand[j];
             
             if (i === 0 || i === 2) { // 左右側玩家
                 tileElement.style.cssText = `
-                    width: 15px; height: 25px; background: #4a90e2; border: 1px solid #333; 
-                    margin: 1px 0; border-radius: 1px;
+                    width: 18px; height: 28px; background: #e6f3ff; border: 1px solid #333; 
+                    margin: 1px 0; border-radius: 1px; font-size: 10px; font-weight: bold;
+                    display: flex; align-items: center; justify-content: center; color: #000;
                 `;
             } else { // 頂部玩家
                 tileElement.style.cssText = `
-                    width: 20px; height: 30px; background: #4a90e2; border: 1px solid #333; 
-                    margin: 0 1px; border-radius: 1px;
+                    width: 22px; height: 32px; background: #e6f3ff; border: 1px solid #333; 
+                    margin: 0 1px; border-radius: 1px; font-size: 12px; font-weight: bold;
+                    display: flex; align-items: center; justify-content: center; color: #000;
                 `;
             }
             
@@ -664,20 +667,27 @@ function hideActionPrompt() {
 }
 
 // 檢查動作的簡化版本
-function checkCanChi() { return Math.random() < 0.3; }
-function checkCanPong() { return Math.random() < 0.2; }
-function checkCanKong() { return Math.random() < 0.1; }
-function checkCanHu() { return gameData.mahjong.playerHand.length >= 13; }
+function checkCanChi() { return Math.random() < 0.2; }
+function checkCanPong() { return Math.random() < 0.15; }
+function checkCanKong() { return Math.random() < 0.05; }
+function checkCanHu() { 
+    // 只有在摸牌後且有14張牌時才能胡，並且加入隨機性
+    return gameData.mahjong.playerHand.length === 14 && Math.random() < 0.1; 
+}
 
 // 玩家回合
 function playerTurn() {
     if (!gameData.mahjong.gameStarted) return;
     
-    // 摸一張牌
-    drawTileToPlayer(0);
+    // 只有在玩家手牌少於14張時才摸牌
+    if (gameData.mahjong.playerHand.length < 14) {
+        drawTileToPlayer(0);
+    }
     
-    // 檢查動作
-    checkPossibleActions();
+    // 檢查動作（只在有14張牌時）
+    if (gameData.mahjong.playerHand.length === 14) {
+        checkPossibleActions();
+    }
 }
 
 // 電腦回合
@@ -759,28 +769,15 @@ function passAction() {
     }
 }
 
-// 舊的麻將函數（保持兼容性）
+// 麻將控制函數
 function drawMahjongTile() {
     if (!gameData.mahjong.gameStarted) {
         startMahjongGame();
         return;
     }
-    playerTurn();
-}
-
-function discardMahjongTile() {
-    passAction();
-}
-
-function declareMahjongWin() {
-    executeSpecialAction('hu');
-}
-
-// 麻將控制
-function drawMahjongTile() {
-    if (gameData.mahjong.playerHand.length < 17) {
-        drawTile();
-        renderMahjongBoard();
+    // 玩家摸牌（如果手牌不足14張）
+    if (gameData.mahjong.playerHand.length < 14) {
+        playerTurn();
     }
 }
 
@@ -792,6 +789,12 @@ function discardMahjongTile() {
             gameData.mahjong.discardPile.push(gameData.mahjong.selectedTile);
             gameData.mahjong.selectedTile = null;
             renderMahjongBoard();
+            
+            // 隱藏動作提示
+            hideActionPrompt();
+            
+            // 結束玩家回合，進入下一個玩家
+            nextPlayer();
         }
     } else {
         alert('請先選擇要打出的牌！');
@@ -799,14 +802,7 @@ function discardMahjongTile() {
 }
 
 function declareMahjongWin() {
-    if (gameData.mahjong.playerHand.length >= 14) {
-        alert('恭喜胡牌！分數 +1000');
-        gameData.mahjong.score += 1000;
-        gameData.mahjong.round++;
-        initMahjongGame();
-    } else {
-        alert('手牌不足，無法胡牌！');
-    }
+    executeSpecialAction('hu');
 }
 
 function selectTile(tile, index) {
