@@ -665,13 +665,54 @@ function hideActionPrompt() {
     document.getElementById('actionButtons').style.display = 'none';
 }
 
-// 檢查動作的簡化版本
-function checkCanChi() { return Math.random() < 0.2; }
-function checkCanPong() { return Math.random() < 0.15; }
-function checkCanKong() { return Math.random() < 0.05; }
+// 檢查動作的邏輯版本
+function checkCanChi() { 
+    // 檢查是否可以吃牌（需要有棄牌堆的最後一張牌）
+    if (gameData.mahjong.discardPile.length === 0) return false;
+    
+    const lastDiscarded = gameData.mahjong.discardPile[gameData.mahjong.discardPile.length - 1];
+    
+    // 簡化檢查：如果手牌中有與棄牌相近的數字牌就可以吃
+    const tileMatch = lastDiscarded.match(/(\d+)([萬條筒])/);
+    if (!tileMatch) return false;
+    
+    const number = parseInt(tileMatch[1]);
+    const suit = tileMatch[2];
+    
+    // 檢查手牌中是否有相鄰的牌
+    const hasAdjacent = gameData.mahjong.playerHand.some(tile => {
+        const match = tile.match(/(\d+)([萬條筒])/);
+        if (!match || match[2] !== suit) return false;
+        const tileNum = parseInt(match[1]);
+        return Math.abs(tileNum - number) === 1 || Math.abs(tileNum - number) === 2;
+    });
+    
+    return hasAdjacent;
+}
+
+function checkCanPong() { 
+    // 檢查是否可以碰牌（手牌中需要有兩張相同的牌）
+    if (gameData.mahjong.discardPile.length === 0) return false;
+    
+    const lastDiscarded = gameData.mahjong.discardPile[gameData.mahjong.discardPile.length - 1];
+    const matchingTiles = gameData.mahjong.playerHand.filter(tile => tile === lastDiscarded);
+    
+    return matchingTiles.length >= 2;
+}
+
+function checkCanKong() { 
+    // 檢查是否可以槓牌（手牌中需要有三張相同的牌）
+    if (gameData.mahjong.discardPile.length === 0) return false;
+    
+    const lastDiscarded = gameData.mahjong.discardPile[gameData.mahjong.discardPile.length - 1];
+    const matchingTiles = gameData.mahjong.playerHand.filter(tile => tile === lastDiscarded);
+    
+    return matchingTiles.length >= 3;
+}
+
 function checkCanHu() { 
-    // 只有在摸牌後且有14張牌時才能胡，並且加入隨機性
-    return gameData.mahjong.playerHand.length === 14 && Math.random() < 0.1; 
+    // 檢查是否可以胡牌
+    return canHu();
 }
 
 // 玩家回合
@@ -924,10 +965,27 @@ function restartMahjong() {
     initMahjongGame();
 }
 
+// 添加橋接函數以兼容麻將模板
+function executeAction(action) {
+    executeSpecialAction(action);
+}
+
+// 添加簡化版麻將的輔助函數
+function startGame() {
+    startMahjongGame();
+}
+
+function drawTile() {
+    drawMahjongTile();
+}
+
 // 確保所有函數都可以全域訪問
 window.executeSpecialAction = executeSpecialAction;
+window.executeAction = executeAction;
 window.passAction = passAction;
 window.startMahjongGame = startMahjongGame;
+window.startGame = startGame;
+window.drawTile = drawTile;
 
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
