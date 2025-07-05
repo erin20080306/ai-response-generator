@@ -272,7 +272,10 @@ class DocumentGenerator {
 
     async generateFromTemplate(type, template) {
         try {
-            this.app.showLoading();
+            // 顯示載入狀態
+            if (this.app && this.app.showLoading) {
+                this.app.showLoading();
+            }
 
             const languageElement = document.getElementById('docLanguage');
             const language = languageElement ? languageElement.value : 'zh-TW';
@@ -292,17 +295,40 @@ class DocumentGenerator {
             console.log('範本生成回應:', data);
 
             if (data.success) {
-                this.handleGenerationSuccess(data);
+                // 直接下載文件
+                console.log('開始下載文件:', data.filename);
+                this.downloadFile(data.download_url, data.filename);
+                
+                // 顯示成功通知
+                if (this.app && this.app.showNotification) {
+                    this.app.showNotification('文件生成成功！', 'success');
+                } else {
+                    alert('文件生成成功！');
+                }
+                
+                // 添加到歷史記錄
+                this.addToHistory(data);
             } else {
                 console.error('範本生成失敗:', data.error);
-                this.app.showNotification(data.error || '生成失敗', 'error');
+                if (this.app && this.app.showNotification) {
+                    this.app.showNotification(data.error || '生成失敗', 'error');
+                } else {
+                    alert('生成失敗: ' + (data.error || '未知錯誤'));
+                }
             }
 
         } catch (error) {
             console.error('範本生成錯誤:', error);
-            this.app.showNotification('生成過程中發生錯誤: ' + error.message, 'error');
+            if (this.app && this.app.showNotification) {
+                this.app.showNotification('生成過程中發生錯誤: ' + error.message, 'error');
+            } else {
+                alert('生成過程中發生錯誤: ' + error.message);
+            }
         } finally {
-            this.app.hideLoading();
+            // 隱藏載入狀態
+            if (this.app && this.app.hideLoading) {
+                this.app.hideLoading();
+            }
         }
     }
 
