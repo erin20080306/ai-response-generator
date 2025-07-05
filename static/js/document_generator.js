@@ -274,28 +274,33 @@ class DocumentGenerator {
         try {
             this.app.showLoading();
 
+            const languageElement = document.getElementById('docLanguage');
+            const language = languageElement ? languageElement.value : 'zh-TW';
+            
             const response = await fetch('/generate_document', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     template_type: type,
                     template_name: template,
-                    language: document.getElementById('docLanguage').value,
+                    language: language,
                     method: 'template'
                 })
             });
 
             const data = await response.json();
+            console.log('範本生成回應:', data);
 
             if (data.success) {
                 this.handleGenerationSuccess(data);
             } else {
+                console.error('範本生成失敗:', data.error);
                 this.app.showNotification(data.error || '生成失敗', 'error');
             }
 
         } catch (error) {
             console.error('範本生成錯誤:', error);
-            this.app.showNotification('生成過程中發生錯誤', 'error');
+            this.app.showNotification('生成過程中發生錯誤: ' + error.message, 'error');
         } finally {
             this.app.hideLoading();
         }
