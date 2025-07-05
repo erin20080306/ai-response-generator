@@ -108,18 +108,18 @@ function loadMahjongGame() {
     
     const gameContainer = document.getElementById('gameContainer');
     gameContainer.innerHTML = `
-        <div class="mahjong-game-container" style="width: 550px; height: 400px; margin: 0 auto; border: 2px solid #333; position: relative;">
+        <div class="mahjong-game-container" style="width: 500px; height: 350px; margin: 0 auto; border: 2px solid #333; position: relative;">
             <div class="game-header" style="height: 30px; background: #333; color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 8px;">
                 <h6 style="margin: 0; font-size: 12px;">🀄 麻將遊戲</h6>
                 <button onclick="showGameSelection()" class="back-btn btn btn-secondary btn-sm" style="font-size: 10px; padding: 2px 6px;">← 返回</button>
             </div>
             
-            <!-- 更緊湊的遊戲桌面 -->
-            <div class="mahjong-table" style="width: 546px; height: 330px; position: relative; background: #0F5132; margin: 0; padding: 0;">
+            <!-- 緊湊的遊戲桌面 -->
+            <div class="mahjong-table" style="width: 496px; height: 288px; position: relative; background: #0F5132; margin: 0; padding: 0;">
                 
                 <!-- 桌面中央區域 - 顯示打出的牌 -->
-                <div class="table-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 160px; border: 1px solid #666; background: rgba(0,0,0,0.1);">
-                    <div class="discarded-tiles" id="discardedTiles" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 6px; font-size: 18px; height: 100%; overflow: hidden;"></div>
+                <div class="table-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 130px; border: 1px solid #666; background: rgba(0,0,0,0.1);">
+                    <div class="discarded-tiles" id="discardedTiles" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; padding: 4px; font-size: 20px; height: 100%; overflow: hidden;"></div>
                 </div>
                 
                 <!-- 玩家位置 - 底部(你) -->
@@ -127,7 +127,7 @@ function loadMahjongGame() {
                     <div class="player-info" style="color: #fff; font-size: 12px; margin-bottom: 5px; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 3px;">
                         <span>你 (25000分)</span>
                     </div>
-                    <div class="player-tiles" id="playerTiles" style="display: flex; gap: 2px; justify-content: center; flex-wrap: wrap; max-width: 440px;"></div>
+                    <div class="player-tiles" id="playerTiles" style="display: flex; gap: 1px; justify-content: center; flex-wrap: wrap; max-width: 380px;"></div>
                 </div>
                 
                 <!-- 電腦AI玩家 - 右側 -->
@@ -551,9 +551,9 @@ function renderPlayerTiles() {
         const tileElement = document.createElement('div');
         tileElement.className = 'mahjong-tile player-tile';
         tileElement.style.cssText = `
-            width: 32px; height: 42px; background: #fff; border: 1px solid #333; 
+            width: 26px; height: 34px; background: #fff; border: 1px solid #333; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 20px; font-weight: bold; cursor: pointer; border-radius: 2px;
+            font-size: 22px; font-weight: bold; cursor: pointer; border-radius: 2px;
         `;
         tileElement.textContent = tile;
         tileElement.onclick = () => selectPlayerTile(index);
@@ -568,30 +568,28 @@ function renderPlayerTiles() {
 
 // 渲染電腦玩家牌張
 function renderComputerTiles() {
-    // 渲染三個電腦玩家的牌面
+    // 渲染三個電腦玩家的牌背（不顯示牌面）
     for (let i = 0; i < 3; i++) {
         const computerTiles = document.getElementById(`computerTiles${i + 1}`);
         if (!computerTiles) continue;
         
         computerTiles.innerHTML = '';
-        const hand = gameData.mahjong.computerHands[i];
+        const handSize = gameData.mahjong.computerHands[i].length;
         
-        for (let j = 0; j < hand.length; j++) {
+        for (let j = 0; j < handSize; j++) {
             const tileElement = document.createElement('div');
             tileElement.className = 'mahjong-tile computer-tile';
-            tileElement.textContent = hand[j];
+            // 不顯示牌面，只顯示牌背
             
             if (i === 0 || i === 2) { // 左右側玩家
                 tileElement.style.cssText = `
-                    width: 20px; height: 30px; background: #e6f3ff; border: 1px solid #333; 
-                    margin: 1px 0; border-radius: 1px; font-size: 14px; font-weight: bold;
-                    display: flex; align-items: center; justify-content: center; color: #000;
+                    width: 16px; height: 24px; background: #4a90e2; border: 1px solid #333; 
+                    margin: 1px 0; border-radius: 1px; 
                 `;
             } else { // 頂部玩家
                 tileElement.style.cssText = `
-                    width: 24px; height: 34px; background: #e6f3ff; border: 1px solid #333; 
-                    margin: 0 1px; border-radius: 1px; font-size: 16px; font-weight: bold;
-                    display: flex; align-items: center; justify-content: center; color: #000;
+                    width: 18px; height: 26px; background: #4a90e2; border: 1px solid #333; 
+                    margin: 0 1px; border-radius: 1px;
                 `;
             }
             
@@ -610,9 +608,9 @@ function renderDiscardedTiles() {
         const tileElement = document.createElement('div');
         tileElement.className = 'discarded-tile';
         tileElement.style.cssText = `
-            width: 28px; height: 38px; background: #fff; border: 1px solid #666; 
+            width: 22px; height: 30px; background: #fff; border: 1px solid #666; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 18px; font-weight: bold; border-radius: 2px;
+            font-size: 20px; font-weight: bold; border-radius: 2px;
         `;
         tileElement.textContent = tile;
         discardedTiles.appendChild(tileElement);
