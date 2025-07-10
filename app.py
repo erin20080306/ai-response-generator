@@ -594,9 +594,9 @@ def generate_ai_document(data):
         
         # 根據類型生成對應文件
         if doc_type in ['excel', 'google_sheet']:
-            return create_spreadsheet(ai_structure, doc_type, language)
+            return create_ai_excel_document(ai_structure, [])
         elif doc_type == 'word':
-            return create_word_document(ai_structure, language)
+            return create_ai_word_document(ai_structure, [])
             
     except Exception as e:
         logging.error(f"AI 生成錯誤: {e}")
