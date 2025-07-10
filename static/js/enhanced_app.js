@@ -548,10 +548,13 @@ class EnhancedAIAssistant {
             }
 
             // 檢查是否為文件生成指令
+            console.log('檢查文件生成需求:', message);
             if (this.isDocumentGenerationRequest(message)) {
+                console.log('檢測到文件生成需求，開始處理...');
                 await this.handleDocumentGeneration(message);
                 return;
             }
+            console.log('非文件生成需求，繼續正常處理');
 
             // 顯示載入狀態
             this.showLoading();
@@ -636,9 +639,10 @@ class EnhancedAIAssistant {
             'create excel', 'generate excel', 'make excel', 'excel file', 'spreadsheet',
             
             // Word 關鍵詞
-            '生成word', '創建word', '製作word', '產生word', '建立word', 'word文件', 'word檔案',
+            '生成word', '創建word', '製作word', '產生word', '建立word', 'word文件', 'word檔案', 'word檔',
             '生成文件', '創建文件', '製作文件', '產生文件', '建立文件',
             '生成文檔', '創建文檔', '製作文檔', '產生文檔', '建立文檔',
+            '存成word', '存成word檔', '儲存word', '儲存word檔', '另存word', '另存word檔',
             'create word', 'generate word', 'make word', 'word document', 'document',
             
             // TXT 關鍵詞
@@ -648,11 +652,18 @@ class EnhancedAIAssistant {
             
             // 一般文件生成關鍵詞
             '產生檔案', '生成檔案', '創建檔案', '製作檔案', '建立檔案',
-            '下載檔案', '匯出檔案', '輸出檔案',
+            '下載檔案', '匯出檔案', '輸出檔案', '存成檔', '存檔',
             'generate file', 'create file', 'export file', 'download file'
         ];
         
-        return docKeywords.some(keyword => message.toLowerCase().includes(keyword.toLowerCase()));
+        const msgLower = message.toLowerCase();
+        const found = docKeywords.some(keyword => msgLower.includes(keyword.toLowerCase()));
+        console.log('文件生成檢測結果:', found, '訊息:', message);
+        if (found) {
+            const matchedKeywords = docKeywords.filter(keyword => msgLower.includes(keyword.toLowerCase()));
+            console.log('匹配的關鍵詞:', matchedKeywords);
+        }
+        return found;
     }
 
     async handleImageGeneration(message) {
