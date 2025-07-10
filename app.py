@@ -133,11 +133,13 @@ def chat():
         # Check if this needs separate code responses
         needs_separation = any(keyword in user_message.lower() for keyword in [
             'apps script', 'app script', 'html', 'css', 'javascript', 'js', 
+            'python', 'sql', 'php', 'java', 'c++', 'c#', 'react', 'vue', 'nodejs',
+            'flutter', 'dart', 'swift', 'kotlin', 'go', 'rust', 'typescript',
             '程式碼', '前端', '後端', 'frontend', 'backend'
         ])
         
         # Also check if message contains multiple programming languages
-        code_keywords = ['html', 'css', 'javascript', 'js', 'python', 'sql', 'php']
+        code_keywords = ['html', 'css', 'javascript', 'js', 'python', 'sql', 'php', 'java', 'c++', 'c#', 'csharp', 'react', 'vue', 'nodejs', 'node', 'flutter', 'dart', 'swift', 'kotlin', 'go', 'rust', 'typescript', 'ts']
         mentioned_languages = [lang for lang in code_keywords if lang in user_message.lower()]
         
         if needs_separation or len(mentioned_languages) > 1:
@@ -166,13 +168,13 @@ def chat():
                     html_response = openai_client.get_response(html_prompt)
                     responses.append(html_response)
                 
-            # Check for general web development
-            elif any(lang in user_message.lower() for lang in ['html', 'css', 'javascript', 'js']):
+            # Check for web development and frameworks
+            elif any(lang in user_message.lower() for lang in ['html', 'css', 'javascript', 'js', 'react', 'vue', 'typescript', 'ts']):
                 # HTML Code
                 if 'html' in user_message.lower():
                     html_prompt = chat_history + [{
                         'role': 'user', 
-                        'content': f"{user_message}\n\n請只提供HTML程式碼部分，並包含使用教學：1. 如何建立HTML檔案 2. 如何使用"
+                        'content': f"{user_message}\n\n請提供完整的HTML程式碼，必須包含：\n1. 完整的文件結構和語義標籤\n2. 所有必要的meta標籤和屬性\n3. 響應式設計支援\n4. 可訪問性考量\n5. 實際可運行的完整HTML\n6. 詳細的註解說明\n7. 使用範例和部署教學\n8. CSS和JavaScript整合指引\n\n確保HTML程式碼符合現代標準且完整。"
                     }]
                     html_response = openai_client.get_response(html_prompt)
                     responses.append(html_response)
@@ -181,13 +183,40 @@ def chat():
                 if 'css' in user_message.lower():
                     css_prompt = chat_history + [{
                         'role': 'user', 
-                        'content': f"{user_message}\n\n請只提供CSS程式碼部分，並包含使用教學：1. 如何連結CSS檔案 2. 樣式設定說明"
+                        'content': f"{user_message}\n\n請提供完整的CSS程式碼，必須包含：\n1. 完整的樣式結構和選擇器\n2. 響應式設計和媒體查詢\n3. 現代CSS特性和變數\n4. 瀏覽器兼容性考量\n5. 實際可使用的完整樣式\n6. 詳細的註解說明\n7. 使用範例和整合教學\n8. 效能優化建議\n\n確保CSS程式碼現代且高效。"
                     }]
                     css_response = openai_client.get_response(css_prompt)
                     responses.append(css_response)
                 
+                # React Code
+                if 'react' in user_message.lower():
+                    react_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的React程式碼，必須包含：\n1. 完整的組件結構和JSX\n2. 所有必要的import和依賴\n3. 狀態管理和生命週期\n4. 事件處理和條件渲染\n5. 實際可運行的完整組件\n6. 詳細的註解說明\n7. 使用範例和部署教學\n8. package.json和webpack配置\n\n確保React程式碼符合現代最佳實踐。"
+                    }]
+                    react_response = openai_client.get_response(react_prompt)
+                    responses.append(react_response)
+                
+                # Vue Code
+                if 'vue' in user_message.lower():
+                    vue_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的Vue.js程式碼，必須包含：\n1. 完整的組件結構和模板\n2. 所有必要的import和依賴\n3. 響應式數據和計算屬性\n4. 事件處理和指令使用\n5. 實際可運行的完整組件\n6. 詳細的註解說明\n7. 使用範例和部署教學\n8. Vue CLI和構建配置\n\n確保Vue程式碼符合框架最佳實踐。"
+                    }]
+                    vue_response = openai_client.get_response(vue_prompt)
+                    responses.append(vue_response)
+                
+                # TypeScript Code
+                if any(ts in user_message.lower() for ts in ['typescript', 'ts']):
+                    typescript_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的TypeScript程式碼，必須包含：\n1. 完整的類型定義和介面\n2. 所有必要的import和類型宣告\n3. 錯誤處理和類型安全\n4. 完整的函數和類別定義\n5. 實際可編譯的完整程式碼\n6. 詳細的註解說明\n7. 使用範例和編譯教學\n8. tsconfig.json配置說明\n\n確保TypeScript程式碼類型安全且完整。"
+                    }]
+                    typescript_response = openai_client.get_response(typescript_prompt)
+                    responses.append(typescript_response)
+                
                 # JavaScript Code
-                if any(js in user_message.lower() for js in ['javascript', 'js']):
+                if any(js in user_message.lower() for js in ['javascript', 'js']) and 'typescript' not in user_message.lower():
                     js_prompt = chat_history + [{
                         'role': 'user', 
                         'content': f"{user_message}\n\n請提供完整的JavaScript程式碼，必須包含：\n1. 完整的程式結構和邏輯\n2. 所有必要的變數宣告\n3. 錯誤處理機制\n4. 完整的函數定義和參數\n5. 實際可執行的程式碼\n6. 詳細的註解說明\n7. DOM操作和事件處理\n8. 使用範例和整合教學\n\n確保JavaScript程式碼完整、現代且可直接使用。"
@@ -195,8 +224,8 @@ def chat():
                     js_response = openai_client.get_response(js_prompt)
                     responses.append(js_response)
             
-            # Check for backend languages
-            elif any(lang in user_message.lower() for lang in ['python', 'sql', 'php']):
+            # Check for backend and other languages
+            elif any(lang in user_message.lower() for lang in ['python', 'sql', 'php', 'java', 'c++', 'c#', 'csharp', 'nodejs', 'node', 'go', 'rust', 'kotlin', 'swift', 'dart', 'flutter', 'typescript', 'ts']):
                 # Python Code
                 if 'python' in user_message.lower():
                     python_prompt = chat_history + [{
@@ -205,6 +234,33 @@ def chat():
                     }]
                     python_response = openai_client.get_response(python_prompt)
                     responses.append(python_response)
+                
+                # Java Code
+                if 'java' in user_message.lower():
+                    java_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的Java程式碼，必須包含：\n1. 完整的類別結構和套件宣告\n2. 所有必要的import語句\n3. 異常處理機制\n4. 完整的方法定義和參數\n5. 實際可編譯執行的程式碼\n6. 詳細的註解說明\n7. 使用範例和編譯教學\n8. Maven/Gradle依賴配置\n\n確保Java程式碼符合最佳實踐且可直接使用。"
+                    }]
+                    java_response = openai_client.get_response(java_prompt)
+                    responses.append(java_response)
+                
+                # C# Code
+                if any(cs in user_message.lower() for cs in ['c#', 'csharp']):
+                    csharp_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的C#程式碼，必須包含：\n1. 完整的命名空間和類別結構\n2. 所有必要的using語句\n3. 異常處理機制\n4. 完整的方法定義和屬性\n5. 實際可編譯執行的程式碼\n6. 詳細的註解說明\n7. 使用範例和執行教學\n8. NuGet套件依賴說明\n\n確保C#程式碼符合.NET最佳實踐。"
+                    }]
+                    csharp_response = openai_client.get_response(csharp_prompt)
+                    responses.append(csharp_response)
+                
+                # Node.js Code
+                if any(node in user_message.lower() for node in ['nodejs', 'node']):
+                    nodejs_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的Node.js程式碼，必須包含：\n1. 完整的模組結構和依賴\n2. 所有必要的require/import語句\n3. 錯誤處理和中介軟體\n4. 完整的函數定義和路由\n5. 實際可執行的伺服器程式碼\n6. 詳細的註解說明\n7. 使用範例和部署教學\n8. package.json依賴配置\n\n確保Node.js程式碼現代且可直接部署。"
+                    }]
+                    nodejs_response = openai_client.get_response(nodejs_prompt)
+                    responses.append(nodejs_response)
                 
                 # SQL Code
                 if 'sql' in user_message.lower():
