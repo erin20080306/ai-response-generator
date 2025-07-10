@@ -282,8 +282,27 @@ def chat():
                     # 生成失敗，返回普通回應
                     ai_response = openai_client.get_response(chat_history)
             else:
-                # Regular single response
-                ai_response = openai_client.get_response(chat_history)
+                # 檢查是否需要網路搜尋（天氣、新聞等）
+                if openai_client.needs_web_search(user_message):
+                    search_type = openai_client.get_search_type(user_message)
+                    search_results = openai_client.perform_web_search(user_message, search_type)
+                    
+                    if search_results:
+                        # 將搜尋結果格式化並整合到回應中
+                        formatted_results = openai_client.format_search_results(search_results, search_type)
+                        
+                        # 使用AI結合搜尋結果生成回應
+                        enhanced_prompt = chat_history + [{
+                            'role': 'user',
+                            'content': f"{user_message}\n\n最新資訊：{formatted_results}\n\n請根據上述最新資訊回答用戶的問題。"
+                        }]
+                        ai_response = openai_client.get_response(enhanced_prompt)
+                    else:
+                        # 搜尋失敗，使用一般回應
+                        ai_response = openai_client.get_response(chat_history)
+                else:
+                    # Regular single response
+                    ai_response = openai_client.get_response(chat_history)
             
             # Add AI response to history
             chat_history.append({
