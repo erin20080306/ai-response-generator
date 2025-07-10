@@ -632,37 +632,55 @@ class EnhancedAIAssistant {
 
     isDocumentGenerationRequest(message) {
         const docKeywords = [
-            // Excel 關鍵詞
-            '生成excel', '創建excel', '製作excel', '產生excel', '建立excel', 'excel表格', 'excel檔案',
-            '生成試算表', '創建試算表', '製作試算表', '產生試算表', '建立試算表',
-            '生成表格', '創建表格', '製作表格', '產生表格', '建立表格',
-            'create excel', 'generate excel', 'make excel', 'excel file', 'spreadsheet',
+            // Excel 關鍵詞 - 使用更簡單的檢測邏輯
+            'excel檔', 'excel表', 'excel文件', 'excel試算表',
+            '試算表', '表格檔', '員工名單excel', '員工清單excel',
+            'spreadsheet', 'excel file',
             
             // Word 關鍵詞
-            '生成word', '創建word', '製作word', '產生word', '建立word', 'word文件', 'word檔案', 'word檔',
-            '生成文件', '創建文件', '製作文件', '產生文件', '建立文件',
-            '生成文檔', '創建文檔', '製作文檔', '產生文檔', '建立文檔',
-            '存成word', '存成word檔', '儲存word', '儲存word檔', '另存word', '另存word檔',
-            'create word', 'generate word', 'make word', 'word document', 'document',
+            'word檔', 'word文件', 'word文檔', 
+            '文件檔', '文檔檔', '報告word', '記錄word',
+            'word document', 'document file',
             
             // TXT 關鍵詞
-            '生成txt', '創建txt', '製作txt', '產生txt', '建立txt', 'txt檔案', 'txt文件',
-            '生成文字檔', '創建文字檔', '製作文字檔', '產生文字檔', '建立文字檔',
-            'create txt', 'generate txt', 'make txt', 'text file',
+            'txt檔', 'txt文件', '文字檔',
+            'text file', 'txt file',
             
-            // 一般文件生成關鍵詞
-            '產生檔案', '生成檔案', '創建檔案', '製作檔案', '建立檔案',
-            '下載檔案', '匯出檔案', '輸出檔案', '存成檔', '存檔',
-            'generate file', 'create file', 'export file', 'download file'
+            // 包含生成動詞的組合檢測
+            '生成.*excel', '創建.*excel', '製作.*excel', '產生.*excel', '建立.*excel',
+            '生成.*word', '創建.*word', '製作.*word', '產生.*word', '建立.*word',
+            '生成.*txt', '創建.*txt', '製作.*txt', '產生.*txt', '建立.*txt',
+            '生成.*檔案', '創建.*檔案', '製作.*檔案', '產生.*檔案', '建立.*檔案',
+            '存成.*word', '存成.*excel', '存成.*txt',
+            '下載.*excel', '下載.*word', '下載.*txt'
         ];
         
         const msgLower = message.toLowerCase();
-        const found = docKeywords.some(keyword => msgLower.includes(keyword.toLowerCase()));
+        
+        // 先檢查簡單關鍵詞
+        const simpleKeywords = docKeywords.filter(keyword => !keyword.includes('.*'));
+        const simpleFound = simpleKeywords.some(keyword => msgLower.includes(keyword.toLowerCase()));
+        
+        // 再檢查正則表達式關鍵詞
+        const regexKeywords = docKeywords.filter(keyword => keyword.includes('.*'));
+        const regexFound = regexKeywords.some(keyword => {
+            const regex = new RegExp(keyword.toLowerCase(), 'i');
+            return regex.test(msgLower);
+        });
+        
+        const found = simpleFound || regexFound;
         console.log('文件生成檢測結果:', found, '訊息:', message);
+        
         if (found) {
-            const matchedKeywords = docKeywords.filter(keyword => msgLower.includes(keyword.toLowerCase()));
-            console.log('匹配的關鍵詞:', matchedKeywords);
+            const matchedSimple = simpleKeywords.filter(keyword => msgLower.includes(keyword.toLowerCase()));
+            const matchedRegex = regexKeywords.filter(keyword => {
+                const regex = new RegExp(keyword.toLowerCase(), 'i');
+                return regex.test(msgLower);
+            });
+            console.log('匹配的簡單關鍵詞:', matchedSimple);
+            console.log('匹配的正則關鍵詞:', matchedRegex);
         }
+        
         return found;
     }
 
