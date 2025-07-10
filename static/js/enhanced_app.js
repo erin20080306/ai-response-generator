@@ -733,6 +733,31 @@ class EnhancedAIAssistant {
         return prompt.trim() || message;
     }
 
+    analyzeDocumentRequest(message) {
+        const msgLower = message.toLowerCase();
+        
+        // 檢測文件類型
+        let type = 'excel'; // 默認
+        let typeName = 'Excel';
+        
+        if (msgLower.includes('word') || msgLower.includes('文件') || msgLower.includes('文檔')) {
+            type = 'word';
+            typeName = 'Word';
+        } else if (msgLower.includes('txt') || msgLower.includes('文字檔')) {
+            type = 'txt';
+            typeName = 'TXT';
+        } else if (msgLower.includes('excel') || msgLower.includes('試算表') || msgLower.includes('表格')) {
+            type = 'excel';
+            typeName = 'Excel';
+        }
+        
+        return {
+            type: type,
+            typeName: typeName,
+            message: message
+        };
+    }
+
     async handleDocumentGeneration(message) {
         try {
             this.showLoading();
@@ -740,6 +765,7 @@ class EnhancedAIAssistant {
 
             // 分析文件類型和內容
             const docInfo = this.analyzeDocumentRequest(message);
+            console.log('分析文件請求結果:', docInfo);
             
             const response = await fetch('/generate_document', {
                 method: 'POST',
@@ -778,21 +804,7 @@ class EnhancedAIAssistant {
         }
     }
 
-    analyzeDocumentRequest(message) {
-        const msg = message.toLowerCase();
-        
-        // 檢測文件類型
-        if (msg.includes('excel') || msg.includes('試算表') || msg.includes('表格') || msg.includes('spreadsheet')) {
-            return { type: 'excel', typeName: 'Excel' };
-        } else if (msg.includes('word') || msg.includes('文件') || msg.includes('文檔') || msg.includes('document')) {
-            return { type: 'word', typeName: 'Word' };
-        } else if (msg.includes('txt') || msg.includes('文字檔') || msg.includes('text file')) {
-            return { type: 'txt', typeName: 'TXT' };
-        } else {
-            // 預設為 Excel
-            return { type: 'excel', typeName: 'Excel' };
-        }
-    }
+
 
     addDocumentDownloadMessage(data) {
         const chatMessages = document.getElementById('chatMessages');
