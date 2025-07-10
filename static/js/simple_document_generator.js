@@ -534,7 +534,17 @@ async function generateAIDocument() {
     }
 }
 
+// 輔助函數
+function showMessage(message, type = 'info') {
+    if (window.aiAssistant && window.aiAssistant.showNotification) {
+        window.aiAssistant.showNotification(message, type);
+    } else {
+        alert(message);
+    }
+}
+
 // 導出函數到全域
 window.generateAndDownloadFromTemplate = generateAndDownloadFromTemplate;
 window.showAIDocumentGenerator = showAIDocumentGenerator;
 window.generateAIDocument = generateAIDocument;
+window.generateFromTemplate = generateFromTemplate;

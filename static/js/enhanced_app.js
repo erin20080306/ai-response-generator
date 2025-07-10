@@ -547,6 +547,12 @@ class EnhancedAIAssistant {
                 return;
             }
 
+            // 檢查是否為文件生成指令
+            if (this.isDocumentGenerationRequest(message)) {
+                await this.handleDocumentGeneration(message);
+                return;
+            }
+
             // 顯示載入狀態
             this.showLoading();
 
@@ -621,6 +627,34 @@ class EnhancedAIAssistant {
         return imageKeywords.some(keyword => message.toLowerCase().includes(keyword.toLowerCase()));
     }
 
+    isDocumentGenerationRequest(message) {
+        const docKeywords = [
+            // Excel 關鍵詞
+            '生成excel', '創建excel', '製作excel', '產生excel', '建立excel', 'excel表格', 'excel檔案',
+            '生成試算表', '創建試算表', '製作試算表', '產生試算表', '建立試算表',
+            '生成表格', '創建表格', '製作表格', '產生表格', '建立表格',
+            'create excel', 'generate excel', 'make excel', 'excel file', 'spreadsheet',
+            
+            // Word 關鍵詞
+            '生成word', '創建word', '製作word', '產生word', '建立word', 'word文件', 'word檔案',
+            '生成文件', '創建文件', '製作文件', '產生文件', '建立文件',
+            '生成文檔', '創建文檔', '製作文檔', '產生文檔', '建立文檔',
+            'create word', 'generate word', 'make word', 'word document', 'document',
+            
+            // TXT 關鍵詞
+            '生成txt', '創建txt', '製作txt', '產生txt', '建立txt', 'txt檔案', 'txt文件',
+            '生成文字檔', '創建文字檔', '製作文字檔', '產生文字檔', '建立文字檔',
+            'create txt', 'generate txt', 'make txt', 'text file',
+            
+            // 一般文件生成關鍵詞
+            '產生檔案', '生成檔案', '創建檔案', '製作檔案', '建立檔案',
+            '下載檔案', '匯出檔案', '輸出檔案',
+            'generate file', 'create file', 'export file', 'download file'
+        ];
+        
+        return docKeywords.some(keyword => message.toLowerCase().includes(keyword.toLowerCase()));
+    }
+
     async handleImageGeneration(message) {
         try {
             this.showLoading();
@@ -668,6 +702,108 @@ class EnhancedAIAssistant {
         });
 
         return prompt.trim() || message;
+    }
+
+    async handleDocumentGeneration(message) {
+        try {
+            this.showLoading();
+            this.addMessage('正在分析您的文件需求...', 'system');
+
+            // 分析文件類型和內容
+            const docInfo = this.analyzeDocumentRequest(message);
+            
+            const response = await fetch('/generate_document', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    description: message,
+                    type: docInfo.type,
+                    language: 'zh-TW',
+                    method: 'ai_generate'
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // 顯示生成成功訊息
+                this.addMessage(`✅ ${docInfo.typeName}文件已生成完成！`, 'system');
+                
+                // 添加下載連結
+                this.addDocumentDownloadMessage(data);
+                
+                this.showNotification('文件生成成功！', 'success');
+            } else {
+                this.addMessage(`❌ 文件生成失敗：${data.error}`, 'system');
+                this.showNotification(data.error, 'error');
+            }
+
+        } catch (error) {
+            console.error('文件生成錯誤:', error);
+            this.addMessage('文件生成過程中發生錯誤，請稍後再試', 'system');
+            this.showNotification('文件生成失敗', 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    analyzeDocumentRequest(message) {
+        const msg = message.toLowerCase();
+        
+        // 檢測文件類型
+        if (msg.includes('excel') || msg.includes('試算表') || msg.includes('表格') || msg.includes('spreadsheet')) {
+            return { type: 'excel', typeName: 'Excel' };
+        } else if (msg.includes('word') || msg.includes('文件') || msg.includes('文檔') || msg.includes('document')) {
+            return { type: 'word', typeName: 'Word' };
+        } else if (msg.includes('txt') || msg.includes('文字檔') || msg.includes('text file')) {
+            return { type: 'txt', typeName: 'TXT' };
+        } else {
+            // 預設為 Excel
+            return { type: 'excel', typeName: 'Excel' };
+        }
+    }
+
+    addDocumentDownloadMessage(data) {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+
+        const messageItem = document.createElement('div');
+        messageItem.className = 'message-item system-message';
+
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+
+        const icon = '<i class="fas fa-file-download me-2"></i>';
+        
+        const downloadHtml = `
+            ${icon}
+            <div class="document-download-container mt-2">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">📄 文件生成完成</h6>
+                        <p class="card-text small">您的文件已準備就緒，可以下載</p>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="/download/${data.filename}" class="btn btn-primary btn-sm" download>
+                                <i class="fas fa-download me-1"></i>下載文件
+                            </a>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="navigator.clipboard.writeText('${window.location.origin}/download/${data.filename}')">
+                                <i class="fas fa-link me-1"></i>複製連結
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-2">檔案名稱: ${data.filename}</small>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        messageContent.innerHTML = downloadHtml;
+        messageItem.appendChild(messageContent);
+        chatMessages.appendChild(messageItem);
+
+        // 滾動到底部
+        this.scrollToBottom();
     }
 
     addImageMessage(imageUrl, prompt) {
