@@ -225,8 +225,8 @@ class OpenAIClient:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=messages,
-                max_tokens=2000,
-                temperature=0.7
+                max_tokens=1200,  # 降低最大token數以提高回應速度
+                temperature=0.5   # 降低溫度以提高回應一致性和速度
             )
             
             return response.choices[0].message.content

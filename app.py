@@ -192,7 +192,7 @@ def chat():
                 if 'react' in user_message.lower():
                     react_prompt = chat_history + [{
                         'role': 'user', 
-                        'content': f"{user_message}\n\n請提供完整的React程式碼，必須包含：\n1. 完整的組件結構和JSX\n2. 所有必要的import和依賴\n3. 狀態管理和生命週期\n4. 事件處理和條件渲染\n5. 實際可運行的完整組件\n6. 詳細的註解說明\n7. 使用範例和部署教學\n8. package.json和webpack配置\n\n確保React程式碼符合現代最佳實踐。"
+                        'content': f"{user_message}\n\n請提供簡潔的React程式碼，包含：\n1. 核心組件結構\n2. 必要的import\n3. 基本狀態管理\n4. 事件處理\n5. 可運行的完整組件\n6. package.json設定\n\n回應簡潔，專注於核心功能。"
                     }]
                     react_response = openai_client.get_response(react_prompt)
                     responses.append(react_response)
@@ -219,7 +219,7 @@ def chat():
                 if any(js in user_message.lower() for js in ['javascript', 'js']) and 'typescript' not in user_message.lower():
                     js_prompt = chat_history + [{
                         'role': 'user', 
-                        'content': f"{user_message}\n\n請提供完整的JavaScript程式碼，必須包含：\n1. 完整的程式結構和邏輯\n2. 所有必要的變數宣告\n3. 錯誤處理機制\n4. 完整的函數定義和參數\n5. 實際可執行的程式碼\n6. 詳細的註解說明\n7. DOM操作和事件處理\n8. 使用範例和整合教學\n\n確保JavaScript程式碼完整、現代且可直接使用。"
+                        'content': f"{user_message}\n\n請提供簡潔的JavaScript程式碼，包含：\n1. 核心程式邏輯\n2. 必要的變數和函數\n3. 基本錯誤處理\n4. DOM操作和事件\n5. 可執行的完整程式\n6. 簡要註解\n\n回應簡潔，專注於核心實現。"
                     }]
                     js_response = openai_client.get_response(js_prompt)
                     responses.append(js_response)
@@ -230,7 +230,7 @@ def chat():
                 if 'python' in user_message.lower():
                     python_prompt = chat_history + [{
                         'role': 'user', 
-                        'content': f"{user_message}\n\n請提供完整的Python程式碼，必須包含：\n1. 完整的程式結構和邏輯\n2. 所有必要的import語句\n3. 錯誤處理機制\n4. 完整的函數定義和參數\n5. 實際可執行的程式碼\n6. 詳細的註解說明\n7. 使用範例和執行教學\n8. 可能需要的套件安裝指令\n\n確保程式碼完整、實用且可直接執行。"
+                        'content': f"{user_message}\n\n請提供簡潔的Python程式碼，包含：\n1. 核心程式邏輯\n2. 必要的import\n3. 基本錯誤處理\n4. 可執行的完整程式\n5. 簡要註解\n6. 套件安裝指令\n\n回應簡潔，專注於核心實現。"
                     }]
                     python_response = openai_client.get_response(python_prompt)
                     responses.append(python_response)
@@ -257,7 +257,7 @@ def chat():
                 if any(node in user_message.lower() for node in ['nodejs', 'node']):
                     nodejs_prompt = chat_history + [{
                         'role': 'user', 
-                        'content': f"{user_message}\n\n請提供完整的Node.js程式碼，必須包含：\n1. 完整的模組結構和依賴\n2. 所有必要的require/import語句\n3. 錯誤處理和中介軟體\n4. 完整的函數定義和路由\n5. 實際可執行的伺服器程式碼\n6. 詳細的註解說明\n7. 使用範例和部署教學\n8. package.json依賴配置\n\n確保Node.js程式碼現代且可直接部署。"
+                        'content': f"{user_message}\n\n請提供簡潔的Node.js程式碼，包含：\n1. 核心程式碼結構\n2. 必要的require語句\n3. 基本錯誤處理\n4. 可執行的完整程式\n5. 簡要註解\n6. package.json設定\n\n回應請保持簡潔，專注於核心功能實現。"
                     }]
                     nodejs_response = openai_client.get_response(nodejs_prompt)
                     responses.append(nodejs_response)
@@ -266,7 +266,7 @@ def chat():
                 if 'flutter' in user_message.lower():
                     flutter_prompt = chat_history + [{
                         'role': 'user', 
-                        'content': f"{user_message}\n\n請提供完整的Flutter程式碼，必須包含：\n1. 完整的Dart程式結構和Widget組件\n2. 所有必要的import語句和依賴\n3. 狀態管理和生命週期\n4. 用戶界面設計和互動\n5. 實際可運行的完整應用程式\n6. 詳細的註解說明\n7. 使用範例和部署教學\n8. pubspec.yaml依賴配置\n\n確保Flutter程式碼符合最佳實踐且可直接編譯運行。"
+                        'content': f"{user_message}\n\n請提供簡潔的Flutter程式碼，包含：\n1. 核心Widget結構\n2. 必要的import\n3. 基本狀態管理\n4. UI設計和互動\n5. 可執行的完整app\n6. pubspec.yaml設定\n\n回應簡潔，專注於核心功能。"
                     }]
                     flutter_response = openai_client.get_response(flutter_prompt)
                     responses.append(flutter_response)
