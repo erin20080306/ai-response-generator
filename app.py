@@ -169,7 +169,7 @@ def chat():
                     responses.append(html_response)
                 
             # Check for web development and frameworks
-            elif any(lang in user_message.lower() for lang in ['html', 'css', 'javascript', 'js', 'react', 'vue', 'typescript', 'ts']):
+            if any(lang in user_message.lower() for lang in ['html', 'css', 'javascript', 'js', 'react', 'vue', 'typescript', 'ts']):
                 # HTML Code
                 if 'html' in user_message.lower():
                     html_prompt = chat_history + [{
@@ -225,7 +225,7 @@ def chat():
                     responses.append(js_response)
             
             # Check for backend and other languages
-            elif any(lang in user_message.lower() for lang in ['python', 'sql', 'php', 'java', 'c++', 'c#', 'csharp', 'nodejs', 'node', 'go', 'rust', 'kotlin', 'swift', 'dart', 'flutter', 'typescript', 'ts']):
+            if any(lang in user_message.lower() for lang in ['python', 'sql', 'php', 'java', 'c++', 'c#', 'csharp', 'nodejs', 'node', 'go', 'rust', 'kotlin', 'swift', 'dart', 'flutter']):
                 # Python Code
                 if 'python' in user_message.lower():
                     python_prompt = chat_history + [{
@@ -261,6 +261,60 @@ def chat():
                     }]
                     nodejs_response = openai_client.get_response(nodejs_prompt)
                     responses.append(nodejs_response)
+                
+                # Flutter Code
+                if 'flutter' in user_message.lower():
+                    flutter_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的Flutter程式碼，必須包含：\n1. 完整的Dart程式結構和Widget組件\n2. 所有必要的import語句和依賴\n3. 狀態管理和生命週期\n4. 用戶界面設計和互動\n5. 實際可運行的完整應用程式\n6. 詳細的註解說明\n7. 使用範例和部署教學\n8. pubspec.yaml依賴配置\n\n確保Flutter程式碼符合最佳實踐且可直接編譯運行。"
+                    }]
+                    flutter_response = openai_client.get_response(flutter_prompt)
+                    responses.append(flutter_response)
+                
+                # Dart Code
+                if 'dart' in user_message.lower() and 'flutter' not in user_message.lower():
+                    dart_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的Dart程式碼，必須包含：\n1. 完整的Dart程式結構和類別\n2. 所有必要的import語句\n3. 錯誤處理和異常管理\n4. 完整的函數和方法定義\n5. 實際可執行的完整程式碼\n6. 詳細的註解說明\n7. 使用範例和執行教學\n8. pubspec.yaml配置說明\n\n確保Dart程式碼現代且高效。"
+                    }]
+                    dart_response = openai_client.get_response(dart_prompt)
+                    responses.append(dart_response)
+                
+                # Swift Code
+                if 'swift' in user_message.lower():
+                    swift_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的Swift程式碼，必須包含：\n1. 完整的Swift程式結構和類別\n2. 所有必要的import框架\n3. 錯誤處理和可選型使用\n4. 完整的函數和方法定義\n5. 實際可編譯的iOS應用程式\n6. 詳細的註解說明\n7. 使用範例和Xcode配置\n8. Info.plist和權限設定\n\n確保Swift程式碼符合iOS開發最佳實踐。"
+                    }]
+                    swift_response = openai_client.get_response(swift_prompt)
+                    responses.append(swift_response)
+                
+                # Kotlin Code
+                if 'kotlin' in user_message.lower():
+                    kotlin_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的Kotlin程式碼，必須包含：\n1. 完整的Kotlin程式結構和類別\n2. 所有必要的import語句\n3. 錯誤處理和Null安全\n4. 完整的函數和擴展定義\n5. 實際可編譯的Android應用程式\n6. 詳細的註解說明\n7. 使用範例和Android Studio配置\n8. build.gradle依賴設定\n\n確保Kotlin程式碼符合Android開發最佳實踐。"
+                    }]
+                    kotlin_response = openai_client.get_response(kotlin_prompt)
+                    responses.append(kotlin_response)
+                
+                # Go Code
+                if 'go' in user_message.lower() and 'golang' not in user_message.lower():
+                    go_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的Go程式碼，必須包含：\n1. 完整的Go程式結構和套件\n2. 所有必要的import語句\n3. 錯誤處理和goroutine\n4. 完整的函數和結構定義\n5. 實際可編譯執行的程式碼\n6. 詳細的註解說明\n7. 使用範例和模組管理\n8. go.mod依賴配置\n\n確保Go程式碼高效且符合慣例。"
+                    }]
+                    go_response = openai_client.get_response(go_prompt)
+                    responses.append(go_response)
+                
+                # Rust Code
+                if 'rust' in user_message.lower():
+                    rust_prompt = chat_history + [{
+                        'role': 'user', 
+                        'content': f"{user_message}\n\n請提供完整的Rust程式碼，必須包含：\n1. 完整的Rust程式結構和模組\n2. 所有必要的use語句和crate\n3. 記憶體安全和所有權管理\n4. 完整的函數和結構定義\n5. 實際可編譯執行的程式碼\n6. 詳細的註解說明\n7. 使用範例和Cargo配置\n8. Cargo.toml依賴設定\n\n確保Rust程式碼安全且高效。"
+                    }]
+                    rust_response = openai_client.get_response(rust_prompt)
+                    responses.append(rust_response)
                 
                 # SQL Code
                 if 'sql' in user_message.lower():
