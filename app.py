@@ -190,7 +190,7 @@ def chat():
                 if any(js in user_message.lower() for js in ['javascript', 'js']):
                     js_prompt = chat_history + [{
                         'role': 'user', 
-                        'content': f"{user_message}\n\n請只提供JavaScript程式碼部分，並包含使用教學：1. 如何連結JS檔案 2. 函數使用說明"
+                        'content': f"{user_message}\n\n請提供完整的JavaScript程式碼，必須包含：\n1. 完整的程式結構和邏輯\n2. 所有必要的變數宣告\n3. 錯誤處理機制\n4. 完整的函數定義和參數\n5. 實際可執行的程式碼\n6. 詳細的註解說明\n7. DOM操作和事件處理\n8. 使用範例和整合教學\n\n確保JavaScript程式碼完整、現代且可直接使用。"
                     }]
                     js_response = openai_client.get_response(js_prompt)
                     responses.append(js_response)
@@ -201,7 +201,7 @@ def chat():
                 if 'python' in user_message.lower():
                     python_prompt = chat_history + [{
                         'role': 'user', 
-                        'content': f"{user_message}\n\n請只提供Python程式碼部分，並包含使用教學：1. 如何執行Python程式 2. 程式功能說明"
+                        'content': f"{user_message}\n\n請提供完整的Python程式碼，必須包含：\n1. 完整的程式結構和邏輯\n2. 所有必要的import語句\n3. 錯誤處理機制\n4. 完整的函數定義和參數\n5. 實際可執行的程式碼\n6. 詳細的註解說明\n7. 使用範例和執行教學\n8. 可能需要的套件安裝指令\n\n確保程式碼完整、實用且可直接執行。"
                     }]
                     python_response = openai_client.get_response(python_prompt)
                     responses.append(python_response)
@@ -210,7 +210,7 @@ def chat():
                 if 'sql' in user_message.lower():
                     sql_prompt = chat_history + [{
                         'role': 'user', 
-                        'content': f"{user_message}\n\n請只提供SQL程式碼部分，並包含使用教學：1. 如何在資料庫中執行 2. 查詢說明"
+                        'content': f"{user_message}\n\n請提供完整的SQL程式碼，必須包含：\n1. 完整的SQL語句和語法\n2. 必要的資料表結構定義\n3. 索引建議和效能優化\n4. 錯誤處理和約束條件\n5. 實際可執行的查詢語句\n6. 詳細的註解說明\n7. 使用範例和執行教學\n8. 不同資料庫系統的兼容性說明\n\n確保SQL程式碼完整、高效且可直接執行。"
                     }]
                     sql_response = openai_client.get_response(sql_prompt)
                     responses.append(sql_response)
