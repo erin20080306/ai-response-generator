@@ -848,7 +848,7 @@ class EnhancedAIAssistant {
                             <a href="/download/${data.filename}" class="btn btn-primary btn-sm" download>
                                 <i class="fas fa-download me-1"></i>下載文件
                             </a>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="navigator.clipboard.writeText('${window.location.origin}/download/${data.filename}')">
+                            <button class="btn btn-outline-secondary btn-sm" onclick="navigator.clipboard.writeText(window.location.origin + '/download/' + '${data.filename}')">
                                 <i class="fas fa-link me-1"></i>複製連結
                             </button>
                         </div>
@@ -885,10 +885,10 @@ class EnhancedAIAssistant {
                 <div class="image-caption mt-2">
                     <small class="text-muted">生成提示：${prompt}</small>
                     <div class="image-actions mt-1">
-                        <button class="btn btn-sm btn-outline-primary me-2" onclick="window.aiAssistant.downloadImage('${imageUrl}', '${prompt}')">
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="window.aiAssistant.downloadImage(\`${imageUrl}\`, \`${prompt}\`)">
                             <i class="fas fa-download"></i> 下載
                         </button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="window.aiAssistant.analyzeGeneratedImage('${imageUrl}')">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="window.aiAssistant.analyzeGeneratedImage(\`${imageUrl}\`)">
                             <i class="fas fa-search"></i> 分析
                         </button>
                     </div>
