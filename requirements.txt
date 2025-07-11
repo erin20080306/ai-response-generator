@@ -5,3 +5,4 @@ qrcode
 python-barcode
 Pillow
 python-pptx
+flask_sqlalchemy
