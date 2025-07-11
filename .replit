@@ -1,8 +1,8 @@
-modules = ["python-3.11"]
+modules = ["python-3.11", "python3"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["cacert", "cairo", "cargo", "espeak-ng", "ffmpeg-full", "file", "firefox", "freetype", "geckodriver", "geos", "ghostscript", "gitFull", "glibcLocales", "gobject-introspection", "gtk3", "iana-etc", "imagemagickBig", "lcms2", "libGL", "libGLU", "libev", "libiconv", "libimagequant", "libjpeg", "libjpeg_turbo", "libpng", "libtiff", "libwebp", "libxcrypt", "nodejs", "openjpeg", "openssl", "pkg-config", "postgresql", "qhull", "rustc", "sqlite", "tcl", "tk", "which", "xsimd", "zbar", "zlib", "zip"]
+packages = ["cacert", "cairo", "cargo", "espeak-ng", "ffmpeg-full", "file", "firefox", "freetype", "geckodriver", "geos", "ghostscript", "gitFull", "glibcLocales", "gobject-introspection", "gtk3", "iana-etc", "imagemagickBig", "lcms2", "libGL", "libGLU", "libev", "libiconv", "libimagequant", "libjpeg", "libjpeg_turbo", "libpng", "libtiff", "libwebp", "libxcrypt", "nodejs", "openjpeg", "openssl", "pkg-config", "postgresql", "qhull", "rustc", "sqlite", "tcl", "tk", "which", "xsimd", "zbar", "zip", "zlib"]
 
 [deployment]
 deploymentTarget = "gce"

@@ -646,13 +646,24 @@ class EnhancedAIAssistant {
             'txt檔', 'txt文件', '文字檔',
             'text file', 'txt file',
             
+            // PDF 關鍵詞
+            'pdf檔', 'pdf文件', 'pdf檔案',
+            'pdf file', 'pdf document',
+            
+            // PPT 關鍵詞
+            'ppt檔', 'ppt文件', 'powerpoint檔', '簡報檔',
+            'ppt file', 'powerpoint file', 'presentation file',
+            
             // 包含生成動詞的組合檢測
             '生成.*excel', '創建.*excel', '製作.*excel', '產生.*excel', '建立.*excel',
             '生成.*word', '創建.*word', '製作.*word', '產生.*word', '建立.*word',
             '生成.*txt', '創建.*txt', '製作.*txt', '產生.*txt', '建立.*txt',
+            '生成.*pdf', '創建.*pdf', '製作.*pdf', '產生.*pdf', '建立.*pdf',
+            '生成.*ppt', '創建.*ppt', '製作.*ppt', '產生.*ppt', '建立.*ppt',
+            '生成.*簡報', '創建.*簡報', '製作.*簡報', '產生.*簡報', '建立.*簡報',
             '生成.*檔案', '創建.*檔案', '製作.*檔案', '產生.*檔案', '建立.*檔案',
-            '存成.*word', '存成.*excel', '存成.*txt',
-            '下載.*excel', '下載.*word', '下載.*txt'
+            '存成.*word', '存成.*excel', '存成.*txt', '存成.*pdf', '存成.*ppt',
+            '下載.*excel', '下載.*word', '下載.*txt', '下載.*pdf', '下載.*ppt'
         ];
         
         const msgLower = message.toLowerCase();
@@ -740,12 +751,18 @@ class EnhancedAIAssistant {
         let type = 'excel'; // 默認
         let typeName = 'Excel';
         
-        if (msgLower.includes('word') || msgLower.includes('文件') || msgLower.includes('文檔')) {
+        if (msgLower.includes('pdf') || msgLower.includes('pdf檔')) {
+            type = 'pdf';
+            typeName = 'PDF';
+        } else if (msgLower.includes('word') || msgLower.includes('文件') || msgLower.includes('文檔')) {
             type = 'word';
             typeName = 'Word';
         } else if (msgLower.includes('txt') || msgLower.includes('文字檔')) {
             type = 'txt';
             typeName = 'TXT';
+        } else if (msgLower.includes('ppt') || msgLower.includes('powerpoint') || msgLower.includes('簡報')) {
+            type = 'ppt';
+            typeName = 'PPT';
         } else if (msgLower.includes('excel') || msgLower.includes('試算表') || msgLower.includes('表格')) {
             type = 'excel';
             typeName = 'Excel';
