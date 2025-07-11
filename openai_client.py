@@ -96,15 +96,25 @@ class OpenAIClient:
             if search_results.get('status') == 'success':
                 location = search_results.get('location', '未知地點')
                 if 'summary' in search_results and search_results['summary']:
-                    return f"📍 {location} 天氣資訊：\n{search_results['summary']}\n\n💡 建議查看中央氣象局官方網站獲取最新精確天氣資訊"
+                    # 清理並格式化天氣資訊
+                    weather_summary = search_results['summary']
+                    # 從摘要中提取有用資訊
+                    if '今日凌晨' in weather_summary or '今日白天' in weather_summary:
+                        return f"🌤️ {location} 天氣預報：\n{weather_summary}\n\n💡 資料來源：中央氣象署"
+                    else:
+                        return f"🌤️ {location} 天氣資訊：\n{weather_summary}\n\n💡 建議查看中央氣象局官方網站獲取最新精確天氣資訊"
                 elif 'data' in search_results and search_results['data']:
                     # 從搜尋結果格式化天氣資訊
                     weather_text = ""
                     for result in search_results['data'][:2]:
-                        weather_text += f"• {result['title']}\n  {result['snippet']}\n\n"
-                    return f"📍 {location} 天氣資訊：\n{weather_text}💡 建議查看中央氣象局官方網站獲取最新精確天氣資訊"
+                        if '氣象' in result['title'] or '天氣' in result['title']:
+                            weather_text += f"• {result['snippet']}\n\n"
+                    if weather_text:
+                        return f"🌤️ {location} 天氣資訊：\n{weather_text}💡 建議查看中央氣象局官方網站獲取最新精確天氣資訊"
+                    else:
+                        return f"🌤️ {location} 天氣資訊：\n建議查看中央氣象局官方網站獲取最新天氣資訊"
                 else:
-                    return f"📍 {location} 天氣資訊：\n建議查看中央氣象局官方網站獲取最新天氣資訊"
+                    return f"🌤️ {location} 天氣資訊：\n建議查看中央氣象局官方網站獲取最新天氣資訊"
             else:
                 return f"天氣查詢失敗：{search_results.get('message', '建議查看中央氣象局官方網站獲取最新天氣資訊')}"
         
@@ -182,8 +192,10 @@ class OpenAIClient:
             - No unnecessary background
 
             FOR REAL-TIME INFORMATION (Weather, Legal, News):
-            - If web search results are provided, integrate them into your response
-            - Provide accurate, up-to-date information
+            - ALWAYS prioritize and use web search results when provided
+            - Present the search results directly as your primary response
+            - Do NOT provide generic advice when specific search results are available
+            - For weather queries, use the exact information from search results
             - For legal questions, remind users to consult professional lawyers for specific cases
 
             TAIWAN SPECIAL LEAVE LAW (最新版本):
@@ -207,7 +219,7 @@ class OpenAIClient:
             - Separate different types of code clearly"""
             
             if web_info:
-                system_content += f"\n\nCURRENT WEB SEARCH RESULTS:\n{web_info}\n\nPlease integrate this information into your response appropriately."
+                system_content += f"\n\nCURRENT WEB SEARCH RESULTS:\n{web_info}\n\nIMPORTANT: Use this web search information as your PRIMARY response. Do NOT provide generic advice when specific search results are available."
             
             # Add system message for better AI behavior
             messages = [
