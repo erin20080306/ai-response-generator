@@ -5,3 +5,4 @@ __pycache__/
 .DS_Store
 backup/project-*.zip
 backup/*.zip
+backup/*.zip
