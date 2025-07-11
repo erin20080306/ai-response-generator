@@ -398,15 +398,19 @@ def chat():
                     search_results = openai_client.perform_web_search(user_message, search_type)
                     
                     if search_results:
-                        # 將搜尋結果格式化並整合到回應中
+                        # 將搜尋結果格式化並直接回傳（特別是天氣）
                         formatted_results = openai_client.format_search_results(search_results, search_type)
                         
-                        # 使用AI結合搜尋結果生成回應
-                        enhanced_prompt = chat_history + [{
-                            'role': 'user',
-                            'content': f"{user_message}\n\n最新資訊：{formatted_results}\n\n請根據上述最新資訊回答用戶的問題。"
-                        }]
-                        ai_response = openai_client.get_response(enhanced_prompt)
+                        # 對於天氣查詢，直接回傳格式化的結果
+                        if search_type == 'weather' and search_results.get('status') == 'success':
+                            ai_response = formatted_results
+                        else:
+                            # 使用AI結合搜尋結果生成回應
+                            enhanced_prompt = chat_history + [{
+                                'role': 'user',
+                                'content': f"{user_message}\n\n最新資訊：{formatted_results}\n\n請根據上述最新資訊回答用戶的問題。"
+                            }]
+                            ai_response = openai_client.get_response(enhanced_prompt)
                     else:
                         # 搜尋失敗，使用一般回應
                         ai_response = openai_client.get_response(chat_history)
