@@ -781,13 +781,8 @@ def generate_ai_document_endpoint():
         if not description:
             return jsonify({'success': False, 'error': '請提供文件描述'})
         
-        # 生成基本文件結構
-        ai_structure = {
-            "title": f"{description[:50]}..." if len(description) > 50 else description,
-            "description": f"根據「{description}」生成的{document_type}文件",
-            "structure": get_default_structure(document_type),
-            "image_requirements": []
-        }
+        # 使用AI生成詳細文件結構
+        ai_structure = generate_ai_document_structure(description, document_type, style, language)
         
         # 為Word和PPT生成圖片
         generated_images = []
@@ -850,27 +845,169 @@ def generate_ai_document_endpoint():
         logging.error(f"AI文件生成錯誤: {e}")
         return jsonify({'success': False, 'error': f'AI文件生成失敗: {str(e)}'})
 
-def get_default_structure(document_type):
-    """獲取預設文件結構"""
+def generate_ai_document_structure(description, document_type, style, language):
+    """使用AI生成詳細文件結構"""
+    try:
+        if not openai_client.is_configured():
+            return get_default_structure(document_type, description)
+        
+        # 根據文件類型生成不同的提示詞
+        if document_type == 'excel':
+            prompt = f"""
+            請根據描述「{description}」生成一個專業的Excel試算表結構。
+            
+            要求：
+            1. 提供具體的欄位標題（至少5個）
+            2. 生成10-15行實際的示例資料
+            3. 資料要與「{description}」相關且實用
+            4. 使用{language}語言
+            5. 風格：{style}
+            
+            請以JSON格式回應：
+            {{
+                "title": "試算表標題",
+                "headers": ["欄位1", "欄位2", "欄位3", "欄位4", "欄位5"],
+                "data": [
+                    ["資料1", "資料2", "資料3", "資料4", "資料5"],
+                    ["資料1", "資料2", "資料3", "資料4", "資料5"]
+                ]
+            }}
+            """
+        elif document_type == 'word':
+            prompt = f"""
+            請根據描述「{description}」生成一個專業的Word文件內容。
+            
+            要求：
+            1. 包含標題、簡介、主要內容、結論
+            2. 內容要詳細且實用（至少300字）
+            3. 使用{language}語言
+            4. 風格：{style}
+            5. 內容要與「{description}」高度相關
+            
+            請以JSON格式回應：
+            {{
+                "title": "文件標題",
+                "sections": [
+                    {{
+                        "heading": "段落標題",
+                        "content": "詳細內容"
+                    }}
+                ]
+            }}
+            """
+        elif document_type == 'ppt':
+            prompt = f"""
+            請根據描述「{description}」生成一個專業的PowerPoint簡報結構。
+            
+            要求：
+            1. 包含6-8張投影片
+            2. 每張投影片要有具體的標題和內容
+            3. 內容要與「{description}」高度相關
+            4. 使用{language}語言
+            5. 風格：{style}
+            
+            請以JSON格式回應：
+            {{
+                "title": "簡報標題",
+                "slides": [
+                    {{
+                        "title": "投影片標題",
+                        "content": "具體內容（可包含項目符號）"
+                    }}
+                ]
+            }}
+            """
+        
+        response = openai_client.client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "你是一個專業的文件生成專家。必須根據用戶需求生成詳細、實用的文件結構。回應必須是有效的JSON格式。"},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"},
+            max_tokens=2000,
+            temperature=0.7
+        )
+        
+        ai_structure = json.loads(response.choices[0].message.content)
+        logging.info(f"AI生成文件結構成功: {ai_structure.get('title', 'Unknown')}")
+        return ai_structure
+        
+    except Exception as e:
+        logging.error(f"AI文件結構生成失敗: {e}")
+        return get_default_structure(document_type, description)
+
+def get_default_structure(document_type, description=""):
+    """獲取改進的預設文件結構"""
     if document_type == 'excel':
         return {
-            "headers": ["項目", "描述", "數值", "備註"],
+            "title": f"{description}相關試算表" if description else "資料管理表",
+            "headers": ["項目名稱", "分類", "數量", "單價", "金額", "狀態", "備註"],
             "data": [
-                ["項目1", "說明1", "100", ""],
-                ["項目2", "說明2", "200", ""],
-                ["項目3", "說明3", "300", ""]
+                ["項目A", "類別1", "10", "100", "1000", "進行中", "重要項目"],
+                ["項目B", "類別2", "5", "200", "1000", "完成", "優先處理"],
+                ["項目C", "類別1", "15", "150", "2250", "待開始", "次要項目"],
+                ["項目D", "類別3", "8", "300", "2400", "進行中", "高價值"],
+                ["項目E", "類別2", "12", "120", "1440", "完成", "標準項目"],
+                ["項目F", "類別1", "20", "80", "1600", "待開始", "大量採購"],
+                ["項目G", "類別3", "3", "500", "1500", "進行中", "特殊需求"],
+                ["項目H", "類別2", "7", "180", "1260", "完成", "常規項目"]
             ]
         }
     elif document_type == 'word':
         return {
-            "content": "這是AI生成的Word文件內容。本文件根據用戶需求自動創建，包含相關的段落和格式。"
+            "title": f"{description}相關文件" if description else "專業文件",
+            "sections": [
+                {
+                    "heading": "文件概述",
+                    "content": f"本文件針對「{description}」進行詳細說明和分析。透過系統化的方式，提供完整的資訊和建議，協助相關人員了解重點內容並採取適當的行動。"
+                },
+                {
+                    "heading": "主要內容",
+                    "content": f"關於「{description}」的詳細分析包含以下幾個重點：\n\n1. 背景說明：提供相關背景資訊和現況分析\n2. 重要發現：列出關鍵發現和重要數據\n3. 建議方案：提出具體的改善建議和執行方案\n4. 預期效益：說明實施後可能帶來的正面影響\n\n每個部分都經過詳細研究和分析，確保提供的資訊準確且實用。"
+                },
+                {
+                    "heading": "結論與建議",
+                    "content": f"基於以上分析，我們建議採取以下行動：\n\n• 優先處理最重要的項目\n• 建立完善的監控機制\n• 定期檢討和調整策略\n• 確保所有相關人員充分了解內容\n\n透過系統化的執行，相信能夠達到預期的目標和效果。"
+                }
+            ]
         }
     elif document_type == 'ppt':
         return {
+            "title": f"{description}簡報" if description else "專業簡報",
             "slides": [
-                {"title": "標題頁", "content": "這是AI生成的簡報"},
-                {"title": "內容概述", "content": "• 重點一\n• 重點二\n• 重點三"},
-                {"title": "結論", "content": "總結與展望"}
+                {
+                    "title": "簡報主題",
+                    "content": f"主題：{description}\n日期：{datetime.datetime.now().strftime('%Y年%m月%d日')}\n製作：AI智能助手"
+                },
+                {
+                    "title": "簡報大綱",
+                    "content": "• 背景說明\n• 現況分析\n• 重要發現\n• 解決方案\n• 實施計畫\n• 預期效益\n• 結論建議"
+                },
+                {
+                    "title": "背景說明",
+                    "content": f"• 主題背景：{description}\n• 分析目的：提供全面性的資訊和建議\n• 範圍界定：涵蓋相關的重要面向\n• 時間框架：當前至未來的規劃"
+                },
+                {
+                    "title": "現況分析",
+                    "content": "• 優勢：具備良好的基礎和資源\n• 劣勢：存在某些待改善的問題\n• 機會：外部環境提供發展契機\n• 威脅：需要注意的潛在風險"
+                },
+                {
+                    "title": "重要發現",
+                    "content": "• 關鍵數據顯示重要趨勢\n• 市場反應普遍正面\n• 技術可行性評估良好\n• 資源需求在可接受範圍內"
+                },
+                {
+                    "title": "解決方案",
+                    "content": "• 方案一：短期改善措施\n• 方案二：中期發展策略\n• 方案三：長期規劃方向\n• 配套措施：支援和輔助機制"
+                },
+                {
+                    "title": "實施計畫",
+                    "content": "• 第一階段：準備和規劃（1-2個月）\n• 第二階段：執行和監控（3-6個月）\n• 第三階段：評估和調整（6-12個月）\n• 持續改善：定期檢討和優化"
+                },
+                {
+                    "title": "結論與建議",
+                    "content": "• 建議採用綜合性的解決方案\n• 分階段實施以降低風險\n• 建立完善的監控機制\n• 持續關注市場變化和調整策略"
+                }
             ]
         }
     else:
@@ -1007,25 +1144,27 @@ def create_ai_excel_document(structure, images):
         title = structure.get('title', 'AI生成文件')
         ws['A1'] = title
         ws['A1'].font = title_font
-        ws.merge_cells('A1:F1')
+        # 動態合併儲存格，根據標題數量調整
+        if len(headers) > 1:
+            end_col = chr(ord('A') + len(headers) - 1)
+            ws.merge_cells(f'A1:{end_col}1')
         
         # 添加標題行
-        headers = structure.get('structure', {}).get('headers', ['項目', '描述', '數值'])
+        headers = structure.get('headers', ['項目', '描述', '數值'])
         for col, header in enumerate(headers, 1):
             cell = ws.cell(row=3, column=col, value=header)
             cell.font = header_font
             cell.fill = header_fill
             cell.alignment = Alignment(horizontal='center')
         
-        # 添加示例數據
-        sample_data = [
+        # 添加實際數據
+        data = structure.get('data', [
             ['項目1', '說明1', '100'],
             ['項目2', '說明2', '200'],
-            ['項目3', '說明3', '300'],
-            ['總計', '', '=SUM(C4:C6)']
-        ]
+            ['項目3', '說明3', '300']
+        ])
         
-        for row_idx, row_data in enumerate(sample_data, 4):
+        for row_idx, row_data in enumerate(data, 4):
             for col_idx, value in enumerate(row_data, 1):
                 ws.cell(row=row_idx, column=col_idx, value=value)
         
@@ -1085,9 +1224,16 @@ def create_ai_word_document(structure, images):
             doc.add_paragraph(structure['description'])
             doc.add_paragraph()  # 空行
         
-        # 添加內容
-        content = structure.get('structure', {}).get('content', '這是AI生成的文件內容。')
-        doc.add_paragraph(content)
+        # 添加內容區塊
+        sections = structure.get('sections', [
+            {'heading': '文件內容', 'content': '這是AI生成的文件內容。'}
+        ])
+        
+        for section in sections:
+            # 添加小標題
+            doc.add_heading(section.get('heading', '內容'), level=1)
+            # 添加段落內容
+            doc.add_paragraph(section.get('content', ''))
         
         # 添加圖片
         for i, image in enumerate(images[:2]):  # 最多添加2張圖片
@@ -1143,11 +1289,11 @@ def create_ai_ppt_document(structure, images):
         subtitle.text = structure.get('description', 'AI智能生成的專業簡報')
         
         # 內容投影片
-        slides_data = structure.get('structure', {}).get('slides', [
-            {'title': '內容概述', 'content': '這是AI生成的簡報內容', 'image_description': '相關示意圖'}
+        slides_data = structure.get('slides', [
+            {'title': '內容概述', 'content': '這是AI生成的簡報內容'}
         ])
         
-        for i, slide_data in enumerate(slides_data[:5]):  # 最多5張投影片
+        for i, slide_data in enumerate(slides_data[:8]):  # 最多8張投影片
             bullet_slide_layout = prs.slide_layouts[1]
             slide = prs.slides.add_slide(bullet_slide_layout)
             
