@@ -782,7 +782,9 @@ def generate_ai_document_endpoint():
             return jsonify({'success': False, 'error': '請提供文件描述'})
         
         # 使用AI生成詳細文件結構
+        logging.info(f"開始AI文件生成: {description}, 類型: {document_type}")
         ai_structure = generate_ai_document_structure(description, document_type, style, language)
+        logging.info(f"AI結構生成完成: {ai_structure}")
         
         # 為Word和PPT生成圖片
         generated_images = []
@@ -874,27 +876,17 @@ def generate_ai_document_structure(description, document_type, style, language):
             }}
             """
         elif document_type == 'word':
-            prompt = f"""
-            請根據描述「{description}」生成一個專業的Word文件內容。
-            
-            要求：
-            1. 包含標題、簡介、主要內容、結論
-            2. 內容要詳細且實用（至少300字）
-            3. 使用{language}語言
-            4. 風格：{style}
-            5. 內容要與「{description}」高度相關
-            
-            請以JSON格式回應：
-            {{
-                "title": "文件標題",
-                "sections": [
-                    {{
-                        "heading": "段落標題",
-                        "content": "詳細內容"
-                    }}
-                ]
-            }}
-            """
+            prompt = f"""請根據描述「{description}」生成一個專業的Word文件內容。
+
+要求：
+1. 包含標題、簡介、主要內容、結論
+2. 內容要詳細且實用（至少300字）
+3. 使用{language}語言
+4. 風格：{style}
+5. 內容要與「{description}」高度相關
+
+請以JSON格式回應，格式如下：
+{{"title": "文件標題", "sections": [{{"heading": "段落標題", "content": "詳細內容"}}]}}"""
         elif document_type == 'ppt':
             prompt = f"""
             請根據描述「{description}」生成一個專業的PowerPoint簡報結構。
@@ -931,6 +923,12 @@ def generate_ai_document_structure(description, document_type, style, language):
         
         ai_structure = json.loads(response.choices[0].message.content)
         logging.info(f"AI生成文件結構成功: {ai_structure.get('title', 'Unknown')}")
+        
+        # 確保AI生成的結構有內容
+        if document_type == 'word' and not ai_structure.get('sections'):
+            logging.warning("AI生成的Word結構沒有sections，使用默認結構")
+            return get_default_structure(document_type, description)
+        
         return ai_structure
         
     except Exception as e:
@@ -955,23 +953,49 @@ def get_default_structure(document_type, description=""):
             ]
         }
     elif document_type == 'word':
-        return {
-            "title": f"{description}相關文件" if description else "專業文件",
-            "sections": [
-                {
-                    "heading": "文件概述",
-                    "content": f"本文件針對「{description}」進行詳細說明和分析。透過系統化的方式，提供完整的資訊和建議，協助相關人員了解重點內容並採取適當的行動。"
-                },
-                {
-                    "heading": "主要內容",
-                    "content": f"關於「{description}」的詳細分析包含以下幾個重點：\n\n1. 背景說明：提供相關背景資訊和現況分析\n2. 重要發現：列出關鍵發現和重要數據\n3. 建議方案：提出具體的改善建議和執行方案\n4. 預期效益：說明實施後可能帶來的正面影響\n\n每個部分都經過詳細研究和分析，確保提供的資訊準確且實用。"
-                },
-                {
-                    "heading": "結論與建議",
-                    "content": f"基於以上分析，我們建議採取以下行動：\n\n• 優先處理最重要的項目\n• 建立完善的監控機制\n• 定期檢討和調整策略\n• 確保所有相關人員充分了解內容\n\n透過系統化的執行，相信能夠達到預期的目標和效果。"
-                }
-            ]
-        }
+        # 針對不同主題生成更具體的內容
+        if description and any(keyword in description.lower() for keyword in ['食譜', '菜', '湯', '料理', '烹飪', '酸辣湯']):
+            # 食譜相關文件
+            return {
+                "title": f"{description}食譜",
+                "sections": [
+                    {
+                        "heading": "食譜簡介",
+                        "content": f"{description}是一道經典的中式湯品，以其酸辣的口感而聞名。這道湯結合了醋的酸味和胡椒的辣味，搭配豐富的食材，營養豐富且口感層次分明。本食譜將詳細介紹製作方法和技巧。"
+                    },
+                    {
+                        "heading": "所需食材",
+                        "content": "主要食材：\n• 豆腐 150g（切條）\n• 木耳 50g（泡發後切絲）\n• 雞蛋 2個（打散）\n• 瘦肉絲 100g\n• 冬筍 50g（切絲）\n• 香菇 4朵（切絲）\n\n調料：\n• 生抽 2湯匙\n• 陳醋 3湯匙\n• 胡椒粉 1茶匙\n• 鹽適量\n• 太白粉 2湯匙\n• 香油 1茶匙\n• 蔥花適量"
+                    },
+                    {
+                        "heading": "製作步驟",
+                        "content": "1. 準備工作：將所有食材洗淨切好，木耳提前泡發，瘦肉絲用少許生抽醃製10分鐘。\n\n2. 炒製配料：熱鍋下油，先炒肉絲至變色，再加入香菇絲、冬筍絲、木耳絲炒香。\n\n3. 加湯煮製：加入高湯或清水1000ml，大火煮開後轉小火煮5分鐘。\n\n4. 調味：加入豆腐條，調入生抽、陳醋、鹽和胡椒粉，煮2分鐘。\n\n5. 勾芡：用太白粉水勾芡，使湯汁略為濃稠。\n\n6. 加蛋花：將打散的蛋液慢慢倒入湯中，用勺子輕輕攪拌成蛋花。\n\n7. 最後調味：滴入香油，撒上蔥花即可。"
+                    },
+                    {
+                        "heading": "烹飪技巧",
+                        "content": "• 酸辣比例：醋和胡椒的比例約為3:1，可根據個人喜好調整\n• 勾芡技巧：太白粉水要慢慢加入，邊加邊攪拌，避免結塊\n• 蛋花製作：蛋液要在湯沸騰時倒入，並用勺子劃圓圈攪拌\n• 食材搭配：可根據喜好添加海帶絲、胡蘿蔔絲等蔬菜\n• 口感調整：喜歡更酸的可增加醋量，喜歡更辣的可增加胡椒粉"
+                    }
+                ]
+            }
+        else:
+            # 一般文件
+            return {
+                "title": f"{description}相關文件" if description else "專業文件",
+                "sections": [
+                    {
+                        "heading": "文件概述",
+                        "content": f"本文件針對「{description}」進行詳細說明和分析。透過系統化的方式，提供完整的資訊和建議，協助相關人員了解重點內容並採取適當的行動。"
+                    },
+                    {
+                        "heading": "主要內容",
+                        "content": f"關於「{description}」的詳細分析包含以下幾個重點：\n\n1. 背景說明：提供相關背景資訊和現況分析\n2. 重要發現：列出關鍵發現和重要數據\n3. 建議方案：提出具體的改善建議和執行方案\n4. 預期效益：說明實施後可能帶來的正面影響\n\n每個部分都經過詳細研究和分析，確保提供的資訊準確且實用。"
+                    },
+                    {
+                        "heading": "結論與建議",
+                        "content": f"基於以上分析，我們建議採取以下行動：\n\n• 優先處理最重要的項目\n• 建立完善的監控機制\n• 定期檢討和調整策略\n• 確保所有相關人員充分了解內容\n\n透過系統化的執行，相信能夠達到預期的目標和效果。"
+                    }
+                ]
+            }
     elif document_type == 'ppt':
         return {
             "title": f"{description}簡報" if description else "專業簡報",
@@ -1224,16 +1248,32 @@ def create_ai_word_document(structure, images):
             doc.add_paragraph(structure['description'])
             doc.add_paragraph()  # 空行
         
-        # 添加內容區塊
-        sections = structure.get('sections', [
-            {'heading': '文件內容', 'content': '這是AI生成的文件內容。'}
-        ])
+        # 添加內容區塊 - 優先使用AI生成的sections
+        sections = structure.get('sections', [])
+        logging.info(f"Word文件sections: {sections}")
+        
+        # 如果沒有sections，嘗試使用content字段
+        if not sections and structure.get('content'):
+            sections = [{'heading': '主要內容', 'content': structure['content']}]
+            logging.info(f"使用content字段: {structure.get('content')}")
+        
+        # 如果仍然沒有內容，使用預設結構
+        if not sections:
+            sections = [
+                {'heading': '文件內容', 'content': '這是AI生成的文件內容。'}
+            ]
+            logging.warning("使用預設Word結構")
         
         for section in sections:
             # 添加小標題
             doc.add_heading(section.get('heading', '內容'), level=1)
-            # 添加段落內容
-            doc.add_paragraph(section.get('content', ''))
+            # 添加段落內容，支持多行內容
+            content = section.get('content', '')
+            if content:
+                # 處理多行內容
+                for paragraph in content.split('\n\n'):
+                    if paragraph.strip():
+                        doc.add_paragraph(paragraph.strip())
         
         # 添加圖片
         for i, image in enumerate(images[:2]):  # 最多添加2張圖片
