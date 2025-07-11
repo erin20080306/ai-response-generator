@@ -4,3 +4,4 @@ __pycache__/
 .env
 .DS_Store
 backup/project-*.zip
+backup/*.zip
