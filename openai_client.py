@@ -89,24 +89,24 @@ class OpenAIClient:
     
     def format_search_results(self, search_results, search_type):
         """格式化搜尋結果"""
-        if not search_results or search_results.get('status') == 'error':
-            return "抱歉，無法獲取最新資訊。"
+        if not search_results:
+            return "搜尋結果為空，請稍後再試。"
         
         if search_type == 'weather':
-            if search_results.get('temperature'):
-                # 使用真實API的詳細天氣資訊
+            if search_results.get('status') == 'success':
                 location = search_results.get('location', '未知地點')
-                temp = search_results.get('temperature', '?')
-                desc = search_results.get('description', '無描述')
-                feels_like = search_results.get('feels_like', '?')
-                humidity = search_results.get('humidity', '?')
-                wind_speed = search_results.get('wind_speed', '?')
-                
-                return f"🌤️ **{location}即時天氣**：\n溫度：{temp}°C\n天氣：{desc}\n體感：{feels_like}°C\n濕度：{humidity}%\n風速：{wind_speed} m/s"
-            elif search_results.get('summary'):
-                return f"🌤️ **{search_results['location']}天氣資訊**：\n{search_results['summary']}"
+                if 'summary' in search_results and search_results['summary']:
+                    return f"📍 {location} 天氣資訊：\n{search_results['summary']}\n\n💡 建議查看中央氣象局官方網站獲取最新精確天氣資訊"
+                elif 'data' in search_results and search_results['data']:
+                    # 從搜尋結果格式化天氣資訊
+                    weather_text = ""
+                    for result in search_results['data'][:2]:
+                        weather_text += f"• {result['title']}\n  {result['snippet']}\n\n"
+                    return f"📍 {location} 天氣資訊：\n{weather_text}💡 建議查看中央氣象局官方網站獲取最新精確天氣資訊"
+                else:
+                    return f"📍 {location} 天氣資訊：\n建議查看中央氣象局官方網站獲取最新天氣資訊"
             else:
-                return "抱歉，無法獲取天氣資訊。"
+                return f"天氣查詢失敗：{search_results.get('message', '建議查看中央氣象局官方網站獲取最新天氣資訊')}"
         
         elif search_type == 'legal':
             if search_results.get('results'):
