@@ -778,22 +778,24 @@ class EnhancedAIAssistant {
     async handleDocumentGeneration(message) {
         try {
             this.showLoading();
-            this.addMessage('正在分析您的文件需求...', 'system');
+            this.addMessage('正在使用AI生成文件...', 'system');
 
             // 分析文件類型和內容
             const docInfo = this.analyzeDocumentRequest(message);
             console.log('分析文件請求結果:', docInfo);
             
-            const response = await fetch('/generate_document', {
+            // 使用修復後的AI文件生成端點
+            const response = await fetch('/generate_ai_document', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     description: message,
-                    type: docInfo.type,
+                    document_type: docInfo.type,
+                    style: 'professional',
                     language: 'zh-TW',
-                    method: 'ai_generate'
+                    include_images: false
                 })
             });
 
@@ -801,7 +803,7 @@ class EnhancedAIAssistant {
 
             if (data.success) {
                 // 顯示生成成功訊息
-                this.addMessage(`✅ ${docInfo.typeName}文件已生成完成！`, 'system');
+                this.addMessage(`✅ ${docInfo.typeName}文件已生成完成！包含實際AI生成的內容`, 'system');
                 
                 // 添加下載連結
                 this.addDocumentDownloadMessage(data);
