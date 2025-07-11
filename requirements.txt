@@ -4,3 +4,4 @@ requests
 qrcode
 python-barcode
 Pillow
+python-pptx
