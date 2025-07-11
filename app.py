@@ -1138,30 +1138,103 @@ def generate_ai_document_with_images(document_type, description, style, language
     """使用AI生成帶有圖片的文件"""
     try:
         # 生成文件結構
-        structure_prompt = f"""
-        請根據以下要求生成一個{document_type}文件的詳細結構：
-        
-        文件描述：{description}
-        風格：{style}
-        語言：{language}
-        
-        請以JSON格式回應，包含：
-        {{
-            "title": "文件標題",
-            "description": "文件描述",
-            "structure": {{
-                "headers": ["欄位1", "欄位2", "欄位3"] (適用於Excel),
-                "content": "文件內容段落" (適用於Word),
-                "slides": [
+        if document_type == 'word':
+            structure_prompt = f"""
+            請根據以下要求生成一個Word文件的詳細結構：
+            
+            文件描述：{description}
+            風格：{style}
+            語言：{language}
+            
+            請以JSON格式回應，包含：
+            {{
+                "title": "文件標題",
+                "description": "文件描述",
+                "sections": [
                     {{
-                        "title": "投影片標題",
-                        "content": "投影片內容"
+                        "heading": "章節標題",
+                        "content": "章節內容（詳細段落）"
                     }}
-                ] (適用於PPT)
-            }},
-            "image_requirements": ["圖片描述1", "圖片描述2"] (如需圖片，最多2個)
-        }}
-        """
+                ]
+            }}
+            
+            請生成至少3個章節，每個章節包含200字以上的詳細內容。
+            """
+        elif document_type == 'excel':
+            structure_prompt = f"""
+            請根據以下要求生成一個Excel文件的詳細結構：
+            
+            文件描述：{description}
+            風格：{style}
+            語言：{language}
+            
+            請以JSON格式回應，包含：
+            {{
+                "title": "文件標題",
+                "description": "文件描述",
+                "headers": ["欄位1", "欄位2", "欄位3"],
+                "data": [
+                    ["數據1", "數據2", "數據3"],
+                    ["數據4", "數據5", "數據6"]
+                ]
+            }}
+            
+            請生成至少8行實際數據。
+            """
+        elif document_type == 'pdf':
+            structure_prompt = f"""
+            請根據以下要求生成一個PDF文件的詳細結構：
+            
+            文件描述：{description}
+            風格：{style}
+            語言：{language}
+            
+            請以JSON格式回應，包含：
+            {{
+                "title": "文件標題",
+                "description": "文件描述",
+                "sections": [
+                    {{
+                        "heading": "章節標題",
+                        "content": "章節內容（詳細段落）"
+                    }}
+                ]
+            }}
+            
+            請生成至少4個章節，每個章節包含150字以上的詳細內容。
+            """
+        elif document_type == 'txt':
+            structure_prompt = f"""
+            請根據以下要求生成一個TXT文件的詳細結構：
+            
+            文件描述：{description}
+            風格：{style}
+            語言：{language}
+            
+            請以JSON格式回應，包含：
+            {{
+                "title": "文件標題",
+                "description": "文件描述",
+                "sections": [
+                    {{
+                        "heading": "章節標題",
+                        "content": "章節內容（詳細段落）"
+                    }}
+                ]
+            }}
+            
+            請生成至少3個章節，每個章節包含100字以上的詳細內容。
+            """
+        else:
+            structure_prompt = f"""
+            請根據以下要求生成一個{document_type}文件的詳細結構：
+            
+            文件描述：{description}
+            風格：{style}
+            語言：{language}
+            
+            請以JSON格式回應，包含詳細的文件結構和內容。
+            """
         
         if not openai_client.client:
             return jsonify({'success': False, 'error': 'OpenAI客戶端未初始化'})
