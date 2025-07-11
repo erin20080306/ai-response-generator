@@ -2,7 +2,8 @@ flask
 openai
 requests
 qrcode
-Pillow
-beautifulsoup4
+python-barcode
+pillow
 python-pptx
 flask_sqlalchemy
+beautifulsoup4
