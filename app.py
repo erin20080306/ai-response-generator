@@ -909,6 +909,42 @@ def generate_ai_document_structure(description, document_type, style, language):
                 ]
             }}
             """
+        elif document_type == 'txt':
+            prompt = f"""請根據描述「{description}」生成一個專業的TXT文件內容。
+
+要求：
+1. 包含標題、簡介、主要內容、結論
+2. 內容要詳細且實用（至少300字）
+3. 使用{language}語言
+4. 風格：{style}
+5. 內容要與「{description}」高度相關
+
+請以JSON格式回應，格式如下：
+{{"title": "文件標題", "sections": [{{"heading": "段落標題", "content": "詳細內容"}}]}}"""
+        elif document_type == 'pdf':
+            prompt = f"""請根據描述「{description}」生成一個專業的PDF文件內容。
+
+要求：
+1. 包含標題、簡介、主要內容、結論
+2. 內容要詳細且實用（至少400字）
+3. 使用{language}語言
+4. 風格：{style}
+5. 內容要與「{description}」高度相關
+6. 適合PDF格式的專業排版
+
+請以JSON格式回應，格式如下：
+{{"title": "文件標題", "sections": [{{"heading": "段落標題", "content": "詳細內容"}}]}}"""
+        else:
+            prompt = f"""請根據描述「{description}」生成一個專業文件內容。
+
+要求：
+1. 包含標題、簡介、主要內容、結論
+2. 內容要詳細且實用
+3. 使用{language}語言
+4. 風格：{style}
+
+請以JSON格式回應，格式如下：
+{{"title": "文件標題", "sections": [{{"heading": "段落標題", "content": "詳細內容"}}]}}"""
         
         response = openai_client.client.chat.completions.create(
             model="gpt-4o",
@@ -996,6 +1032,67 @@ def get_default_structure(document_type, description=""):
                     }
                 ]
             }
+    elif document_type == 'txt':
+        # TXT文件默認結構
+        if description and any(keyword in description.lower() for keyword in ['咖啡', '店', '經營', '生意', '創業']):
+            return {
+                "title": f"{description}",
+                "sections": [
+                    {
+                        "heading": "經營概述",
+                        "content": f"{description}是一個充滿挑戰與機遇的行業。成功的關鍵在於了解市場需求、提供優質服務、建立穩固的客戶基礎。本指南將提供實用的經營策略和管理技巧，幫助您在競爭激烈的市場中脫穎而出。"
+                    },
+                    {
+                        "heading": "核心要素",
+                        "content": "1. 選址策略：選擇人流量大、交通便利的地點\n2. 產品品質：確保提供高品質的產品和服務\n3. 客戶服務：建立友善、專業的服務團隊\n4. 成本控制：合理控制營運成本，提高利潤率\n5. 市場行銷：制定有效的宣傳和促銷策略\n6. 財務管理：建立完善的財務管理制度"
+                    },
+                    {
+                        "heading": "實施建議",
+                        "content": "建議從小規模開始，逐步擴大經營規模。重視員工培訓，建立標準化的作業流程。定期檢討經營績效，根據市場變化調整策略。保持與客戶的良好溝通，收集意見回饋以改善服務品質。"
+                    }
+                ]
+            }
+        else:
+            return {
+                "title": f"{description}相關文件" if description else "專業文件",
+                "sections": [
+                    {
+                        "heading": "文件概述",
+                        "content": f"本文件針對「{description}」進行詳細說明和分析。透過系統化的方式，提供完整的資訊和建議，協助相關人員了解重點內容並採取適當的行動。"
+                    },
+                    {
+                        "heading": "主要內容",
+                        "content": f"關於「{description}」的重點包括：\n\n1. 基本概念與定義\n2. 相關背景資訊\n3. 重要特點與優勢\n4. 實施步驟與方法\n5. 注意事項與建議\n\n這些內容經過仔細研究和分析，確保資訊準確且實用。"
+                    },
+                    {
+                        "heading": "總結",
+                        "content": f"透過本文件的說明，相信您對「{description}」有了更深入的了解。建議根據實際情況，選擇適合的方式進行實施，並持續關注相關發展動態。"
+                    }
+                ]
+            }
+    elif document_type == 'pdf':
+        # PDF文件默認結構（與TXT類似但更詳細）
+        return {
+            "title": f"{description}專業指南" if description else "專業文件",
+            "sections": [
+                {
+                    "heading": "引言",
+                    "content": f"本指南專為「{description}」而設計，旨在提供全面、實用的資訊和建議。透過詳細的分析和說明，幫助讀者全面了解相關內容並掌握實際應用技巧。"
+                },
+                {
+                    "heading": "詳細分析",
+                    "content": f"「{description}」涉及多個重要層面：\n\n• 理論基礎：提供必要的理論知識和背景資訊\n• 實務操作：說明具體的實施步驟和操作方法\n• 案例分析：透過實際案例展示應用效果\n• 最佳實踐：分享成功經驗和專業建議\n\n每個層面都經過專業分析，確保內容的準確性和實用性。"
+                },
+                {
+                    "heading": "實施建議",
+                    "content": f"為了有效實施「{description}」，建議採取以下步驟：\n\n1. 充分準備：收集相關資訊，了解基本要求\n2. 制定計劃：根據實際情況制定詳細的實施計劃\n3. 分階段執行：按計劃逐步推進，確保每個階段的品質\n4. 監控評估：定期檢查進度，及時調整策略\n5. 持續改進：根據實施結果不斷優化和完善\n\n透過系統化的方法，可以大幅提升成功機率並達到預期效果。"
+                },
+                {
+                    "heading": "結論",
+                    "content": f"「{description}」是一個值得深入探討的主題。通過本指南的學習，相信您已經具備了必要的知識和技能。建議將所學知識應用到實際情況中，並持續關注相關領域的最新發展。祝您在相關領域取得成功！"
+                }
+            ]
+        }
     elif document_type == 'ppt':
         return {
             "title": f"{description}簡報" if description else "專業簡報",
@@ -1141,6 +1238,10 @@ def generate_ai_document_with_images(document_type, description, style, language
             return create_ai_word_document(ai_structure, generated_images)
         elif document_type == 'ppt':
             return create_ai_ppt_document(ai_structure, generated_images)
+        elif document_type == 'txt':
+            return create_ai_txt_document(ai_structure, generated_images)
+        elif document_type == 'pdf':
+            return create_ai_pdf_document(ai_structure, generated_images)
         else:
             return jsonify({'success': False, 'error': '不支援的文件類型'})
             
@@ -1168,13 +1269,13 @@ def create_ai_excel_document(structure, images):
         title = structure.get('title', 'AI生成文件')
         ws['A1'] = title
         ws['A1'].font = title_font
+        # 添加標題行
+        headers = structure.get('headers', ['項目', '描述', '數值'])
+        
         # 動態合併儲存格，根據標題數量調整
         if len(headers) > 1:
             end_col = chr(ord('A') + len(headers) - 1)
             ws.merge_cells(f'A1:{end_col}1')
-        
-        # 添加標題行
-        headers = structure.get('headers', ['項目', '描述', '數值'])
         for col, header in enumerate(headers, 1):
             cell = ws.cell(row=3, column=col, value=header)
             cell.font = header_font
@@ -1372,6 +1473,315 @@ def create_ai_ppt_document(structure, images):
     except Exception as e:
         logging.error(f"PPT生成錯誤: {e}")
         return jsonify({'success': False, 'error': f'PPT生成失敗: {str(e)}'})
+
+def create_ai_txt_document(structure, images):
+    """創建AI生成的TXT文件"""
+    try:
+        # 生成文件內容
+        content = []
+        
+        # 添加標題
+        title = structure.get('title', 'AI生成文件')
+        content.append(f"{'='*60}")
+        content.append(f"{title:^60}")
+        content.append(f"{'='*60}")
+        content.append("")
+        
+        # 添加描述
+        if structure.get('description'):
+            content.append(structure['description'])
+            content.append("")
+        
+        # 添加內容區塊
+        sections = structure.get('sections', [])
+        if not sections and structure.get('content'):
+            sections = [{'heading': '主要內容', 'content': structure['content']}]
+        
+        if not sections:
+            sections = [{'heading': '文件內容', 'content': '這是AI生成的文件內容。'}]
+        
+        for section in sections:
+            # 添加小標題
+            heading = section.get('heading', '內容')
+            content.append(f"{heading}")
+            content.append(f"{'-'*len(heading)}")
+            
+            # 添加段落內容
+            section_content = section.get('content', '')
+            if section_content:
+                content.append(section_content)
+                content.append("")
+        
+        # 添加圖片說明
+        if images:
+            content.append("相關圖片:")
+            content.append("-" * 20)
+            for i, image in enumerate(images):
+                content.append(f"{i+1}. {image.get('description', f'圖片{i+1}')}")
+            content.append("")
+        
+        # 添加生成時間
+        from datetime import datetime
+        content.append(f"生成時間: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # 保存文件
+        import uuid
+        filename = f"ai_text_{uuid.uuid4()}.txt"
+        file_path = os.path.join('static', 'downloads', filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(content))
+        
+        return jsonify({
+            'success': True,
+            'filename': filename,
+            'download_url': f'/download/{filename}',
+            'type': 'text',
+            'title': title,
+            'description': structure.get('description', ''),
+            'file_size': f'{os.path.getsize(file_path) // 1024}KB'
+        })
+        
+    except Exception as e:
+        logging.error(f"TXT生成錯誤: {e}")
+        return jsonify({'success': False, 'error': f'TXT生成失敗: {str(e)}'})
+
+def create_ai_pdf_document(structure, images):
+    """創建AI生成的PDF文件"""
+    try:
+        # 使用reportlab生成PDF
+        from reportlab.lib.pagesizes import letter, A4
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT
+        
+        # 設置中文字體 (使用系統字體)
+        try:
+            # 嘗試使用系統中文字體
+            font_paths = [
+                '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+                '/System/Library/Fonts/PingFang.ttc',
+                '/Windows/Fonts/simsun.ttc'
+            ]
+            
+            font_registered = False
+            for font_path in font_paths:
+                if os.path.exists(font_path):
+                    try:
+                        pdfmetrics.registerFont(TTFont('Chinese', font_path))
+                        font_registered = True
+                        break
+                    except:
+                        continue
+            
+            if not font_registered:
+                # 使用預設字體
+                font_name = 'Helvetica'
+            else:
+                font_name = 'Chinese'
+                
+        except Exception as e:
+            logging.warning(f"字體設置失敗: {e}")
+            font_name = 'Helvetica'
+        
+        # 創建PDF文件
+        import uuid
+        filename = f"ai_pdf_{uuid.uuid4()}.pdf"
+        file_path = os.path.join('static', 'downloads', filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        doc = SimpleDocTemplate(file_path, pagesize=A4)
+        story = []
+        
+        # 設置樣式
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=18,
+            spaceAfter=30,
+            alignment=TA_CENTER,
+            fontName=font_name
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=14,
+            spaceAfter=12,
+            fontName=font_name
+        )
+        
+        normal_style = ParagraphStyle(
+            'CustomNormal',
+            parent=styles['Normal'],
+            fontSize=12,
+            spaceAfter=12,
+            fontName=font_name
+        )
+        
+        # 添加標題
+        title = structure.get('title', 'AI生成文件')
+        story.append(Paragraph(title, title_style))
+        story.append(Spacer(1, 12))
+        
+        # 添加描述
+        if structure.get('description'):
+            story.append(Paragraph(structure['description'], normal_style))
+            story.append(Spacer(1, 12))
+        
+        # 添加內容區塊
+        sections = structure.get('sections', [])
+        if not sections and structure.get('content'):
+            sections = [{'heading': '主要內容', 'content': structure['content']}]
+        
+        if not sections:
+            sections = [{'heading': '文件內容', 'content': '這是AI生成的文件內容。'}]
+        
+        for section in sections:
+            # 添加小標題
+            heading = section.get('heading', '內容')
+            story.append(Paragraph(heading, heading_style))
+            
+            # 添加段落內容
+            section_content = section.get('content', '')
+            if section_content:
+                # 處理多行內容
+                for paragraph in section_content.split('\n\n'):
+                    if paragraph.strip():
+                        story.append(Paragraph(paragraph.strip(), normal_style))
+                        story.append(Spacer(1, 6))
+        
+        # 添加圖片
+        for i, image in enumerate(images[:3]):  # 最多添加3張圖片
+            try:
+                if os.path.exists(image['path']):
+                    story.append(Spacer(1, 12))
+                    story.append(Paragraph(f"圖片 {i+1}: {image['description']}", heading_style))
+                    img = Image(image['path'], width=4*inch, height=3*inch)
+                    story.append(img)
+                    story.append(Spacer(1, 12))
+            except Exception as e:
+                logging.warning(f"PDF插入圖片失敗: {e}")
+                story.append(Paragraph(f"[圖片: {image['description']}]", normal_style))
+        
+        # 生成PDF
+        doc.build(story)
+        
+        return jsonify({
+            'success': True,
+            'filename': filename,
+            'download_url': f'/download/{filename}',
+            'type': 'pdf',
+            'title': title,
+            'description': structure.get('description', ''),
+            'file_size': f'{os.path.getsize(file_path) // 1024}KB'
+        })
+        
+    except ImportError:
+        # 如果沒有reportlab，使用HTML轉PDF的方法
+        return create_ai_html_to_pdf_document(structure, images)
+    except Exception as e:
+        logging.error(f"PDF生成錯誤: {e}")
+        return jsonify({'success': False, 'error': f'PDF生成失敗: {str(e)}'})
+
+def create_ai_html_to_pdf_document(structure, images):
+    """使用HTML生成PDF（備用方案）"""
+    try:
+        # 生成HTML內容
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>{structure.get('title', 'AI生成文件')}</title>
+            <style>
+                body {{
+                    font-family: 'Arial', sans-serif;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    line-height: 1.6;
+                }}
+                h1 {{
+                    text-align: center;
+                    color: #333;
+                    border-bottom: 2px solid #333;
+                    padding-bottom: 10px;
+                }}
+                h2 {{
+                    color: #555;
+                    margin-top: 30px;
+                }}
+                p {{
+                    margin-bottom: 15px;
+                    text-align: justify;
+                }}
+                .description {{
+                    font-style: italic;
+                    color: #666;
+                    margin-bottom: 30px;
+                }}
+            </style>
+        </head>
+        <body>
+            <h1>{structure.get('title', 'AI生成文件')}</h1>
+        """
+        
+        # 添加描述
+        if structure.get('description'):
+            html_content += f'<p class="description">{structure["description"]}</p>'
+        
+        # 添加內容區塊
+        sections = structure.get('sections', [])
+        if not sections and structure.get('content'):
+            sections = [{'heading': '主要內容', 'content': structure['content']}]
+        
+        if not sections:
+            sections = [{'heading': '文件內容', 'content': '這是AI生成的文件內容。'}]
+        
+        for section in sections:
+            heading = section.get('heading', '內容')
+            html_content += f'<h2>{heading}</h2>'
+            
+            section_content = section.get('content', '')
+            if section_content:
+                for paragraph in section_content.split('\n\n'):
+                    if paragraph.strip():
+                        html_content += f'<p>{paragraph.strip()}</p>'
+        
+        html_content += """
+        </body>
+        </html>
+        """
+        
+        # 保存HTML文件
+        import uuid
+        filename = f"ai_pdf_{uuid.uuid4()}.html"
+        file_path = os.path.join('static', 'downloads', filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        
+        return jsonify({
+            'success': True,
+            'filename': filename,
+            'download_url': f'/download/{filename}',
+            'type': 'html',
+            'title': structure.get('title', 'AI生成文件'),
+            'description': structure.get('description', ''),
+            'file_size': f'{os.path.getsize(file_path) // 1024}KB',
+            'note': '由於系統限制，PDF以HTML格式提供，您可以在瀏覽器中打開後列印為PDF'
+        })
+        
+    except Exception as e:
+        logging.error(f"HTML轉PDF生成錯誤: {e}")
+        return jsonify({'success': False, 'error': f'PDF生成失敗: {str(e)}'})
 
 def create_google_sheets_template(template_data, language):
     """創建 Google Sheets 範本（實際上創建 CSV 檔案）"""

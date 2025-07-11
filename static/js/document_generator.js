@@ -78,6 +78,8 @@ class DocumentGenerator {
                                             <option value="google_sheet">Google Sheets</option>
                                             <option value="word">Word 文件</option>
                                             <option value="ppt">PowerPoint 簡報</option>
+                                            <option value="txt">TXT 文字檔</option>
+                                            <option value="pdf">PDF 文件</option>
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-3">

@@ -430,6 +430,8 @@ function showAIDocumentGenerator() {
                                 <option value="excel">Excel試算表</option>
                                 <option value="word">Word文件</option>
                                 <option value="ppt">PowerPoint簡報</option>
+                                <option value="txt">TXT文字檔</option>
+                                <option value="pdf">PDF文件</option>
                             </select>
                         </div>
                         <div class="mb-3">
